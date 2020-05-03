@@ -171,6 +171,11 @@
                         (translate [0 0 (+ 5 plate-thickness)])
                         (color [240/255 223/255 175/255 1])))})
 
+;; Fill the keyholes instead of placing a a keycap over them
+(def keyhole-fill (let [fill (cube keyswitch-height keyswitch-width plate-thickness)]
+                (->> fill
+                     (translate [0 0 (/ plate-thickness 2)]))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Placement Functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -192,6 +197,7 @@
 
 (defn offset-for-column [col, row]
   (if (and (true? pinky-15u) (= col lastcol) (<= row last-15u-row) (>= row first-15u-row)) 4.7625 0))
+
 (defn apply-key-geometry [translate-fn rotate-x-fn rotate-y-fn column row shape]
   (let [column-angle (* β (- centercol column))
         placed-shape (->> shape
@@ -262,12 +268,28 @@
                 (key-place column row)))))
 (def caps
   (apply union
-         (for [column columns
+         (conj (for [column columns
                row rows
-               :when (or (.contains [2 3] column)
-                         (not= row lastrow))]
-           (->> (sa-cap (if (and (true? pinky-15u) (= column lastcol)) 1.5 1))
-                (key-place column row)))))
+               :when (or (and (= column 0) (< row 3))
+                         (and (.contains [1 2] column) (< row 4))
+                         (.contains [3 4 5 6] column))]
+               (->> (sa-cap (if (and (true? pinky-15u) (= column lastcol) (not= row lastrow)) 1.5 1))
+                    (key-place column row)))
+               (list (key-place 0 0 (sa-cap 1))
+                 (key-place 0 1 (sa-cap 1))
+                 (key-place 0 2 (sa-cap 1))))))
+
+(def caps-fill
+  (apply union
+         (conj (for [column columns
+               row rows
+               :when (or (and (= column 0) (< row 3))
+                         (and (.contains [1 2] column) (< row 4))
+                         (.contains [3 4 5 6] column))]
+                 (key-place column row keyhole-fill))
+               (list (key-place 0 0 keyhole-fill)
+                 (key-place 0 1 keyhole-fill)
+                 (key-place 0 2 keyhole-fill)))))
 
 ;placement for the innermost column
 (def key-holes-inner
@@ -485,6 +507,11 @@
   (union
    (thumb-1x-layout (sa-cap 1))
    (thumb-15x-layout (rotate (/ π 2) [0 0 1] (sa-cap 1.5)))))
+
+(def thumbcaps-fill
+  (union
+   (thumb-1x-layout keyhole-fill)
+   (thumb-15x-layout (rotate (/ π 2) [0 0 1] keyhole-fill))))
 
 (def thumb
   (union
@@ -1092,25 +1119,20 @@
 ))))
 
 (def model-right (difference
-                  (union
-                   key-holes
-                   key-holes-inner
-                   pinky-connectors
-                   extra-connectors
-                   connectors
-                   inner-connectors
-                   thumb-type
-                   thumb-connector-type
-                   (difference (union case-walls
-                                      screw-insert-outers
-                                      )
-                               usb-holder-space
-                               screw-insert-holes)
-;                     thumbcaps
-;                     caps
-                   )
-                  (translate [0 0 -20] (cube 350 350 40))
-                  ))
+                   (union
+                     key-holes
+                     key-holes-inner
+                     pinky-connectors
+                     extra-connectors
+                     connectors
+                     inner-connectors
+                     thumb-type
+                     thumb-connector-type
+                     (difference (union case-walls
+                                        screw-insert-outers)
+                                 usb-holder-space
+                                 screw-insert-holes))
+                   (translate [0 0 -20] (cube 350 350 40))))
 
 (spit "things/right.scad"
       (write-scad model-right))
@@ -1120,19 +1142,41 @@
 
 (spit "things/right-test.scad"
       (write-scad
-       (union
-        key-holes
-        key-holes-inner
-        connectors
-        inner-connectors
-        thumb
-        thumb-connectors
-        case-walls
-        thumbcaps
-        caps
-        )))
+        (union
+          key-holes
+          key-holes-inner
+          pinky-connectors
+          extra-connectors
+          connectors
+          inner-connectors
+          thumb
+          thumb-connectors
+          case-walls
+          thumbcaps
+          caps)))
 
 (spit "things/right-plate.scad"
+      (write-scad
+        (extrude-linear
+          {:height 2.6 :center false}
+          (project
+            (difference
+              (union
+                key-holes
+                key-holes-inner
+                pinky-connectors
+                extra-connectors
+                connectors
+                inner-connectors
+                thumb
+                thumb-connectors
+                case-walls
+                thumbcaps-fill
+                caps-fill
+                screw-insert-outers)
+              (translate [0 0 -10] screw-insert-screw-holes))))))
+
+(spit "things/right-plate-laser.scad"
       (write-scad
        (cut
         (translate [0 0 -0.1]
@@ -1141,11 +1185,5 @@
                                (translate [0 0 -10] screw-insert-screw-holes))))
 
        ))
-
-;(spit "things/test.scad"
-;      (write-scad
-;       ))
-
-
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
