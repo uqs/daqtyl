@@ -32,17 +32,15 @@
 
 (def column-style :standard)
 
-(if (true? inner-column)
-  (defn column-offset [column] (cond
-  (<= column 1) [0 -2 0]
-  (= column 3) [0 2.82 -4.5]
-  (>= column 5) [0 -12 5.64]            ; original [0 -5.8 5.64]
-  :else [0 0 0]))
-  (defn column-offset [column] (cond
-  (= column 2) [0 2.82 -4.5]
-  (>= column 4) [0 -12 5.64]            ; original [0 -5.8 5.64]
-  :else [0 0 0]))
-  )
+(defn column-offset [column]
+  (if inner-column
+    (cond (<= column 1) [0 -2 0]
+          (= column 3) [0 2.82 -4.5]
+          (>= column 5) [0 -12 5.64]    ; original [0 -5.8 5.64]
+          :else [0 0 0])
+    (cond (= column 2) [0 2.82 -4.5]
+          (>= column 4) [0 -12 5.64]    ; original [0 -5.8 5.64]
+          :else [0 0 0])))
 
 (def thumb-offsets [6 -3 7])
 
@@ -76,8 +74,8 @@
 (def lastrow (dec nrows))
 (def cornerrow (dec lastrow))
 (def lastcol (dec ncols))
-(if (true? extra-row) (def extra-cornerrow lastrow) (def extra-cornerrow cornerrow))
-(if (true? inner-column) (def innercol-offset 1) (def innercol-offset 0))
+(def extra-cornerrow (if extra-row lastrow cornerrow))
+(def innercol-offset (if inner-column 1 0))
 
 ;;;;;;;;;;;;;;;;;
 ;; Switch Hole ;;
@@ -171,6 +169,10 @@
                         (translate [0 0 (+ 5 plate-thickness)])
                         (color [240/255 223/255 175/255 1])))})
 
+;; Fill the keyholes instead of placing a a keycap over them
+(def keyhole-fill (->> (cube keyswitch-height keyswitch-width plate-thickness)
+                       (translate [0 0 (/ plate-thickness 2)])))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Placement Functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -191,7 +193,13 @@
 (def column-x-delta (+ -1 (- (* column-radius (Math/sin β)))))
 
 (defn offset-for-column [col, row]
-  (if (and (true? pinky-15u) (= col lastcol) (<= row last-15u-row) (>= row first-15u-row)) 4.7625 0))
+  (if (and pinky-15u
+           (= col lastcol)
+           (<= row last-15u-row)
+           (>= row first-15u-row))
+    4.7625
+    0))
+
 (defn apply-key-geometry [translate-fn rotate-x-fn rotate-y-fn column row shape]
   (let [column-angle (* β (- centercol column))
         placed-shape (->> shape
@@ -253,25 +261,41 @@
          (for [column columns
                row rows
                :when (or (.contains [(+ innercol-offset 2) (+ innercol-offset 3)] column)
-                         (and (.contains [(+ innercol-offset 4) (+ innercol-offset 5)] column) (true? extra-row) (= ncols (+ innercol-offset 6)))
-                         (and (.contains [(+ innercol-offset 4)] column) (true? extra-row) (= ncols (+ innercol-offset 5)))
-                         (and (true? inner-column) (not= row cornerrow)(= column 0))
+                         (and (.contains [(+ innercol-offset 4) (+ innercol-offset 5)] column) extra-row (= ncols (+ innercol-offset 6)))
+                         (and (.contains [(+ innercol-offset 4)] column) extra-row (= ncols (+ innercol-offset 5)))
+                         (and inner-column (not= row cornerrow)(= column 0))
                          (not= row lastrow))]
            (->> single-plate
                 ;                (rotate (/ π 2) [0 0 1])
                 (key-place column row)))))
 (def caps
   (apply union
-         (for [column columns
+         (conj (for [column columns
                row rows
-               :when (or (.contains [2 3] column)
-                         (not= row lastrow))]
-           (->> (sa-cap (if (and (true? pinky-15u) (= column lastcol)) 1.5 1))
-                (key-place column row)))))
+               :when (or (and (= column 0) (< row 3))
+                         (and (.contains [1 2] column) (< row 4))
+                         (.contains [3 4 5 6] column))]
+               (->> (sa-cap (if (and pinky-15u (= column lastcol) (not= row lastrow)) 1.5 1))
+                    (key-place column row)))
+               (list (key-place 0 0 (sa-cap 1))
+                 (key-place 0 1 (sa-cap 1))
+                 (key-place 0 2 (sa-cap 1))))))
+
+(def caps-fill
+  (apply union
+         (conj (for [column columns
+               row rows
+               :when (or (and (= column 0) (< row 3))
+                         (and (.contains [1 2] column) (< row 4))
+                         (.contains [3 4 5 6] column))]
+                 (key-place column row keyhole-fill))
+               (list (key-place 0 0 keyhole-fill)
+                 (key-place 0 1 keyhole-fill)
+                 (key-place 0 2 keyhole-fill)))))
 
 ;placement for the innermost column
 (def key-holes-inner
-  (if (true? inner-column)
+  (if inner-column
     (apply union
            (for [row innerrows]
              (->> single-plate
@@ -295,7 +319,7 @@
 (def web-post-br (translate [(- (/ mount-width 2) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
 
 ; wide posts for 1.5u keys in the main cluster
-(if (true? pinky-15u)
+(if pinky-15u
   (do (def wide-post-tr (translate [(- (/ mount-width 1.2) post-adj)  (- (/ mount-height  2) post-adj) 0] web-post))
     (def wide-post-tl (translate [(+ (/ mount-width -1.2) post-adj) (- (/ mount-height  2) post-adj) 0] web-post))
     (def wide-post-bl (translate [(+ (/ mount-width -1.2) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
@@ -341,7 +365,7 @@
              (key-place (inc column) (inc row) web-post-tl))))))
 
 (def inner-connectors
-  (if (true? inner-column)
+  (if inner-column
     (apply union
            (concat
             ;; Row connections
@@ -371,7 +395,7 @@
                (key-place (inc column) (inc row) web-post-tl)))))))
 
 (def extra-connectors
-  (if (true? extra-row)
+  (if extra-row
     (apply union
            (concat
             (for [column (range 3 ncols)
@@ -486,6 +510,11 @@
    (thumb-1x-layout (sa-cap 1))
    (thumb-15x-layout (rotate (/ π 2) [0 0 1] (sa-cap 1.5)))))
 
+(def thumbcaps-fill
+  (union
+   (thumb-1x-layout keyhole-fill)
+   (thumb-15x-layout (rotate (/ π 2) [0 0 1] keyhole-fill))))
+
 (def thumb
   (union
    (thumb-1x-layout (rotate (/ π 2) [0 0 0] single-plate))
@@ -563,7 +592,7 @@
     (key-place (+ innercol-offset 2) lastrow web-post-tr)
     (key-place (+ innercol-offset 2) cornerrow web-post-br)
     (key-place (+ innercol-offset 3) cornerrow web-post-bl))
-   (if (true? extra-row)
+   (if extra-row
      (union
       (triangle-hulls
        (key-place (+ innercol-offset 3) lastrow web-post-tr)
@@ -641,6 +670,11 @@
    (minithumb-1x-layout (sa-cap 1))
    (minithumb-15x-layout (rotate (/ π 2) [0 0 1] (sa-cap 1)))))
 
+(def minithumbcaps-fill
+  (union
+   (minithumb-1x-layout keyhole-fill)
+   (minithumb-15x-layout (rotate (/ π 2) [0 0 1] keyhole-fill))))
+
 (def minithumb
   (union
    (minithumb-1x-layout single-plate)
@@ -717,7 +751,7 @@
     (key-place (+ innercol-offset 2) lastrow web-post-tr)
     (key-place (+ innercol-offset 2) cornerrow web-post-br)
     (key-place (+ innercol-offset 3) cornerrow web-post-bl))
-   (if (true? extra-row)
+   (if extra-row
      (union
       (triangle-hulls
        (key-place (+ innercol-offset 3) lastrow web-post-tr)
@@ -738,7 +772,7 @@
        (key-place (+ innercol-offset 3) lastrow web-post-tr)
        (key-place (+ innercol-offset 3) cornerrow web-post-br)
        (key-place (+ innercol-offset 4) cornerrow web-post-bl))))))
-       
+
 ;;;;;;;;;;;;;;;;
 ;; New Thumb ;;
 ;;;;;;;;;;;;;;;;
@@ -802,6 +836,11 @@
   (union
    (newthumb-1x-layout (sa-cap 1))
    (newthumb-15x-layout (rotate (/ π 2) [0 0 1] (sa-cap 1.5)))))
+
+(def newthumbcaps-fill
+  (union
+   (newthumb-1x-layout keyhole-fill)
+   (newthumb-15x-layout (rotate (/ π 2) [0 0 1] keyhole-fill))))
 
 (def newthumb
   (union
@@ -888,7 +927,7 @@
     (key-place (+ innercol-offset 2) lastrow web-post-tr)
     (key-place (+ innercol-offset 2) cornerrow web-post-br)
     (key-place (+ innercol-offset 3) cornerrow web-post-bl))
-   (if (true? extra-row)
+   (if extra-row
      (union
       (triangle-hulls
        (key-place (+ innercol-offset 3) lastrow web-post-tr)
@@ -912,23 +951,23 @@
 
 
 ;switching connectors, switchplates, etc. depending on thumb-style used
-(cond
-(= thumb-style "default") (when true
-(def thumb-type thumb) 
-(def thumb-connector-type thumb-connectors)
-(def thumbcaps-type thumbcaps)))
+(when (= thumb-style "default")
+  (def thumb-type thumb)
+  (def thumb-connector-type thumb-connectors)
+  (def thumbcaps-type thumbcaps)
+  (def thumbcaps-fill-type thumbcaps-fill))
 
-(cond
-(= thumb-style "new") (when true
-(def thumb-type newthumb) 
-(def thumb-connector-type newthumb-connectors)
-(def thumbcaps-type newthumbcaps)))
+(when (= thumb-style "new")
+  (def thumb-type newthumb)
+  (def thumb-connector-type newthumb-connectors)
+  (def thumbcaps-type newthumbcaps)
+  (def thumbcaps-fill-type newthumbcaps-fill))
 
-(cond
-(= thumb-style "mini") (when true
-(def thumb-type minithumb) 
-(def thumb-connector-type minithumb-connectors)
-(def thumbcaps-type minithumbcaps)))
+(when (= thumb-style "mini")
+  (def thumb-type minithumb)
+  (def thumb-connector-type minithumb-connectors)
+  (def thumbcaps-type minithumbcaps)
+  (def thumbcaps-fill-type minithumbcaps-fill))
 
 ;;;;;;;;;;
 ;; Case ;;
@@ -977,7 +1016,7 @@
               (partial key-place x2 y2) dx2 dy2 post2))
 
 (def right-wall
-  (if (true? pinky-15u)
+  (if pinky-15u
     (union
      ; corner between the right wall and back wall
      (if (> first-15u-row 0)
@@ -1010,7 +1049,7 @@
                 (key-wall-brace lastcol (inc y) 1 0 web-post-tr lastcol (inc y) 1 0 web-post-br))))
      )
     (union (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
-           (if (true? extra-row)
+           (if extra-row
              (union (for [y (range 0 (inc lastrow))] (key-wall-brace lastcol y 1 0 web-post-tr lastcol y 1 0 web-post-br))
                     (for [y (range 1 (inc lastrow))] (key-wall-brace lastcol (dec y) 1 0 web-post-br lastcol y 1 0 web-post-tr)))
              (union (for [y (range 0 lastrow)] (key-wall-brace lastcol y 1 0 web-post-tr lastcol y 1 0 web-post-br))
@@ -1065,7 +1104,7 @@
     (newthumb-bl-place (translate (wall-locate3 -0.3 1) thumb-post-tr))
     (newthumb-ml-place thumb-post-tl))
    ; connectors below the inner column to the thumb & second column
-   (if (true? inner-column)
+   (if inner-column
      (union
       (hull
        (key-place 0 (dec cornerrow) web-post-bl)
@@ -1130,7 +1169,7 @@
     (minithumb-bl-place (translate (wall-locate3 -0.3 1) web-post-tr))
     (minithumb-tl-place web-post-tl))
    ; connectors below the inner column to the thumb & second column
-   (if (true? inner-column)
+   (if inner-column
      (union
       (hull
        (key-place 0 (dec cornerrow) web-post-bl)
@@ -1192,7 +1231,7 @@
     (key-place 0 (- cornerrow innercol-offset) (translate (wall-locate1 0 0) web-post-bl))
     (thumb-tl-place thumb-post-tl))
    ; connectors below the inner column to the thumb & second column
-   (if (true? inner-column)
+   (if inner-column
      (union
       (hull
        (key-place 0 (dec cornerrow) web-post-bl)
@@ -1216,19 +1255,13 @@
     (thumb-ml-place (translate (wall-locate2 -0.3 1) web-post-tr))
     (thumb-ml-place (translate (wall-locate3 -0.3 1) web-post-tr))
     (thumb-tl-place thumb-post-tl))))
-    
+
 ;switching walls depending on thumb-style used
-(cond
-(= thumb-style "default") (when true
-(def thumb-wall-type default-thumb-wall)))
-
-(cond
-(= thumb-style "new") (when true
-(def thumb-wall-type new-thumb-wall)))
-
-(cond
-(= thumb-style "mini") (when true
-(def thumb-wall-type mini-thumb-wall)))
+(def thumb-wall-type
+  (case thumb-style
+    "default" default-thumb-wall
+    "new" new-thumb-wall
+    "mini" mini-thumb-wall))
 
 (def case-walls
   (union
@@ -1260,19 +1293,19 @@
    ))
 
 ; Offsets for the controller/trrs holder cutout
-(case nrows
-      4 (def holder-offset -3.5)
-      5 (def holder-offset 0)
-      6 (def holder-offset 3.2))
-      
-(if (and (false? inner-column) (= nrows 6))
-  (def holder-offset (- holder-offset 1))
-  )
- 
-(case nrows
-      4 (def notch-offset 3.15)
-      5 (def notch-offset 0)
-      6 (def notch-offset -5.07))
+(def holder-offset
+  (case nrows
+    4 -3.5
+    5 0
+    6 (if inner-column
+          3.2
+          2.2)))
+
+(def notch-offset
+  (case nrows
+    4 3.15
+    5 0
+    6 -5.07))
 
 ; Cutout for controller/trrs jack holder
 (def usb-holder-ref (key-position 0 0 (map - (wall-locate2  0  -1) [0 (/ mount-height 2) 0])))
@@ -1321,7 +1354,7 @@
 
 ; Connectors between outer column and right wall when 1.5u keys are used
 (def pinky-connectors
-  (if (true? pinky-15u)
+  (if pinky-15u
     (apply union
            (concat
             ;; Row connections
@@ -1362,26 +1395,21 @@
 ))))
 
 (def model-right (difference
-                  (union
-                   key-holes
-                   key-holes-inner
-                   pinky-connectors
-                   extra-connectors
-                   connectors
-                   inner-connectors
-                   thumb-type
-                   thumb-connector-type
-                   (difference (union case-walls
-                                      screw-insert-outers
-                                      )
-                               usb-holder-space
-                               usb-holder-notch
-                               screw-insert-holes)
-                    ; thumbcaps-type
-                    ; caps
-                   )
-                  (translate [0 0 -20] (cube 350 350 40))
-                  ))
+                   (union
+                     key-holes
+                     key-holes-inner
+                     pinky-connectors
+                     extra-connectors
+                     connectors
+                     inner-connectors
+                     thumb-type
+                     thumb-connector-type
+                     (difference (union case-walls
+                                        screw-insert-outers)
+                                 usb-holder-space
+                                 usb-holder-notch
+                                 screw-insert-holes))
+                   (translate [0 0 -20] (cube 350 350 40))))
 
 (spit "things/right.scad"
       (write-scad model-right))
@@ -1390,33 +1418,37 @@
       (write-scad (mirror [-1 0 0] model-right)))
 
 (spit "things/right-test.scad"
-      (write-scad
-       (union
-        key-holes
-        key-holes-inner
-        connectors
-        inner-connectors
-        thumb
-        thumb-connectors
-        case-walls
-        thumbcaps
-        caps
-        )))
+      (write-scad (union model-right
+                         thumbcaps-type
+                         caps)))
 
 (spit "things/right-plate.scad"
+      (write-scad
+        (extrude-linear
+          {:height 2.6 :center false}
+          (project
+            (difference
+              (union
+                key-holes
+                key-holes-inner
+                pinky-connectors
+                extra-connectors
+                connectors
+                inner-connectors
+                thumb-type
+                thumb-connector-type
+                case-walls
+                thumbcaps-fill-type
+                caps-fill
+                screw-insert-outers)
+              (translate [0 0 -10] screw-insert-screw-holes))))))
+
+(spit "things/right-plate-laser.scad"
       (write-scad
        (cut
         (translate [0 0 -0.1]
                    (difference (union case-walls
                                       screw-insert-outers)
-                               (translate [0 0 -10] screw-insert-screw-holes))))
-
-       ))
-
-;(spit "things/test.scad"
-;      (write-scad
-;       ))
-
-
+                               (translate [0 0 -10] screw-insert-screw-holes))))))
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
