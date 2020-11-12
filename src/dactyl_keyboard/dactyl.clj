@@ -98,8 +98,8 @@
                       (translate [0
                                   (+ (/ 1.5 2) (/ keyswitch-height 2))
                                   (/ plate-thickness 2)]))
-        left-wall (->> (cube 1.5 (+ keyswitch-height 3) plate-thickness)
-                       (translate [(+ (/ 1.5 2) (/ keyswitch-width 2))
+        left-wall (->> (cube 1.8 (+ keyswitch-height 3) plate-thickness)
+                       (translate [(+ (/ 1.8 2) (/ keyswitch-width 2))
                                    0
                                    (/ plate-thickness 2)]))
         side-nub (->> (binding [*fn* 30] (cylinder 1 2.75))
@@ -313,10 +313,10 @@
                                       plate-thickness)])))
 
 (def post-adj (/ post-size 2))
-(def web-post-tr (translate [(- (/ mount-width 2) post-adj) (- (/ mount-height 2) post-adj) 0] web-post))
-(def web-post-tl (translate [(+ (/ mount-width -2) post-adj) (- (/ mount-height 2) post-adj) 0] web-post))
-(def web-post-bl (translate [(+ (/ mount-width -2) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
-(def web-post-br (translate [(- (/ mount-width 2) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
+(def web-post-tr (translate [(- (/ mount-width 1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] web-post))
+(def web-post-tl (translate [(+ (/ mount-width -1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] web-post))
+(def web-post-bl (translate [(+ (/ mount-width -1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] web-post))
+(def web-post-br (translate [(- (/ mount-width 1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] web-post))
 
 ; wide posts for 1.5u keys in the main cluster
 (if pinky-15u
@@ -532,7 +532,7 @@
   (union
    (triangle-hulls    ; top two
     (thumb-tl-place thumb-post-tr)
-    (thumb-tl-place web-post-br)
+    (thumb-tl-place minithumb-post-br)
     (thumb-tr-place thumb-post-tl)
     (thumb-tr-place thumb-post-bl))
    (triangle-hulls    ; bottom two on the right
@@ -557,9 +557,9 @@
    (triangle-hulls    ; top two to the middle two, starting on the left
     (thumb-tl-place thumb-post-tl)
     (thumb-ml-place web-post-tr)
-    (thumb-tl-place web-post-bl)
+    (thumb-tl-place minithumb-post-bl)
     (thumb-ml-place web-post-br)
-    (thumb-tl-place web-post-br)
+    (thumb-tl-place minithumb-post-br)
     (thumb-mr-place web-post-tr)
     (thumb-tr-place thumb-post-bl)
     (thumb-mr-place web-post-br)
@@ -822,10 +822,10 @@
 
 (defn newthumb-1x-layout [shape]
   (union
-   (newthumb-tr-place (rotate (/ π 2) [0 0 1] shape))
+   (newthumb-tr-place (rotate (/ π 2) [0 0 0] shape))
    (newthumb-mr-place shape)
    (newthumb-br-place shape)
-   (newthumb-tl-place (rotate (/ π 2) [0 0 1] shape))))
+   (newthumb-tl-place (rotate (/ π 2) [0 0 0] shape))))
 
 (defn newthumb-15x-layout [shape]
   (union
@@ -886,8 +886,7 @@
     (newthumb-tr-place web-post-tl)
     (newthumb-tl-place web-post-bl)
     (newthumb-tr-place web-post-tr)
-    (newthumb-tl-place web-post-br)
-    )
+    (newthumb-tl-place web-post-br))
    (triangle-hulls    ; top two to the main keyboard, starting on the left
     (newthumb-ml-place thumb-post-tl)
     (key-place (+ innercol-offset 0) cornerrow web-post-bl)
@@ -914,7 +913,7 @@
    (triangle-hulls
     (key-place (+ innercol-offset 2) lastrow web-post-tr)
     (key-place (+ innercol-offset 2) lastrow web-post-br)
-    (key-place (+ innercol-offset 3) cornerrow web-post-bl)
+    (key-place (+ innercol-offset 3) lastrow web-post-tl)
     (key-place (+ innercol-offset 3) lastrow web-post-bl))
    (triangle-hulls
     (newthumb-tr-place web-post-br)
@@ -1073,7 +1072,7 @@
    ; newthumb tweeners
    (wall-brace newthumb-mr-place  0 -1.15 web-post-bl newthumb-br-place  0 -1 web-post-br)
    (wall-brace newthumb-bl-place -1  0 web-post-bl newthumb-br-place -1  0 web-post-tl)
-   (wall-brace newthumb-tr-place  0 -1 minithumb-post-br (partial key-place (+ innercol-offset 3) lastrow)  0 -1 web-post-bl)
+   (wall-brace newthumb-tr-place  0 -1 web-post-br (partial key-place (+ innercol-offset 3) lastrow)  0 -1 web-post-bl)
    ; clunky bit on the top left newthumb connection  (normal connectors don't work well)
    (bottom-hull
     (left-key-place (- cornerrow innercol-offset) -1 (translate (wall-locate2 -1 0) web-post))
