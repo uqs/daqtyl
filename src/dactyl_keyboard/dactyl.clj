@@ -89,19 +89,19 @@
 (def plate-thickness 4)
 (def side-nub-thickness 4)
 (def retention-tab-thickness 1.5)
-(def retention-tab-hole-thickness (- plate-thickness retention-tab-thickness))
+(def retention-tab-hole-thickness (- (+ plate-thickness 0.5) retention-tab-thickness))
 (def mount-width (+ keyswitch-width 3.2))
 (def mount-height (+ keyswitch-height 2.7))
 
 (def single-plate
-  (let [top-wall (->> (cube (+ keyswitch-width 3) 1.5 plate-thickness)
+  (let [top-wall (->> (cube (+ keyswitch-width 3) 1.5 (+ plate-thickness 0.5))
                       (translate [0
                                   (+ (/ 1.5 2) (/ keyswitch-height 2))
-                                  (/ plate-thickness 2)]))
-        left-wall (->> (cube 1.8 (+ keyswitch-height 3) plate-thickness)
+                                  (- (/ plate-thickness 2) 0.25)]))
+        left-wall (->> (cube 1.8 (+ keyswitch-height 3) (+ plate-thickness 0.5))
                        (translate [(+ (/ 1.8 2) (/ keyswitch-width 2))
                                    0
-                                   (/ plate-thickness 2)]))
+                                   (- (/ plate-thickness 2) 0.25)]))
         side-nub (->> (binding [*fn* 30] (cylinder 1 2.75))
                       (rotate (/ π 2) [1 0 0])
                       (translate [(+ (/ keyswitch-width 2)) 0 1])
@@ -112,7 +112,7 @@
                       (translate [0 0 (- plate-thickness side-nub-thickness)]))
         plate-half (union top-wall left-wall (if create-side-nubs? (with-fn 100 side-nub)))
         top-nub (->> (cube 5 5 retention-tab-hole-thickness)
-                     (translate [(+ (/ keyswitch-width 2.5)) 0 (/ retention-tab-hole-thickness 2)]))
+                     (translate [(+ (/ keyswitch-width 2.5)) 0 (- (/ retention-tab-hole-thickness 2) 0.5)]))
         top-nub-pair (union top-nub
                             (->> top-nub
                                  (mirror [1 0 0])
@@ -306,7 +306,7 @@
 ;; Web Connectors ;;
 ;;;;;;;;;;;;;;;;;;;;
 
-(def web-thickness 3.5)
+(def web-thickness 4.5)
 (def post-size 0.1)
 (def web-post (->> (cube post-size post-size web-thickness)
                    (translate [0 0 (+ (/ web-thickness -2)
@@ -532,7 +532,7 @@
   (union
    (triangle-hulls    ; top two
     (thumb-tl-place thumb-post-tr)
-    (thumb-tl-place minithumb-post-br)
+    (thumb-tl-place web-post-br)
     (thumb-tr-place thumb-post-tl)
     (thumb-tr-place thumb-post-bl))
    (triangle-hulls    ; bottom two on the right
@@ -557,9 +557,9 @@
    (triangle-hulls    ; top two to the middle two, starting on the left
     (thumb-tl-place thumb-post-tl)
     (thumb-ml-place web-post-tr)
-    (thumb-tl-place minithumb-post-bl)
+    (thumb-tl-place web-post-bl)
     (thumb-ml-place web-post-br)
-    (thumb-tl-place minithumb-post-br)
+    (thumb-tl-place web-post-br)
     (thumb-mr-place web-post-tr)
     (thumb-tr-place thumb-post-bl)
     (thumb-mr-place web-post-br)
