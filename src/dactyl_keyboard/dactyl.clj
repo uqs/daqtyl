@@ -532,7 +532,7 @@
   (union
    (triangle-hulls    ; top two
     (thumb-tl-place thumb-post-tr)
-    (thumb-tl-place web-post-br)
+    (thumb-tl-place (translate [-0.33 -0.25 0] web-post-br))
     (thumb-tr-place thumb-post-tl)
     (thumb-tr-place thumb-post-bl))
    (triangle-hulls    ; bottom two on the right
@@ -557,9 +557,9 @@
    (triangle-hulls    ; top two to the middle two, starting on the left
     (thumb-tl-place thumb-post-tl)
     (thumb-ml-place web-post-tr)
-    (thumb-tl-place web-post-bl)
+    (thumb-tl-place (translate [0.25 0.1 0] web-post-bl))
     (thumb-ml-place web-post-br)
-    (thumb-tl-place web-post-br)
+    (thumb-tl-place (translate [-0.33 -0.25 0] web-post-br))
     (thumb-mr-place web-post-tr)
     (thumb-tr-place thumb-post-bl)
     (thumb-mr-place web-post-br)
