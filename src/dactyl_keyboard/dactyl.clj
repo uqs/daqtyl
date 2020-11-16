@@ -925,6 +925,7 @@
     (key-place (+ innercol-offset 2) cornerrow web-post-bl)
     (key-place (+ innercol-offset 2) lastrow web-post-tr)
     (key-place (+ innercol-offset 2) cornerrow web-post-br)
+    (key-place (+ innercol-offset 3) lastrow web-post-tl)
     (key-place (+ innercol-offset 3) cornerrow web-post-bl))
    (if extra-row
      (union
