@@ -44,7 +44,7 @@
 
 (def thumb-offsets [6 -3 7])
 
-(def keyboard-z-offset 10)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
+(def keyboard-z-offset 8)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
 
 (def extra-width 2.5)                   ; extra space between the base of keys; original= 2
 (def extra-height 1.0)                  ; original= 0.5
@@ -980,8 +980,8 @@
 (defn bottom-hull [& p]
   (hull p (bottom 0.001 p)))
 
-(def left-wall-x-offset 8)
-(def left-wall-z-offset  3)
+(def left-wall-x-offset 4)
+(def left-wall-z-offset 1)
 
 (defn left-key-position [row direction]
   (map - (key-position 0 row [(* mount-width -0.5) (* direction mount-height 0.5) 0]) [left-wall-x-offset 0 left-wall-z-offset]) )
@@ -1282,8 +1282,8 @@
                                                          (left-key-place y        1 web-post)
                                                          (left-key-place (dec y) -1 web-post)
                                                          )))
-   (wall-brace (partial key-place 0 0) 0 1 web-post-tl (partial left-key-place 0 1) 0 1 web-post)
-   (wall-brace (partial left-key-place 0 1) 0 1 web-post (partial left-key-place 0 1) -1 0 web-post)
+   (wall-brace (partial key-place 0 0) 0 1 web-post-tl (partial left-key-place 0 1) -0.6 1 web-post)
+   (wall-brace (partial left-key-place 0 1) -0.6 1 web-post (partial left-key-place 0 1) -1 0 web-post)
    ; front wall
    (key-wall-brace (+ innercol-offset 3) lastrow  0 -1 web-post-bl (+ innercol-offset 3) lastrow   0 -1 web-post-br)
    (key-wall-brace (+ innercol-offset 3) lastrow  0 -1 web-post-br (+ innercol-offset 4) extra-cornerrow 0 -1 web-post-bl)
@@ -1303,7 +1303,7 @@
 (def notch-offset
   (case nrows
     4 3.15
-    5 0
+    5 0.15
     6 -5.07))
 
 ; Cutout for controller/trrs jack holder
@@ -1347,26 +1347,26 @@
     
 ; Offsets for the screw inserts dependent on thumb-style & inner-column
 (when (and (= thumb-style "cf") inner-column)
-    (def screw-offset-bl [13 4 0])
+    (def screw-offset-bl [9 4 0])
     (def screw-offset-bm [13 -7 0]))
 (when (and (= thumb-style "cf") (false? inner-column))
-    (def screw-offset-bl [-3.7 2 0])
+    (def screw-offset-bl [-7.7 2 0])
     (def screw-offset-bm [13 -7 0]))
 (when (and (= thumb-style "mini") inner-column)
-    (def screw-offset-bl [18 8 0])
+    (def screw-offset-bl [14 8 0])
     (def screw-offset-bm [-1 -7 0]))
 (when (and (= thumb-style "mini") (false? inner-column))
-    (def screw-offset-bl [2 6 0])
+    (def screw-offset-bl [-1 4.2 0])
     (def screw-offset-bm [-1 -7 0]))
 (when (and (= thumb-style "default") inner-column)
-    (def screw-offset-bl [9 -6 0])
+    (def screw-offset-bl [5 -6 0])
     (def screw-offset-bm [8 -1 0]))
 (when (and (= thumb-style "default") (false? inner-column))
-    (def screw-offset-bl [-7.7 -8 0])
+    (def screw-offset-bl [-11.7 -8 0])
     (def screw-offset-bm [8 -1 0]))
 
          (defn screw-insert-all-shapes [bottom-radius top-radius height]
-  (union (screw-insert 0 0         bottom-radius top-radius height [7 6.5 0])
+  (union (screw-insert 0 0         bottom-radius top-radius height [8 10.5 0])
          (screw-insert 0 lastrow   bottom-radius top-radius height screw-offset-bl)
          (screw-insert lastcol lastrow  bottom-radius top-radius height screw-offset-br)
          (screw-insert lastcol 0         bottom-radius top-radius height screw-offset-tr)
