@@ -1302,16 +1302,16 @@
 
 (def notch-offset
   (case nrows
-    4 3.15
+    4 3.35
     5 0.15
     6 -5.07))
 
 ; Cutout for controller/trrs jack holder
 (def usb-holder-ref (key-position 0 0 (map - (wall-locate2  0  -1) [0 (/ mount-height 2) 0])))
 (def usb-holder-position (map + [(+ 18.8 holder-offset) 18.7 1.3] [(first usb-holder-ref) (second usb-holder-ref) 2]))
-(def usb-holder-cube   (cube 28.666 30 19.8))
-(def usb-holder-space  (translate (map + usb-holder-position [-1.5 (* -1 wall-thickness) 6.6]) usb-holder-cube))
-(def usb-holder-notch  (translate (map + usb-holder-position [-1.5 (+ 4.4 notch-offset) 6.6]) (cube 31.366 1.3 19.8)))
+(def usb-holder-space  (translate (map + usb-holder-position [-1.5 (* -1 wall-thickness) 2.9]) (cube 28.666 30 12.4)))
+(def usb-holder-notch  (translate (map + usb-holder-position [-1.5 (+ 4.4 notch-offset) 2.9]) (cube 31.366 1.3 12.4)))
+(def trrs-notch        (translate (map + usb-holder-position [-10.33 (+ 3.6 notch-offset) 6.6]) (cube 8.4 2.4 19.8)))
 
 ; Screw insert definition & position
 (defn screw-insert-shape [bottom-radius top-radius height]
@@ -1439,6 +1439,7 @@
                      (difference (union case-walls
                                         screw-insert-outers)
                                  usb-holder-space
+                                 trrs-notch
                                  usb-holder-notch
                                  screw-insert-holes))
                    (translate [0 0 -20] (cube 350 350 40))))
