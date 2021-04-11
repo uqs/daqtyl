@@ -285,9 +285,11 @@
   (apply union
          (conj (for [column columns
                row rows
-               :when (or (and (= column 0) (< row 3))
-                         (and (.contains [1 2] column) (< row 4))
-                         (.contains [3 4 5 6] column))]
+               :when (or (.contains [(+ innercol-offset 2) (+ innercol-offset 3)] column)
+                         (and (.contains [(+ innercol-offset 4) (+ innercol-offset 5)] column) extra-row (= ncols (+ innercol-offset 6)))
+                         (and (.contains [(+ innercol-offset 4)] column) extra-row (= ncols (+ innercol-offset 5)))
+                         (and inner-column (not= row cornerrow)(= column 0))
+                         (not= row lastrow))]
                  (key-place column row keyhole-fill))
                (list (key-place 0 0 keyhole-fill)
                  (key-place 0 1 keyhole-fill)
