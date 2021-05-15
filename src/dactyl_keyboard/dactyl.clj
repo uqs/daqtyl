@@ -14,21 +14,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;
 
 (def nrows 5)
-(def ncols 7)
+(def ncols 6)
 
 (def α (/ π 12))                        ; curvature of the columns
 (def β (/ π 36))                        ; curvature of the rows
 (def centerrow (- nrows 3))             ; controls front-back tilt
 (def centercol 4)                       ; controls left-right tilt / tenting (higher number is more tenting)
-(def tenting-angle (/ π 12))            ; or, change this for more precise tenting control
+(def tenting-angle (/ π 9))            ; or, change this for more precise tenting control
 
-(def pinky-15u true)                   ; controls whether the outer column uses 1.5u keys
+(def pinky-15u false)                   ; controls whether the outer column uses 1.5u keys
 (def first-15u-row 0)                   ; controls which should be the first row to have 1.5u keys on the outer column
 (def last-15u-row 3)                    ; controls which should be the last row to have 1.5u keys on the outer column
 
-(def extra-row true)                   ; adds an extra bottom row to the outer columns
-(def inner-column true)                ; adds an extra inner column (two less rows than nrows)
-(def thumb-style "cf")                ; toggles between "default", "mini", and "cf" thumb cluster
+(def extra-row false)                   ; adds an extra bottom row to the outer columns
+(def inner-column false)                ; adds an extra inner column (two less rows than nrows)
+(def thumb-style "mini")                ; toggles between "default", "mini", and "cf" thumb cluster
 
 (def column-style :standard)
 
@@ -65,7 +65,7 @@
 
 ; If you use Cherry MX or Gateron switches, this can be turned on.
 ; If you use other switches such as Kailh, you should set this as false
-(def create-side-nubs? false)
+(def create-side-nubs? true)
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; General variables ;;
@@ -1321,7 +1321,7 @@
    (->> (binding [*fn* 30]
                  (cylinder [bottom-radius top-radius] height)))))
 
-(defn screw-insert [column row bottom-radius top-radius height offset]
+(defn screw-insert [column row bottom-radius top-radius height offset col]
   (let [shift-right   (= column lastcol)
         shift-left    (= column 0)
         shift-up      (and (not (or shift-right shift-left)) (= row 0))
@@ -1331,7 +1331,8 @@
                           (if shift-left (map + (left-key-position row 0) (wall-locate3 -1 0))
                             (key-position column row (map + (wall-locate2  1  0) [(/ mount-width 2) 0 0])))))]
     (->> (screw-insert-shape bottom-radius top-radius height)
-         (translate (map + offset [(first position) (second position) (/ height 2)])))))
+         (translate (map + offset [(first position) (second position) (/ height 2)]))
+         (color col))))
 
 ; Offsets for the screw inserts dependent on extra-row & pinky-15u
 (when (and pinky-15u extra-row)
@@ -1344,7 +1345,7 @@
     (def screw-offset-tr [-3.5 6.5 0])
     (def screw-offset-br [-3.5 -6.5 0]))
 (when (and (false? pinky-15u) (false? extra-row))
-    (def screw-offset-tr [-4 6.5 0])
+    (def screw-offset-tr [-2.5 6.5 0])
     (def screw-offset-br [-6 13 0]))
     
 ; Offsets for the screw inserts dependent on thumb-style & inner-column
@@ -1361,9 +1362,9 @@
     (def screw-offset-tm [9.5 -4.5 0])
     (def screw-offset-bm [-1 -7 0]))
 (when (and (= thumb-style "mini") (false? inner-column))
-    (def screw-offset-bl [-1 4.2 0])
+    (def screw-offset-bl [-3 5.5 0])
     (def screw-offset-tm [9.5 -4.5 0])
-    (def screw-offset-bm [-1 -7 0]))
+    (def screw-offset-bm [-2 -7 0]))
 (when (and (= thumb-style "default") inner-column)
     (def screw-offset-bl [5 -6 0])
     (def screw-offset-tm [9.5 -4.5 0])
@@ -1373,13 +1374,15 @@
     (def screw-offset-tm [9.5 -4.5 0])
     (def screw-offset-bm [8 -1 0]))
 
-         (defn screw-insert-all-shapes [bottom-radius top-radius height]
-  (union (screw-insert 0 0         bottom-radius top-radius height [8 10.5 0])
-         (screw-insert 0 lastrow   bottom-radius top-radius height screw-offset-bl)
-         (screw-insert lastcol lastrow  bottom-radius top-radius height screw-offset-br)
-         (screw-insert lastcol 0         bottom-radius top-radius height screw-offset-tr)
-         (screw-insert (+ 2 innercol-offset) 0         bottom-radius top-radius height screw-offset-tm)
-         (screw-insert (+ 1 innercol-offset) lastrow         bottom-radius top-radius height screw-offset-bm)))
+(defn screw-insert-all-shapes [bottom-radius top-radius height]
+  (union (screw-insert 0 0        bottom-radius top-radius height [8 10.5 0] [1 0 0]) ; red
+         (screw-insert 0 lastrow  bottom-radius top-radius height screw-offset-bl [1 1 0]) ; yellow
+         (screw-insert lastcol lastrow  bottom-radius top-radius height screw-offset-br [0 1 0]) ; green
+         (screw-insert lastcol 0        bottom-radius top-radius height screw-offset-tr [0 1 1]) ; aqua
+         (screw-insert (+ 2 innercol-offset) 0        bottom-radius top-radius height screw-offset-tm [0 0 1]) ; blue
+         (screw-insert (+ 1 innercol-offset) lastrow  bottom-radius top-radius height screw-offset-bm [1 0 1]) ; fuchsia
+         )
+  )
 
 ; Hole Depth Y: 4.4
 (def screw-insert-height 6)
