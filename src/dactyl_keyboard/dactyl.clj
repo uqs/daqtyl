@@ -1347,7 +1347,7 @@
 (when (and (false? pinky-15u) (false? extra-row))
     (def screw-offset-tr [-2.5 6.5 0])
     (def screw-offset-br [-6 13 0]))
-    
+
 ; Offsets for the screw inserts dependent on thumb-style & inner-column
 (when (and (= thumb-style "cf") inner-column)
     (def screw-offset-bl [9 4 0])
@@ -1438,6 +1438,77 @@
                (key-place lastcol (inc row) web-post-tr))))
 ))))
 
+; Wrist rest cutout for https://github.com/crystalhand/dactyl-keyboard.git
+;;Wrist rest to case connections
+(def wrist-rest-on 1)
+(def right_wrist_connecter_x   (if (== ncols 5) 13 17))
+(def middle_wrist_connecter_x  (if (== ncols 5) -5 -4))
+(def left_wrist_connecter_x    (if (== ncols 5) -25 -25))
+(def wrist_right_nut_y         (if (== ncols 5) 10 20.5))
+
+(def rest-case-cuts
+  (union
+    ;;right cut
+    (->> (cylinder 1.85 25)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 23.5 4.5]))
+    (->> (cylinder 2.8 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x (+ 33.3 nrows) 4.5]))
+    (->> (cube 6 3 12.2)(translate [right_wrist_connecter_x (+ 23.0 nrows) 1.5]))
+    ;;middle cut
+    (->> (cylinder 1.85 25)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 18 4.5]))
+    (->> (cylinder 2.8 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 30 4.5]))
+    (->> (cube 6 3 12.2)(translate [middle_wrist_connecter_x (+ 14.0 nrows) 1.5]))
+    ;;left
+    (->> (cylinder 1.85 25)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 21 4.5]))
+    (->> (cylinder 2.8 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x (+ 27.25 nrows) 4.5]))
+    (->> (cube 6 3 12.2)(translate [left_wrist_connecter_x (+ 11.0 nrows) 1.5]))
+    )
+  )
+
+(def rest-case-connectors
+  (difference
+    (union
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 4 0])));;right
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x -5 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x -9 0])))
+      ;rest-case-cuts
+      )
+    )
+  )
+
+(def wrist-rest-locate
+  (key-position 3 8 (map + (wall-locate1 0 (- 4.9 (* 2 nrows))) [0 (/ mount-height 2) 0]))
+  )
+
+(def wrest-wall-cut
+  (->> (for [xyz (range 1.00 10 3)];controls the scale last number needs to be lower for thinner walls
+         (union
+           (translate[1, xyz,1] case-walls)
+           ;(translate [0 0 -3])
+           )
+         )
+       ))
+
+(def wrist-rest-build
+  (difference
+    (->> (union
+           (->> wrist-rest-base (translate [wrist_brse_position_x wrist_brse_distance_y 0])(rotate  (/ (* π wrist-rest-rotation-angle) 180)  [0 0 1]))
+           (->> (difference
+                  ;wrist-rest-sides
+                  rest-case-connectors
+                  rest-case-cuts
+                  cut-bottom
+                  ; wrest-wall-cut
+                  )
+                )
+           )
+         (translate [(+ (first thumborigin ) 33) (- (second thumborigin) 50) 0])
+         )
+    (translate [(+ (first thumborigin ) 33) (- (second thumborigin) 50) 0] rest-case-cuts)
+    wrest-wall-cut
+    )
+  ;(translate [25 -103 0]))
+  )
+
+; put it all together
 (def model-right (difference
                    (union
                      key-holes
@@ -1453,6 +1524,7 @@
                                  usb-holder-space
                                  trrs-notch
                                  usb-holder-notch
+                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
                    (translate [0 0 -20] (cube 350 350 40))))
 
@@ -1495,5 +1567,11 @@
                    (difference (union case-walls
                                       screw-insert-outers)
                                (translate [0 0 -10] screw-insert-screw-holes))))))
+
+(spit "things/wrist-rest.scad"
+      (write-scad wrist-rest-build))
+
+(spit "things/wrist-rest-left.scad"
+      (write-scad (scale [-1,1,1] wrist-rest-build)))
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
