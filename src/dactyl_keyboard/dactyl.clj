@@ -47,7 +47,7 @@
 (def keyboard-z-offset 8)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
 
 (def extra-width 2.5)                   ; extra space between the base of keys; original= 2
-(def extra-height 1.0)                  ; original= 0.5
+(def extra-height 0.5)                  ; original= 0.5
 
 (def wall-z-offset -8)                 ; length of the first downward-sloping part of the wall (negative)
 (def wall-xy-offset 5)                  ; offset in the x and/or y direction for the first downward-sloping part of the wall (negative)
@@ -1275,18 +1275,19 @@
    (for [x (range 0 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
    (for [x (range 1 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
    ; left wall
-   (for [y (range 0 (- lastrow innercol-offset))] (union (wall-brace (partial left-key-place y 1) -1 0 web-post (partial left-key-place y -1) -1 0 web-post)
-                                                         (hull (key-place 0 y web-post-tl)
-                                                               (key-place 0 y web-post-bl)
-                                                               (left-key-place y  1 web-post)
-                                                               (left-key-place y -1 web-post))))
+   (for [y (range 0 (- lastrow innercol-offset))] (union
+                                                    (wall-brace (partial left-key-place y 1) -1 0 web-post (partial left-key-place y -1) -1 0 web-post)
+                                                    (hull (key-place 0 y web-post-tl)
+                                                          (key-place 0 y web-post-bl)
+                                                          (left-key-place y  1 web-post)
+                                                          (left-key-place y -1 web-post))))
    (for [y (range 1 (- lastrow innercol-offset))] (union
-                                                   (wall-brace (partial left-key-place (dec y) -1) -1 0 web-post (partial left-key-place y  1) -1 0 web-post)
-                                                   (hull (key-place 0 y       web-post-tl)
-                                                         (key-place 0 (dec y) web-post-bl)
-                                                         (left-key-place y        1 web-post)
-                                                         (left-key-place (dec y) -1 web-post)
-                                                         )))
+                                                    (wall-brace (partial left-key-place (dec y) -1) -1 0 web-post (partial left-key-place y  1) -1 0 web-post)
+                                                    (hull (key-place 0 y       web-post-tl)
+                                                          (key-place 0 (dec y) web-post-bl)
+                                                          (left-key-place y        1 web-post)
+                                                          (left-key-place (dec y) -1 web-post)
+                                                          )))
    (wall-brace (partial key-place 0 0) 0 1 web-post-tl (partial left-key-place 0 1) -0.6 1 web-post)
    (wall-brace (partial left-key-place 0 1) -0.6 1 web-post (partial left-key-place 0 1) -1 0 web-post)
    ; front wall
