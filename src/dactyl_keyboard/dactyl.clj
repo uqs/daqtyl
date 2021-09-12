@@ -1457,38 +1457,6 @@
 (def wrist_brse_position_x -1)
 (def wrist_brse_distance_y -45)     ;; Distance from wrist rest to keyboard
 
-#_(def wrist-rest-cut
-    (->> (scale [1 1 2]
-                (->> (scale [1 1 1] wrist-rest) (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])
-                     (translate [0 0 (+ 5 wrist-rest-back-height)]))
-                )
-         )
-    )
-
-#_(def wrist-rest-sides
-    (->>
-      ;(scale [2.5 2.5 1]
-      (difference
-        (->> (scale[1.1, 1.2, 1]
-                         ;(hull
-                         (->> wrist-rest (rotate  (translate [0 0 wrist-rest-back-height])(/ (* π wrist-rest-angle) 180)  [1 1 0]) )
-                         (->> wrist-rest (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])))
-             )
-        ; (->> wrist-rest (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])(translate [0 -2 (+ 2 wrist-rest-back-height)]))
-        (->> wrist-rest-front-cut (rotate  (/ (* π wrist-rest-angle) 180)))
-        )
-      ;)
-      )
-    )
-
-(def wrist-rest-front-cut
-  (scale[1.1, 1, 1](->> (cylinder 7 200)(with-fn 300)
-                        (translate [0 -13.4 0]))
-              ;(->> (cube 18 10 15)(translate [0 -14.4 0]))
-              ))
-
-
-
 (def cut-bottom
   (->>(cube 300 300 100)(translate [0 0 -50]))
 )
@@ -1506,36 +1474,32 @@
 )
 
 (def wrist-rest
-	(difference
-		 (scale [4.25  scale-amount  1] (difference (union
-			(difference
-				;the main back circle
-				(scale[1.3, 1, 1](->> (cylinder 10 150)(with-fn 200)
-				(translate [0 0 0])))
-				;front cut cube and circle
-				(scale[1.1, 1, 1](->> (cylinder 7 201)(with-fn 200)
-				(translate [0 -13.4 0]))
-				(->> (cube 18 10 201)(translate [0 -12.4 0]))
-			))
-		;;side fillers
-			(->> (cylinder 6.8 200)(with-fn 200)
-				(translate [-6.15 -0.98 0]))
-
-				(->> (cylinder 6.8 200)(with-fn 200)
-				(translate [6.15 -0.98 0]))
-		;;heart shapes at bottom
-			(->> (cylinder 5.9 200)(with-fn 200)
-				(translate [-6.35 -2 0]))
-			(scale[1.01, 1, 1](->> (cylinder 5.9 200)(with-fn 200)
-			(translate [6.35 -2. 0])))
-			)
-		)
-		)
-		cut-bottom
-	)
+  (difference
+    (scale [4.25  scale-amount  1]
+           (difference (union
+                         (difference
+                           ;the main back circle
+                           (scale [1.3, 1, 1](->> (cylinder 10 150)(with-fn 200)
+                                                  (translate [0 0 0])))
+                           ;front cut cube and circle
+                           (scale [1.1, 1, 1](->> (cylinder 7 201)(with-fn 200)
+                                                  (translate [0 -13.4 0]))
+                                  (->> (cube 18 10 201)(translate [0 -12.4 0]))))
+                         ;;side fillers
+                         ;; TODO: figure out why these glitch in the OpenSCAD view, it annoys me.
+                         (->> (cylinder 6.8 200)(with-fn 200) (translate [-6.15 -0.98 0]))
+                         (->> (cylinder 6.8 200)(with-fn 200) (translate [6.15 -0.98 0]))
+                         ;;heart shapes at bottom
+                         (->> (cylinder 5.9 200)(with-fn 200) (translate [-6.35 -2 0]))
+                         (scale [1.01, 1, 1](->> (cylinder 5.9 200)(with-fn 200)
+                                                 (translate [6.35 -2. 0])))
+                         )
+                       )
+           )
+    cut-bottom
+    )
 )
 
-;(def right_wrist_connecter_x 25)
 (def wrist-rest-base
   (->>
     (scale [1 1 1] ;;;;scale the wrist rest to the final size after it has been cut
@@ -1554,6 +1518,8 @@
 ))
 )
 
+; These cut out the holes on the case side (so screw head sits flush), as well
+; as the cube to receive the nut on the connector itself.
 (def rest-case-cuts
   (union
     ;;right cut
@@ -1599,11 +1565,9 @@
     (->> (union
            (->> wrist-rest-base (translate [wrist_brse_position_x wrist_brse_distance_y 0])(rotate  (/ (* π wrist-rest-rotation-angle) 180)  [0 0 1]))
            (->> (difference
-                  ;wrist-rest-sides
                   rest-case-connectors
                   rest-case-cuts
                   cut-bottom
-                  ; wrest-wall-cut
                   )
                 )
            )
@@ -1612,7 +1576,6 @@
     (translate [(+ (first thumborigin ) 33) (- (second thumborigin) 50) 0] rest-case-cuts)
     wrest-wall-cut
     )
-  ;(translate [25 -103 0]))
   )
 
 ; put it all together
