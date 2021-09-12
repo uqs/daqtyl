@@ -1459,7 +1459,7 @@
 (def wrist_brse_distance_y -45)     ;; Distance from wrist rest to keyboard
 
 (def cut-bottom
-  (->>(cube 300 300 110)(translate [0 0 -55]))
+  (->>(cube 300 300 100)(translate [0 0 -50]))
 )
 
 (def h-offset
@@ -1488,11 +1488,11 @@
                                   (->> (cube 18 10 201)(translate [0 -12.4 0]))))
                          ;;side fillers
                          ;; TODO: figure out why these glitch in the OpenSCAD view, it annoys me.
-                         (->> (cylinder 6.8 200)(with-fn 200) (translate [-6.15 -0.98 0]))
-                         (->> (cylinder 6.8 200)(with-fn 200) (translate [6.15 -0.98 0]))
+                         (->> (cylinder 6.8 199)(with-fn 200) (translate [-6.15 -0.98 0]))
+                         (->> (cylinder 6.8 199)(with-fn 200) (translate [6.15 -0.98 0]))
                          ;;heart shapes at bottom
-                         (->> (cylinder 5.9 200)(with-fn 200) (translate [-6.35 -2 0]))
-                         (scale [1.01, 1, 1](->> (cylinder 5.9 200)(with-fn 200)
+                         (->> (cylinder 5.9 190)(with-fn 200) (translate [-6.35 -2 0]))
+                         (scale [1.01, 1, 1](->> (cylinder 5.9 199)(with-fn 200)
                                                  (translate [6.35 -2. 0])))
                          )
                        )
@@ -1507,17 +1507,17 @@
            (difference
              (scale [1.08 1.08 1] wrist-rest)
              (->> (cube 200 200 200)(translate [0 0 (+ (+ (/ h-offset 2) (- wrist-rest-back-height h-offset) ) 100)]) (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])(rotate  (/ (* π wrist-rest-y-angle) 180)  [0 1 0]))
-			;	(->> (cube 200 200 200)(translate [0 0 (+ (+ (- wrist-rest-back-height h-offset) (* 2 h-offset)) 100)]) (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0]))
-			;	(->> (cube 200 200 200)(translate [0 0 (+ (+ (/ (* 88 (Math/tan(/ (* π wrist-rest-angle) 180))) 4) 100) wrist-rest-back-height)]) (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0]))
-             (->> (difference
-                    wrist-rest
-                    (->> (cube 200 200 200)(translate [0 0 (- (+ (/ h-offset 2) (- wrist-rest-back-height h-offset) ) (+ 100  wrist-rest-ledge))]) (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])(rotate  (/ (* π wrist-rest-y-angle) 180)  [0 1 0]))
-			;(->> (cube 200 200 200)(translate [0 0 (- (+ (/ (* 17.7 (Math/tan(/ (* π wrist-rest-angle) 180))) 4) wrist-rest-back-height)(+ 100  wrist-rest-ledge))])(rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])))
-		)
-	)
-	);(rotate  (/ (* π wrist-rest-rotation-angle) 180)  [0 0 1])
-))
-)
+             (cond (= wrist-rest-ledge 0) nil
+                   :else
+                   (->> (difference
+                          wrist-rest
+                          (->> (cube 200 200 200)(translate [0 0 (- (+ (/ h-offset 2) (- wrist-rest-back-height h-offset) ) (+ 100  wrist-rest-ledge))]) (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])(rotate  (/ (* π wrist-rest-y-angle) 180)  [0 1 0]))
+                          )
+                        )
+                   )
+             )
+           ))
+  )
 
 ; These cut out the holes on the case side (so screw head sits flush), as well
 ; as the cube to receive the nut on the connector itself.
