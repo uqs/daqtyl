@@ -1459,7 +1459,7 @@
 (def wrist_brse_distance_y -45)     ;; Distance from wrist rest to keyboard
 
 (def cut-bottom
-  (->>(cube 300 300 100)(translate [0 0 -50]))
+  (->>(cube 300 300 110)(translate [0 0 -55]))
 )
 
 (def h-offset
