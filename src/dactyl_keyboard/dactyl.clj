@@ -1597,21 +1597,7 @@
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
                    (translate [0 0 -20] (cube 350 350 40))))
-
-(spit "things/right.scad"
-      (write-scad model-right))
-
-(spit "things/left.scad"
-      (write-scad (mirror [-1 0 0] model-right)))
-
-(spit "things/right-test.scad"
-      (write-scad (union model-right
-                         thumbcaps-type
-                         caps
-                         wrist-rest-build)))
-
-(spit "things/right-plate.scad"
-      (write-scad
+(def plate-right
         (extrude-linear
           {:height 2.6 :center false}
           (project
@@ -1629,20 +1615,31 @@
                 thumbcaps-fill-type
                 caps-fill
                 screw-insert-outers)
-              (translate [0 0 -10] screw-insert-screw-holes))))))
+              (translate [0 0 -10] screw-insert-screw-holes)))))
 
-(spit "things/right-plate-laser.scad"
-      (write-scad
-       (cut
-        (translate [0 0 -0.1]
-                   (difference (union case-walls
-                                      screw-insert-outers)
-                               (translate [0 0 -10] screw-insert-screw-holes))))))
+(spit "things/right.scad"
+      (write-scad model-right))
 
-(spit "things/wrist-rest.scad"
+(spit "things/left.scad"
+      (write-scad (mirror [-1 0 0] model-right)))
+
+(spit "things/right-test.scad"
+      (write-scad (union model-right
+                         plate-right
+                         thumbcaps-type
+                         caps
+                         wrist-rest-build)))
+
+(spit "things/right-plate.scad"
+      (write-scad plate-right))
+
+(spit "things/left-plate.scad"
+      (write-scad (mirror [-1 0 0] plate-right)))
+
+(spit "things/right-wrist-rest.scad"
       (write-scad wrist-rest-build))
 
-(spit "things/wrist-rest-left.scad"
+(spit "things/left-wrist-rest.scad"
       (write-scad (scale [-1,1,1] wrist-rest-build)))
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
