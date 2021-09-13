@@ -1449,7 +1449,7 @@
 (def wrist-rest-angle 5) 	;;angle of the wrist rest--Default 20
 (def wrist-rest-rotation-angle 9);;0 default The angle in counter clockwise the wrist rest is at
 (def wrist-rest-ledge 0)	;;The height of ledge the silicone wrist rest fits inside
-(def wrist-rest-y-angle 5)	;;0 Default.  Controls the wrist rest y axis tilt (left to right)
+(def wrist-rest-y-angle 15)	;;0 Default.  Controls the wrist rest y axis tilt (left to right)
 
 (def right_wrist_connecter_x   (if (== ncols 5) 13 17))
 (def middle_wrist_connecter_x  (if (== ncols 5) -5 -4))
@@ -1488,11 +1488,11 @@
                                   (->> (cube 18 10 201)(translate [0 -12.4 0]))))
                          ;;side fillers
                          ;; TODO: figure out why these glitch in the OpenSCAD view, it annoys me.
-                         (->> (cylinder 6.8 199)(with-fn 200) (translate [-6.15 -0.98 0]))
-                         (->> (cylinder 6.8 199)(with-fn 200) (translate [6.15 -0.98 0]))
+                         (->> (cylinder 6.8 190)(with-fn 200) (translate [-6.15 -0.98 0]))
+                         (->> (cylinder 6.8 190)(with-fn 200) (translate [6.15 -0.98 0]))
                          ;;heart shapes at bottom
                          (->> (cylinder 5.9 190)(with-fn 200) (translate [-6.35 -2 0]))
-                         (scale [1.01, 1, 1](->> (cylinder 5.9 199)(with-fn 200)
+                         (scale [1.01, 1, 1](->> (cylinder 5.9 190)(with-fn 200)
                                                  (translate [6.35 -2. 0])))
                          )
                        )
@@ -1507,14 +1507,13 @@
            (difference
              (scale [1.08 1.08 1] wrist-rest)
              (->> (cube 200 200 200)(translate [0 0 (+ (+ (/ h-offset 2) (- wrist-rest-back-height h-offset) ) 100)]) (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])(rotate  (/ (* π wrist-rest-y-angle) 180)  [0 1 0]))
-             (cond (= wrist-rest-ledge 0) nil
-                   :else
-                   (->> (difference
-                          wrist-rest
-                          (->> (cube 200 200 200)(translate [0 0 (- (+ (/ h-offset 2) (- wrist-rest-back-height h-offset) ) (+ 100  wrist-rest-ledge))]) (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])(rotate  (/ (* π wrist-rest-y-angle) 180)  [0 1 0]))
-                          )
-                        )
-                   )
+             (if (not (zero? wrist-rest-ledge))
+               (->> (difference
+                      wrist-rest
+                      (->> (cube 200 200 200)(translate [0 0 (- (+ (/ h-offset 2) (- wrist-rest-back-height h-offset) ) (+ 100  wrist-rest-ledge))]) (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])(rotate  (/ (* π wrist-rest-y-angle) 180)  [0 1 0]))
+                      )
+                    )
+               )
              )
            ))
   )
@@ -1618,6 +1617,21 @@
                 screw-insert-outers)
               (translate [0 0 -10] screw-insert-screw-holes)))))
 
+(def trackball (import "../trackball_bottom.stl"))
+
+(def trackball-top (->> trackball
+                         (rotate (deg->rad 90) [1 0 0])
+                         (rotate (deg->rad 20) [0 1 0])
+                         (translate [-30 55 40])
+                         (color [1 0 0 1])))
+
+(def trackball-side (->> trackball
+                         (rotate (deg->rad 90) [1 0 0])
+                         (rotate (deg->rad -30) [0 0 1])
+                         (rotate (deg->rad -20) [0 1 0])
+                         (translate [-105 -20 70])
+                         (color [0 0 1 1])))
+
 (spit "things/right.scad"
       (write-scad model-right))
 
@@ -1625,11 +1639,14 @@
       (write-scad (mirror [-1 0 0] model-right)))
 
 (spit "things/right-test.scad"
-      (write-scad (union model-right
-                         plate-right
+      (write-scad (union (difference model-right (scale [1.1 1.1 1.1] (hull trackball-side)))
+                         ;plate-right
                          thumbcaps-type
                          caps
-                         wrist-rest-build)))
+                         wrist-rest-build
+                         trackball-top
+                         trackball-side
+                         )))
 
 (spit "things/right-plate.scad"
       (write-scad plate-right))
