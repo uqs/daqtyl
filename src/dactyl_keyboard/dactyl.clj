@@ -93,6 +93,7 @@
 (def mount-width (+ keyswitch-width 3.2))
 (def mount-height (+ keyswitch-height 2.7))
 
+; plate here means the single support structure a switch will snap into
 (def single-plate
   (let [top-wall (->> (cube (+ keyswitch-width 3) 1.5 (+ plate-thickness 0.5))
                       (translate [0
@@ -1267,34 +1268,45 @@
     "cf" cf-thumb-wall
     "mini" mini-thumb-wall))
 
+(def back-wall (union
+  (for [x (range 0 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
+  (for [x (range 1 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+  )
+)
+
+(def left-wall (union
+  (for [y (range 0 (- lastrow innercol-offset))] (union
+                                                   (wall-brace (partial left-key-place y 1) -1 0 web-post (partial left-key-place y -1) -1 0 web-post)
+                                                   (hull (key-place 0 y web-post-tl)
+                                                         (key-place 0 y web-post-bl)
+                                                         (left-key-place y  1 web-post)
+                                                         (left-key-place y -1 web-post))))
+  (for [y (range 1 (- lastrow innercol-offset))] (union
+                                                   (wall-brace (partial left-key-place (dec y) -1) -1 0 web-post (partial left-key-place y  1) -1 0 web-post)
+                                                   (hull (key-place 0 y       web-post-tl)
+                                                         (key-place 0 (dec y) web-post-bl)
+                                                         (left-key-place y        1 web-post)
+                                                         (left-key-place (dec y) -1 web-post)
+                                                         )))
+  (wall-brace (partial key-place 0 0) 0 1 web-post-tl (partial left-key-place 0 1) -0.6 1 web-post)
+  (wall-brace (partial left-key-place 0 1) -0.6 1 web-post (partial left-key-place 0 1) -1 0 web-post)
+  ))
+
+
+(def front-wall (union
+  (key-wall-brace (+ innercol-offset 3) lastrow  0 -1 web-post-bl (+ innercol-offset 3) lastrow   0 -1 web-post-br)
+  (key-wall-brace (+ innercol-offset 3) lastrow  0 -1 web-post-br (+ innercol-offset 4) extra-cornerrow 0 -1 web-post-bl)
+  (for [x (range (+ innercol-offset 4) ncols)] (key-wall-brace x extra-cornerrow 0 -1 web-post-bl x       extra-cornerrow 0 -1 web-post-br))
+  (for [x (range (+ innercol-offset 5) ncols)] (key-wall-brace x extra-cornerrow 0 -1 web-post-bl (dec x) extra-cornerrow 0 -1 web-post-br))
+  ))
+
 (def case-walls
   (union
    thumb-wall-type
    right-wall
-   ; back wall
-   (for [x (range 0 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
-   (for [x (range 1 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
-   ; left wall
-   (for [y (range 0 (- lastrow innercol-offset))] (union
-                                                    (wall-brace (partial left-key-place y 1) -1 0 web-post (partial left-key-place y -1) -1 0 web-post)
-                                                    (hull (key-place 0 y web-post-tl)
-                                                          (key-place 0 y web-post-bl)
-                                                          (left-key-place y  1 web-post)
-                                                          (left-key-place y -1 web-post))))
-   (for [y (range 1 (- lastrow innercol-offset))] (union
-                                                    (wall-brace (partial left-key-place (dec y) -1) -1 0 web-post (partial left-key-place y  1) -1 0 web-post)
-                                                    (hull (key-place 0 y       web-post-tl)
-                                                          (key-place 0 (dec y) web-post-bl)
-                                                          (left-key-place y        1 web-post)
-                                                          (left-key-place (dec y) -1 web-post)
-                                                          )))
-   (wall-brace (partial key-place 0 0) 0 1 web-post-tl (partial left-key-place 0 1) -0.6 1 web-post)
-   (wall-brace (partial left-key-place 0 1) -0.6 1 web-post (partial left-key-place 0 1) -1 0 web-post)
-   ; front wall
-   (key-wall-brace (+ innercol-offset 3) lastrow  0 -1 web-post-bl (+ innercol-offset 3) lastrow   0 -1 web-post-br)
-   (key-wall-brace (+ innercol-offset 3) lastrow  0 -1 web-post-br (+ innercol-offset 4) extra-cornerrow 0 -1 web-post-bl)
-   (for [x (range (+ innercol-offset 4) ncols)] (key-wall-brace x extra-cornerrow 0 -1 web-post-bl x       extra-cornerrow 0 -1 web-post-br))
-   (for [x (range (+ innercol-offset 5) ncols)] (key-wall-brace x extra-cornerrow 0 -1 web-post-bl (dec x) extra-cornerrow 0 -1 web-post-br))
+   back-wall
+   left-wall
+   front-wall
    ))
 
 ; Offsets for the controller/trrs holder cutout
