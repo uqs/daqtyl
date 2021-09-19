@@ -1020,6 +1020,33 @@
   (wall-brace (partial key-place x1 y1) dx1 dy1 post1
               (partial key-place x2 y2) dx2 dy2 post2))
 
+; TODO: merge this with wall-brace somehow, optional args or something.
+(defn wall-brace-flat [place1 dx1 dy1 post1 place2 dx2 dy2 post2 yoffset]
+  (union
+   (hull
+    (place1 post1)
+    (place1 (translate (wall-locate1 dx1 dy1) post1))
+    (place1 (translate (wall-locate2 dx1 (- dy1 (first yoffset))) post1))
+    (place1 (translate (wall-locate3 dx1 (- dy1 (first yoffset))) post1))
+    (place2 post2)
+    (place2 (translate (wall-locate1 dx2 dy2) post2))
+    (place2 (translate (wall-locate2 dx2 (- dy2 (last yoffset))) post2))
+    (place2 (translate (wall-locate3 dx2 (- dy2 (last yoffset))) post2))
+    )
+   (bottom-hull
+     (place1 (translate (wall-locate2 dx1 (- dy1 (first yoffset))) post1))
+     (place1 (translate (wall-locate3 dx1 (- dy1 (first yoffset))) post1))
+     (place2 (translate (wall-locate2 dx2 (- dy2 (last yoffset))) post2))
+     (place2 (translate (wall-locate3 dx2 (- dy2 (last yoffset))) post2))
+    )
+   ))
+
+(defn key-wall-brace-flat [x1 y1 dx1 dy1 post1 x2 y2 dx2 dy2 post2 yoffset]
+  (wall-brace-flat (partial key-place x1 y1) dx1 dy1 post1
+                   (partial key-place x2 y2) dx2 dy2 post2
+                   yoffset
+                   ))
+
 (def right-wall
   (if pinky-15u
     (union
@@ -1269,8 +1296,15 @@
     "mini" mini-thumb-wall))
 
 (def back-wall (union
-  (for [x (range 0 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
-  (for [x (range 1 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+  ;(for [x (range 0 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
+  ;(for [x (range 1 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+  (for [x (range 0 2)    ] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
+  (for [x (range 3 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
+  (for [x (range 1 2)    ] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+  (for [x (range 4 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+  (color [1 0 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0.4 0.4]))
+  (color [0 1 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 1 0 0 1 web-post-tr [0.4 0]))
+  (color [0 0 1 1] (key-wall-brace-flat 3 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0 0.4]))
   )
 )
 
