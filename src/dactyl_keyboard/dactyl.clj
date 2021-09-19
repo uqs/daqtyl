@@ -65,7 +65,7 @@
 
 ; If you use Cherry MX or Gateron switches, this can be turned on.
 ; If you use other switches such as Kailh, you should set this as false
-(def create-side-nubs? true)
+(def create-side-nubs? false)
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; General variables ;;
@@ -1391,7 +1391,7 @@
     (def screw-offset-bm [8 -1 0]))
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
-  (union (screw-insert 0 0        bottom-radius top-radius height [8 10.5 0] [1 0 0]) ; red
+  (union (screw-insert 0 0        bottom-radius top-radius height [6.2 10.4 0] [1 0 0]) ; red
          (screw-insert 0 lastrow  bottom-radius top-radius height screw-offset-bl [1 1 0]) ; yellow
          (screw-insert lastcol lastrow  bottom-radius top-radius height screw-offset-br [0 1 0]) ; green
          (screw-insert lastcol 0        bottom-radius top-radius height screw-offset-tr [0 1 1]) ; aqua
@@ -1631,45 +1631,90 @@
 
 (def trackball (import "../trackball_bottom.stl"))
 
-(def trackball-top (->> trackball
-                         (rotate (deg->rad 90) [1 0 0])
-                         (rotate (deg->rad 20) [0 1 0])
-                         (translate [-30 55 40])
-                         (color [1 0 0 1])))
+; Trackball on the top/back of keyboard. We create a funnel as support
+; structure and move them both by the same vector.
+(defn move-topball [shape]
+  (->> shape
+       (translate [-30 55 40])
+       ))
+(def trackball-top-holder
+  (let [h 22 r1 22.5 r2 5]
+    (->>
+      (multmatrix [[1 0 0 0]
+                   [0 1 (deg->rad 40) 0]
+                   [(deg->rad 20) 0 1 0]]
+                  (difference (cylinder [r1 r2] h :center false)
+                              (translate [0 0 -4] (cylinder [r1 r2] h :center false))
+                              ))
+      (rotate (deg->rad 90) [1 0 0])
+      (translate [-8 -21 0])
+      (rotate (deg->rad 90) [1 0 0])
+      (translate [-30 55 40])
+      ))
+  )
 
-(def trackball-side (->> trackball
-                         (rotate (deg->rad 90) [1 0 0])
-                         (rotate (deg->rad -30) [0 0 1])
-                         (rotate (deg->rad -20) [0 1 0])
-                         (translate [-105 -20 70])
-                         (color [0 0 1 1])))
+(def trackball-top
+  (union (->> trackball
+              (rotate (deg->rad 90) [1 0 0])
+              (rotate (deg->rad 20) [0 1 0])
+              (translate [-30 55 40])
+              (color [1 0 0 1]))
+         (difference trackball-top-holder
+                     (hull (union back-wall (->> (cube 1 1 1)(translate [0 -100 0]))))
+                     (->> (cube 100 100 100)(translate [0 0 -50]))
+                     )
+         ))
 
-(spit "things/right.scad"
-      (write-scad model-right))
-
-(spit "things/left.scad"
-      (write-scad (mirror [-1 0 0] model-right)))
+(defn move-sideball [shape]
+  (->> shape
+       (rotate (deg->rad 90) [1 0 0])
+       (rotate (deg->rad -30) [0 0 1])
+       (rotate (deg->rad -20) [0 1 0])
+       (translate [-110 -20 70])
+       ))
+(def trackball-side-holder
+  (let [h 48 r1 22.9 r2 4]
+    (->> (move-sideball
+           (->> (difference (cylinder [r1 r2] h :center false)
+                            (translate [0 0 -5] (cylinder [r1 r2] h :center false))
+                            )
+                (rotate (deg->rad 90) [1 0 0])
+                (translate [0 -23.0 0])
+                )
+           ))
+    )
+  )
+(def trackball-side
+  (union (->> (move-sideball trackball) (color [0 0 1 1]))
+         (difference trackball-side-holder (hull (union left-wall (cube 1 1 1))))
+         ))
 
 (spit "things/right-test.scad"
-      (write-scad (union (difference model-right (scale [1.1 1.1 1.1] (hull trackball-side)))
+      (write-scad (union model-right
                          ;plate-right
-                         thumbcaps-type
-                         caps
-                         wrist-rest-build
+                         ;thumbcaps-type
+                         ;caps
+                         ;wrist-rest-build
                          trackball-top
                          trackball-side
                          )))
 
-(spit "things/right-plate.scad"
-      (write-scad plate-right))
-
-(spit "things/left-plate.scad"
-      (write-scad (mirror [-1 0 0] plate-right)))
-
-(spit "things/right-wrist-rest.scad"
-      (write-scad wrist-rest-build))
-
-(spit "things/left-wrist-rest.scad"
-      (write-scad (scale [-1,1,1] wrist-rest-build)))
+;(spit "things/right.scad"
+;      (write-scad model-right))
+;
+;(spit "things/left.scad"
+;      (write-scad (mirror [-1 0 0] model-right)))
+;
+;(spit "things/right-plate.scad"
+;      (write-scad plate-right))
+;
+;(spit "things/left-plate.scad"
+;      (write-scad (mirror [-1 0 0] plate-right)))
+;
+;(spit "things/right-wrist-rest.scad"
+;      (write-scad wrist-rest-build))
+;
+;(spit "things/left-wrist-rest.scad"
+;      (write-scad (scale [-1,1,1] wrist-rest-build)))
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
