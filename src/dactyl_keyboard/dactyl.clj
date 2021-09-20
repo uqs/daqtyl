@@ -1607,9 +1607,13 @@
 ))
 
 (def wrist-rest-build
+  (let [base (->> wrist-rest-base (translate [wrist_brse_position_x wrist_brse_distance_y 0])(rotate  (/ (* π wrist-rest-rotation-angle) 180)  [0 0 1]))
+        cutout (->> base (scale [0.85 0.85 0.85])(translate [0 -7 -8]))
+        _translate (fn [x] (translate [(+ (first thumborigin ) 33) (- (second thumborigin) 50) 0] x))
+        ]
   (difference
     (->> (union
-           (->> wrist-rest-base (translate [wrist_brse_position_x wrist_brse_distance_y 0])(rotate  (/ (* π wrist-rest-rotation-angle) 180)  [0 0 1]))
+           base
            (->> (difference
                   rest-case-connectors
                   rest-case-cuts
@@ -1617,11 +1621,13 @@
                   )
                 )
            )
-         (translate [(+ (first thumborigin ) 33) (- (second thumborigin) 50) 0])
+         _translate
          )
-    (translate [(+ (first thumborigin ) 33) (- (second thumborigin) 50) 0] rest-case-cuts)
+    (_translate rest-case-cuts)
     wrest-wall-cut
+    (_translate cutout)
     )
+  )
   )
 
 ; put it all together
@@ -1637,9 +1643,9 @@
                      thumb-connector-type
                      (difference (union case-walls
                                         screw-insert-outers)
-                                 usb-holder-space
-                                 trrs-notch
-                                 usb-holder-notch
+                                 ;usb-holder-space
+                                 ;trrs-notch
+                                 ;usb-holder-notch
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
                    (translate [0 0 -20] (cube 350 350 40))))
@@ -1678,7 +1684,7 @@
                    [0 1 (deg->rad 40) 0]
                    [(deg->rad 20) 0 1 0]]
                   (difference (cylinder [r1 r2] h :center false)
-                              (translate [0 0 -4] (cylinder [r1 r2] h :center false))
+                              (translate [0 0 -3] (cylinder [r1 r2] h :center false))
                               ))
       (rotate (deg->rad 90) [1 0 0])
       (translate [-8 -21 0])
@@ -1694,7 +1700,7 @@
               (translate [-30 55 40])
               (color [1 0 0 1]))
          (difference trackball-top-holder
-                     (hull (union back-wall (->> (cube 1 1 1)(translate [0 -100 0]))))
+                     ;(hull (union back-wall (->> (cube 1 1 1)(translate [0 -100 0]))))
                      (->> (cube 100 100 100)(translate [0 0 -50]))
                      )
          ))
@@ -1733,22 +1739,22 @@
                          trackball-side
                          )))
 
-;(spit "things/right.scad"
-;      (write-scad model-right))
-;
-;(spit "things/left.scad"
-;      (write-scad (mirror [-1 0 0] model-right)))
-;
-;(spit "things/right-plate.scad"
-;      (write-scad plate-right))
-;
-;(spit "things/left-plate.scad"
-;      (write-scad (mirror [-1 0 0] plate-right)))
-;
-;(spit "things/right-wrist-rest.scad"
-;      (write-scad wrist-rest-build))
-;
-;(spit "things/left-wrist-rest.scad"
-;      (write-scad (scale [-1,1,1] wrist-rest-build)))
+(spit "things/right.scad"
+      (write-scad (union model-right trackball-top trackball-side)))
+
+(spit "things/left.scad"
+      (write-scad (mirror [-1 0 0] model-right)))
+
+(spit "things/right-plate.scad"
+      (write-scad plate-right))
+
+(spit "things/left-plate.scad"
+      (write-scad (mirror [-1 0 0] plate-right)))
+
+(spit "things/right-wrist-rest.scad"
+      (write-scad wrist-rest-build))
+
+(spit "things/left-wrist-rest.scad"
+      (write-scad (scale [-1,1,1] wrist-rest-build)))
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
