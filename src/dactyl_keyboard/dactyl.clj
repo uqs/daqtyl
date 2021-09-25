@@ -609,27 +609,7 @@
     (key-place (+ innercol-offset 2) lastrow web-post-tr)
     (key-place (+ innercol-offset 2) cornerrow web-post-br)
     (key-place (+ innercol-offset 3) cornerrow web-post-bl))
-   (if extra-row
-     (union
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) lastrow web-post-br)
-       (key-place (+ innercol-offset 4) lastrow web-post-tl)
-       (key-place (+ innercol-offset 4) lastrow web-post-bl))
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) cornerrow web-post-br)
-       (key-place (+ innercol-offset 4) lastrow web-post-tl)
-       (key-place (+ innercol-offset 4) cornerrow web-post-bl)))
-     (union
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) lastrow web-post-br)
-       (key-place (+ innercol-offset 4) cornerrow web-post-bl))
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) cornerrow web-post-br)
-       (key-place (+ innercol-offset 4) cornerrow web-post-bl))))))
+   ))
 
 ;;;;;;;;;;;;;;;;
 ;; Mini Thumb ;;
@@ -768,27 +748,7 @@
     (key-place (+ innercol-offset 2) lastrow web-post-tr)
     (key-place (+ innercol-offset 2) cornerrow web-post-br)
     (key-place (+ innercol-offset 3) cornerrow web-post-bl))
-   (if extra-row
-     (union
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) lastrow web-post-br)
-       (key-place (+ innercol-offset 4) lastrow web-post-tl)
-       (key-place (+ innercol-offset 4) lastrow web-post-bl))
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) cornerrow web-post-br)
-       (key-place (+ innercol-offset 4) lastrow web-post-tl)
-       (key-place (+ innercol-offset 4) cornerrow web-post-bl)))
-     (union
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) lastrow web-post-br)
-       (key-place (+ innercol-offset 4) cornerrow web-post-bl))
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) cornerrow web-post-br)
-       (key-place (+ innercol-offset 4) cornerrow web-post-bl))))))
+   ))
 
 ;;;;;;;;;;;;;;;;
 ;; cf Thumb ;;
@@ -944,27 +904,7 @@
     (key-place (+ innercol-offset 2) cornerrow web-post-br)
     (key-place (+ innercol-offset 3) lastrow web-post-tl)
     (key-place (+ innercol-offset 3) cornerrow web-post-bl))
-   (if extra-row
-     (union
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) lastrow web-post-br)
-       (key-place (+ innercol-offset 4) lastrow web-post-tl)
-       (key-place (+ innercol-offset 4) lastrow web-post-bl))
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) cornerrow web-post-br)
-       (key-place (+ innercol-offset 4) lastrow web-post-tl)
-       (key-place (+ innercol-offset 4) cornerrow web-post-bl)))
-     (union
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) lastrow web-post-br)
-       (key-place (+ innercol-offset 4) cornerrow web-post-bl))
-      (triangle-hulls
-       (key-place (+ innercol-offset 3) lastrow web-post-tr)
-       (key-place (+ innercol-offset 3) cornerrow web-post-br)
-       (key-place (+ innercol-offset 4) cornerrow web-post-bl))))))
+   ))
 
 ;switching connectors, switchplates, etc. depending on thumb-style used
 (when (= thumb-style "default")
