@@ -362,7 +362,6 @@
              (key-place column row web-post-tr)
              (key-place (inc column) row web-post-bl)
              (key-place column row web-post-br)))
-
           ;; Column connections
           (for [column columns
                 row (range 0 cornerrow)]
@@ -371,7 +370,6 @@
              (key-place column row web-post-br)
              (key-place column (inc row) web-post-tl)
              (key-place column (inc row) web-post-tr)))
-
           ;; Diagonal connections
           (for [column (range 0 (dec ncols))
                 row (range 0 cornerrow)]
@@ -379,65 +377,88 @@
              (key-place column row web-post-br)
              (key-place column (inc row) web-post-tr)
              (key-place (inc column) row web-post-bl)
-             (key-place (inc column) (inc row) web-post-tl))))))
+             (key-place (inc column) (inc row) web-post-tl)))
 
-(def inner-connectors
-  (if inner-column
-    (apply union
-           (concat
-            ;; Row connections
-            (for [column (range 0 1)
-                  row (range 0 (- nrows 2))]
-              (triangle-hulls
-               (key-place (inc column) row web-post-tl)
-               (key-place column row web-post-tr)
-               (key-place (inc column) row web-post-bl)
-               (key-place column row web-post-br)))
+          (if inner-column
+            (concat
+              ;; Row connections
+              (for [column (range 0 1)
+                    row (range 0 (- nrows 2))]
+                (triangle-hulls
+                  (key-place (inc column) row web-post-tl)
+                  (key-place column row web-post-tr)
+                  (key-place (inc column) row web-post-bl)
+                  (key-place column row web-post-br)))
 
-            ;; Column connections
-            (for [row (range 0 (dec cornerrow))]
-              (triangle-hulls
-               (key-place innercolumn row web-post-bl)
-               (key-place innercolumn row web-post-br)
-               (key-place innercolumn (inc row) web-post-tl)
-               (key-place innercolumn (inc row) web-post-tr)))
+              ;; Column connections
+              (for [row (range 0 (dec cornerrow))]
+                (triangle-hulls
+                  (key-place innercolumn row web-post-bl)
+                  (key-place innercolumn row web-post-br)
+                  (key-place innercolumn (inc row) web-post-tl)
+                  (key-place innercolumn (inc row) web-post-tr)))
 
-            ;; Diagonal connections
-            (for [column (range 0 (dec ncols))
-                  row (range 0 2)]
-              (triangle-hulls
-               (key-place column row web-post-br)
-               (key-place column (inc row) web-post-tr)
-               (key-place (inc column) row web-post-bl)
-               (key-place (inc column) (inc row) web-post-tl)))))))
-
-(def extra-connectors
-  (if extra-row
-    (apply union
-           (concat
-            (for [column (range 3 ncols)
-                  row (range cornerrow lastrow)]
-              (triangle-hulls
-               (key-place column row web-post-bl)
-               (key-place column row web-post-br)
-               (key-place column (inc row) web-post-tl)
-               (key-place column (inc row) web-post-tr)))
-
-            (for [column (range 3 (dec ncols))
-                  row (range cornerrow lastrow)]
-              (triangle-hulls
-               (key-place column row web-post-br)
-               (key-place column (inc row) web-post-tr)
-               (key-place (inc column) row web-post-bl)
-               (key-place (inc column) (inc row) web-post-tl)))
-
-            (for [column (range 4 (dec ncols))
-                  row (range lastrow nrows)]
-              (triangle-hulls
-               (key-place (inc column) row web-post-tl)
-               (key-place column row web-post-tr)
-               (key-place (inc column) row web-post-bl)
-               (key-place column row web-post-br)))))))
+              ;; Diagonal connections
+              (for [column (range 0 (dec ncols))
+                    row (range 0 2)]
+                (triangle-hulls
+                  (key-place column row web-post-br)
+                  (key-place column (inc row) web-post-tr)
+                  (key-place (inc column) row web-post-bl)
+                  (key-place (inc column) (inc row) web-post-tl)))
+              ))
+          (if extra-row
+            (concat
+              (for [column (range 3 ncols)
+                    row (range cornerrow lastrow)]
+                (triangle-hulls
+                  (key-place column row web-post-bl)
+                  (key-place column row web-post-br)
+                  (key-place column (inc row) web-post-tl)
+                  (key-place column (inc row) web-post-tr)))
+              (for [column (range 3 (dec ncols))
+                    row (range cornerrow lastrow)]
+                (triangle-hulls
+                  (key-place column row web-post-br)
+                  (key-place column (inc row) web-post-tr)
+                  (key-place (inc column) row web-post-bl)
+                  (key-place (inc column) (inc row) web-post-tl)))
+              (for [column (range 4 (dec ncols))
+                    row (range lastrow nrows)]
+                (triangle-hulls
+                  (key-place (inc column) row web-post-tl)
+                  (key-place column row web-post-tr)
+                  (key-place (inc column) row web-post-bl)
+                  (key-place column row web-post-br)))
+              ))
+          (if extra-top-row
+            (concat
+              ;; Row connections
+              (for [column (range 1 3)
+                    row [-1]]
+                (triangle-hulls
+                  (key-place (inc column) row web-post-tl)
+                  (key-place column row web-post-tr)
+                  (key-place (inc column) row web-post-bl)
+                  (key-place column row web-post-br)))
+              ;; Column connections
+              (for [column (range 1 4)
+                    row [-1]]
+                (triangle-hulls
+                  (key-place column row web-post-bl)
+                  (key-place column row web-post-br)
+                  (key-place column (inc row) web-post-tl)
+                  (key-place column (inc row) web-post-tr)))
+              ;; Diagonal connections
+              (for [column (range 1 3)
+                    row [-1]]
+                (triangle-hulls
+                  (key-place column row web-post-br)
+                  (key-place column (inc row) web-post-tr)
+                  (key-place (inc column) row web-post-bl)
+                  (key-place (inc column) (inc row) web-post-tl)))
+              ))
+          )))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Default Thumb ;;
@@ -1587,9 +1608,7 @@
                      key-holes
                      key-holes-inner
                      pinky-connectors
-                     extra-connectors
                      connectors
-                     inner-connectors
                      thumb-type
                      thumb-connector-type
                      (difference (union case-walls
@@ -1609,9 +1628,7 @@
                 key-holes
                 key-holes-inner
                 pinky-connectors
-                extra-connectors
                 connectors
-                inner-connectors
                 thumb-type
                 thumb-connector-type
                 case-walls
