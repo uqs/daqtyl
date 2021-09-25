@@ -27,6 +27,7 @@
 (def last-15u-row 3)                    ; controls which should be the last row to have 1.5u keys on the outer column
 
 (def extra-row false)                   ; adds an extra bottom row to the outer columns
+(def extra-top-row true)                ; adds an extra top row to the inner columns
 (def inner-column false)                ; adds an extra inner column (two less rows than nrows)
 (def thumb-style "mini")                ; toggles between "default", "mini", and "cf" thumb cluster
 
@@ -259,16 +260,19 @@
 
 (def key-holes
   (apply union
-         (for [column columns
-               row rows
-               :when (or (.contains [(+ innercol-offset 2) (+ innercol-offset 3)] column)
-                         (and (.contains [(+ innercol-offset 4) (+ innercol-offset 5)] column) extra-row (= ncols (+ innercol-offset 6)))
-                         (and (.contains [(+ innercol-offset 4)] column) extra-row (= ncols (+ innercol-offset 5)))
-                         (and inner-column (not= row cornerrow)(= column 0))
-                         (not= row lastrow))]
-           (->> single-plate
-                ;                (rotate (/ π 2) [0 0 1])
-                (key-place column row)))))
+         (conj
+           (for [column columns
+                 row rows
+                 :when (or (.contains [(+ innercol-offset 2) (+ innercol-offset 3)] column)
+                           (and (.contains [(+ innercol-offset 4) (+ innercol-offset 5)] column) extra-row (= ncols (+ innercol-offset 6)))
+                           (and (.contains [(+ innercol-offset 4)] column) extra-row (= ncols (+ innercol-offset 5)))
+                           (and inner-column (not= row cornerrow)(= column 0))
+                           (not= row lastrow))]
+             (->> single-plate (key-place column row)))
+           (if extra-top-row (->> single-plate (key-place 1 -1)))
+           (if extra-top-row (->> single-plate (key-place 2 -1)))
+           (if extra-top-row (->> single-plate (key-place 3 -1)))
+           )))
 (def caps
   (apply union
          (conj (for [column columns
@@ -280,9 +284,16 @@
                                (not= row lastrow))]
                  (->> (sa-cap (if (and pinky-15u (= column lastcol) (not= row lastrow)) 1.5 1))
                       (key-place column row)))
-               (list (key-place 0 0 (sa-cap 1))
-                     (key-place 0 1 (sa-cap 1))
-                     (key-place 0 2 (sa-cap 1))))))
+               ; why is this needed, but not for the placement above?
+               (if inner-column (list (key-place 0 0 (sa-cap 1))
+                                      (key-place 0 1 (sa-cap 1))
+                                      (if (>= nrows 5) (key-place 0 2 (sa-cap 1)))
+                                      )
+                 )
+               (if extra-top-row (->> (sa-cap 1) (key-place 1 -1)))
+               (if extra-top-row (->> (sa-cap 1) (key-place 2 -1)))
+               (if extra-top-row (->> (sa-cap 1) (key-place 3 -1)))
+               )))
 
 ; only used to project the shadow on the bottom plate
 (def caps-fill
