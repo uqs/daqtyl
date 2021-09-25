@@ -1,9 +1,9 @@
 (ns dactyl-keyboard.dactyl
-    (:refer-clojure :exclude [use import])
-    (:require [clojure.core.matrix :refer [array matrix mmul]]
-              [scad-clj.scad :refer :all]
-              [scad-clj.model :refer :all]
-              [unicode-math.core :refer :all]))
+  (:refer-clojure :exclude [use import])
+  (:require [clojure.core.matrix :refer [array matrix mmul]]
+            [scad-clj.scad :refer :all]
+            [scad-clj.model :refer :all]
+            [unicode-math.core :refer :all]))
 
 
 (defn deg2rad [degrees]
@@ -1729,32 +1729,40 @@
          (difference trackball-side-holder (hull (union left-wall (cube 1 1 1))))
          ))
 
-(spit "things/right-test.scad"
-      (write-scad (union model-right
-                         ;plate-right
-                         ;thumbcaps-type
-                         ;caps
-                         ;wrist-rest-build
-                         trackball-top
-                         trackball-side
-                         )))
+;(spit "things/right-test.scad"
+;      (write-scad (union model-right
+;                         ;plate-right
+;                         ;thumbcaps-type
+;                         ;caps
+;                         ;wrist-rest-build
+;                         trackball-top
+;                         trackball-side
+;                         )))
 
-(spit "things/right.scad"
-      (write-scad (union model-right trackball-top trackball-side)))
+(spit "things/left-test.scad"
+      (write-scad (mirror [-1 0 0] (union model-right
+                                          ;plate-right
+                                          thumbcaps-type
+                                          caps
+                                          ;wrist-rest-build
+                                          ))))
 
-(spit "things/left.scad"
-      (write-scad (mirror [-1 0 0] model-right)))
-
-(spit "things/right-plate.scad"
-      (write-scad plate-right))
-
-(spit "things/left-plate.scad"
-      (write-scad (mirror [-1 0 0] plate-right)))
-
-(spit "things/right-wrist-rest.scad"
-      (write-scad wrist-rest-build))
-
-(spit "things/left-wrist-rest.scad"
-      (write-scad (scale [-1,1,1] wrist-rest-build)))
+;(spit "things/right.scad"
+;      (write-scad (union model-right trackball-top trackball-side)))
+;
+;(spit "things/left.scad"
+;      (write-scad (mirror [-1 0 0] model-right)))
+;
+;(spit "things/right-plate.scad"
+;      (write-scad plate-right))
+;
+;(spit "things/left-plate.scad"
+;      (write-scad (mirror [-1 0 0] plate-right)))
+;
+;(spit "things/right-wrist-rest.scad"
+;      (write-scad wrist-rest-build))
+;
+;(spit "things/left-wrist-rest.scad"
+;      (write-scad (scale [-1,1,1] wrist-rest-build)))
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
