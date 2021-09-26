@@ -24,7 +24,7 @@
 
 (def pinky-15u false)                   ; controls whether the outer column uses 1.5u keys
 (def first-15u-row 0)                   ; controls which should be the first row to have 1.5u keys on the outer column
-(def last-15u-row 3)                    ; controls which should be the last row to have 1.5u keys on the outer column
+(def last-15u-row 2)                    ; controls which should be the last row to have 1.5u keys on the outer column
 
 (def extra-row false)                   ; adds an extra bottom row to the outer columns
 (def extra-top-row true)                ; adds an extra top row to the inner columns
@@ -294,6 +294,11 @@
                            (and inner-column (not= row cornerrow)(= column 0))
                            (not= row lastrow))]
              (->> single-plate (key-place column row)))
+           ; placement for the innermost column
+           (if inner-column (apply union
+                                   (for [row innerrows]
+                                     (->> single-plate
+                                          (key-place 0 row)))))
            ; mouse keys go here, the middle one uses a different plate for the encoder
            (if extra-top-row (->> single-plate (key-place 1 -1)))
            (if extra-top-row (->> encoder-plate (key-place 2 -1)))
@@ -335,15 +340,6 @@
                (list (key-place 0 0 keyhole-fill)
                      (key-place 0 1 keyhole-fill)
                      (key-place 0 2 keyhole-fill)))))
-
-;placement for the innermost column
-(def key-holes-inner
-  (if inner-column
-    (apply union
-           (for [row innerrows]
-             (->> single-plate
-                  ;               (rotate (/ π 2) [0 0 1])
-                  (key-place 0 row))))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Web Connectors ;;
@@ -432,6 +428,45 @@
                   (key-place column (inc row) web-post-tr)
                   (key-place (inc column) row web-post-bl)
                   (key-place (inc column) (inc row) web-post-tl)))
+              ))
+          ; Connectors between outer column and right wall when 1.5u keys are used
+          (if pinky-15u
+            (concat
+              ;; Row connections
+              (for [row (range first-15u-row (inc last-15u-row))]
+                (triangle-hulls
+                  (key-place lastcol row web-post-tr)
+                  (key-place lastcol row wide-post-tr)
+                  (key-place lastcol row web-post-br)
+                  (key-place lastcol row wide-post-br)))
+              (if-not (= last-15u-row extra-cornerrow) (for [row (range last-15u-row (inc last-15u-row))]
+                                                         (triangle-hulls
+                                                           (key-place lastcol (inc row) web-post-tr)
+                                                           (key-place lastcol row wide-post-br)
+                                                           (key-place lastcol (inc row) web-post-br))))
+              (if-not (= first-15u-row 0) (for [row (range (dec first-15u-row) first-15u-row)]
+                                            (triangle-hulls
+                                              (key-place lastcol row web-post-tr)
+                                              (key-place lastcol (inc row) wide-post-tr)
+                                              (key-place lastcol row web-post-br))))
+
+              ;; Column connections
+              (for [row (range first-15u-row last-15u-row)]
+                (triangle-hulls
+                  (key-place lastcol row web-post-br)
+                  (key-place lastcol row wide-post-br)
+                  (key-place lastcol (inc row) web-post-tr)
+                  (key-place lastcol (inc row) wide-post-tr)))
+              (if-not (= last-15u-row extra-cornerrow) (for [row (range last-15u-row (inc last-15u-row))]
+                                                         (triangle-hulls
+                                                           (key-place lastcol row web-post-br)
+                                                           (key-place lastcol row wide-post-br)
+                                                           (key-place lastcol (inc row) web-post-tr))))
+              (if-not (= first-15u-row 0) (for [row (range (dec first-15u-row) first-15u-row)]
+                                            (triangle-hulls
+                                              (key-place lastcol row web-post-br)
+                                              (key-place lastcol (inc row) wide-post-tr)
+                                              (key-place lastcol (inc row) web-post-tr))))
               ))
           (if extra-row
             (concat
@@ -953,48 +988,6 @@
 (def screw-insert-outers (screw-insert-all-shapes (+ screw-insert-bottom-radius 1.65) (+ screw-insert-top-radius 1.65) (+ screw-insert-height 1)))
 (def screw-insert-screw-holes  (screw-insert-all-shapes 1.7 1.7 350))
 
-; Connectors between outer column and right wall when 1.5u keys are used
-(def pinky-connectors
-  (if pinky-15u
-    (apply union
-           (concat
-            ;; Row connections
-            (for [row (range first-15u-row (inc last-15u-row))]
-              (triangle-hulls
-               (key-place lastcol row web-post-tr)
-               (key-place lastcol row wide-post-tr)
-               (key-place lastcol row web-post-br)
-               (key-place lastcol row wide-post-br)))
-            (if-not (= last-15u-row extra-cornerrow) (for [row (range last-15u-row (inc last-15u-row))]
-              (triangle-hulls
-               (key-place lastcol (inc row) web-post-tr)
-               (key-place lastcol row wide-post-br)
-               (key-place lastcol (inc row) web-post-br))))
-            (if-not (= first-15u-row 0) (for [row (range (dec first-15u-row) first-15u-row)]
-              (triangle-hulls
-               (key-place lastcol row web-post-tr)
-               (key-place lastcol (inc row) wide-post-tr)
-               (key-place lastcol row web-post-br))))
-
-            ;; Column connections
-            (for [row (range first-15u-row last-15u-row)]
-              (triangle-hulls
-               (key-place lastcol row web-post-br)
-               (key-place lastcol row wide-post-br)
-               (key-place lastcol (inc row) web-post-tr)
-               (key-place lastcol (inc row) wide-post-tr)))
-            (if-not (= last-15u-row extra-cornerrow) (for [row (range last-15u-row (inc last-15u-row))]
-              (triangle-hulls
-               (key-place lastcol row web-post-br)
-               (key-place lastcol row wide-post-br)
-               (key-place lastcol (inc row) web-post-tr))))
-            (if-not (= first-15u-row 0) (for [row (range (dec first-15u-row) first-15u-row)]
-              (triangle-hulls
-               (key-place lastcol row web-post-br)
-               (key-place lastcol (inc row) wide-post-tr)
-               (key-place lastcol (inc row) web-post-tr))))
-))))
-
 ; Wrist rest cutout for https://github.com/crystalhand/dactyl-keyboard.git
 ;;Wrist rest to case connections
 (def wrist-rest-on 1)
@@ -1141,8 +1134,6 @@
 (def model-right (difference
                    (union
                      key-holes
-                     key-holes-inner
-                     pinky-connectors
                      connectors
                      thumb-type
                      thumb-connector-type
@@ -1154,6 +1145,20 @@
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
                    (translate [0 0 -20] (cube 350 350 40))))
+
+(def model-left (mirror [-1 0 0]
+                        (difference
+                          (union
+                            key-holes
+                            connectors
+                            thumb-type
+                            thumb-connector-type
+                            (difference (union case-walls
+                                               screw-insert-outers)
+                                        (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
+                                        screw-insert-holes))
+                          (translate [0 0 -20] (cube 350 350 40)))))
+
 (def plate-right
         (extrude-linear
           {:height 2.6 :center false}
@@ -1161,8 +1166,6 @@
             (difference
               (union
                 key-holes
-                key-holes-inner
-                pinky-connectors
                 connectors
                 thumb-type
                 thumb-connector-type
@@ -1243,18 +1246,18 @@
 ;                         )))
 
 (spit "things/left-test.scad"
-      (write-scad (mirror [-1 0 0] (union model-right
-                                          ;plate-right
-                                          thumbcaps-type
-                                          caps
-                                          ;wrist-rest-build
-                                          ))))
+      (write-scad (union model-left (mirror [-1 0 0] (union
+                                                       ;plate-right
+                                                       ;thumbcaps-type
+                                                       ;caps
+                                                       ;wrist-rest-build
+                                                       )))))
 
 ;(spit "things/right.scad"
 ;      (write-scad (union model-right trackball-top trackball-side)))
 ;
 ;(spit "things/left.scad"
-;      (write-scad (mirror [-1 0 0] model-right)))
+;      (write-scad model-left))
 ;
 ;(spit "things/right-plate.scad"
 ;      (write-scad plate-right))
