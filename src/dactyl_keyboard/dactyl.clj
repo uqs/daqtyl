@@ -84,6 +84,8 @@
 
 (def keyswitch-height 14.15)
 (def keyswitch-width 14.15)
+(def encoder-height 14.15)
+(def encoder-width 16.15)
 
 (def sa-profile-key-height 12.7)
 
@@ -127,6 +129,29 @@
      (->>
       top-nub-pair
       (rotate (/ π 2) [0 0 1])))))
+
+; plate structure for the EVQWGD001 rotary encoder
+(def encoder-plate
+  (let [plate-thickness 8
+        top-wall (->> (cube (+ encoder-width 3) 1.5 (+ plate-thickness 0.5))
+                      (translate [0
+                                  (+ (/ 1.5 2) (/ encoder-height 2))
+                                  (- (/ plate-thickness 2) 0.25)]))
+        left-wall (->> (cube 1.8 (+ encoder-height 3) (+ plate-thickness 0.5))
+                       (translate [(+ (/ 1.8 2) (/ encoder-width 2))
+                                   0
+                                   (- (/ plate-thickness 2) 0.25)]))
+        plate-half (union top-wall left-wall)
+        bridge (->> (cube 8 (+ encoder-height 3) (/ plate-thickness 3))
+                    (translate [0 0 (- plate-thickness (/ plate-thickness 6))]))
+        ]
+    (difference
+     (union plate-half
+            bridge
+            (->> plate-half
+                 (mirror [1 0 0])
+                 (mirror [0 1 0])))
+     )))
 
 ;;;;;;;;;;;;;;;;
 ;; SA Keycaps ;;
@@ -269,8 +294,9 @@
                            (and inner-column (not= row cornerrow)(= column 0))
                            (not= row lastrow))]
              (->> single-plate (key-place column row)))
+           ; mouse keys go here, the middle one uses a different plate for the encoder
            (if extra-top-row (->> single-plate (key-place 1 -1)))
-           (if extra-top-row (->> single-plate (key-place 2 -1)))
+           (if extra-top-row (->> encoder-plate (key-place 2 -1)))
            (if extra-top-row (->> single-plate (key-place 3 -1)))
            )))
 (def caps
