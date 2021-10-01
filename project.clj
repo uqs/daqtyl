@@ -1,5 +1,5 @@
 (defproject dactyl-keyboard "0.1.0-SNAPSHOT"
-  :description "A parametrized, split-hand, concave, columnar, erogonomic keyboard"
+  :description "A parametrized, split-hand, concave, columnar, ergonomic keyboard with trackballs"
   :url "http://example.com/FIXME"
   :main dactyl-keyboard.dactyl
   :license {:name "Eclipse Public License"
