@@ -941,7 +941,7 @@
 (when (false? inner-column)
     (def screw-offset-bl [-3 5.5 0])
     (def screw-offset-tm [9.5 -4.5 0])
-    (def screw-offset-bm [-2 12 0]))
+    (def screw-offset-bm [0 12 0]))
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
   (union (screw-insert 0 0        bottom-radius top-radius height [6.2 10.4 0] [1 0 0]) ; red
@@ -974,6 +974,7 @@
 (def wrist-rest-ledge 0)	;;The height of ledge the silicone wrist rest fits inside
 (def wrist-rest-y-angle 10)	;;0 Default.  Controls the wrist rest y axis tilt (left to right)
 
+(def wrist-translate-x (+ (first thumborigin) 10))
 (def right_wrist_connecter_x   (if (== ncols 5) 13 17))
 (def middle_wrist_connecter_x  (if (== ncols 5) -5 -4))
 (def left_wrist_connecter_x    (if (== ncols 5) -25 -25))
@@ -1047,32 +1048,28 @@
   (union
     ;;right cut
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 23.5 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x (+ 35.0 nrows) 4.5]))
-    (->> (cube 6 3 12.2)(translate [right_wrist_connecter_x (+ 23.0 nrows) 1.5]))
+    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 31.5 4.5]))
+    (->> (cube 6 3 12.2)(translate [right_wrist_connecter_x 19.0 1.5]))
     ;;middle cut
-    (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 18 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 31.5 4.5]))
-    (->> (cube 6 3 12.2)(translate [middle_wrist_connecter_x (+ 14.0 nrows) 1.5]))
+    (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 20 4.5]))
+    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 34.0 4.5]))
+    (->> (cube 6 3 12.2)(translate [middle_wrist_connecter_x 19.0 1.5]))
     ;;left
     (->> (cylinder 1.85 60)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 21 4.5]))
     (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x (+ 29.5 nrows) 4.5]))
-    (->> (cube 6 3 12.2)(translate [left_wrist_connecter_x (+ 15.0 nrows) 1.5]))
+    (->> (cube 6 3 12.2)(translate [left_wrist_connecter_x 19.0 1.5]))
     )
 )
 
 (def rest-case-connectors
   (difference
     (union
-      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 4 0])))
-      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x -5 0])))
-      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x -3 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 0 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 0 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 0 0])))
       )
     )
 )
-
-(def wrist-rest-locate
-  (key-position 3 8 (map + (wall-locate1 0 (- 4.9 (* 2 nrows))) [0 (/ mount-height 2) 0]))
-  )
 
 (def wrest-wall-cut
   (->> (for [xyz (range 1.00 10 3)];controls the scale last number needs to be lower for thinner walls
@@ -1086,7 +1083,7 @@
 (def wrist-rest-build
   (let [base (->> wrist-rest-base (translate [wrist_brse_position_x wrist_brse_distance_y 0])(rotate  (/ (* π wrist-rest-rotation-angle) 180)  [0 0 1]))
         cutout (->> base (scale [0.85 0.85 0.85])(translate [0 -7 -8]))
-        _translate (fn [x] (translate [(+ (first thumborigin ) 33) (- (second thumborigin) 50) 0] x))
+        _translate (fn [x] (translate [wrist-translate-x (- (second thumborigin) 50) 0] x))
         ]
   (difference
     (->> (union
@@ -1120,7 +1117,7 @@
                                  ;usb-holder-space
                                  ;trrs-notch
                                  ;usb-holder-notch
-                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
+                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
                    (translate [0 0 -20] (cube 350 350 40))))
 
@@ -1132,7 +1129,7 @@
                     thumb-connectors
                     (difference (union (case-walls :extra-top-row true)
                                        screw-insert-outers)
-                                (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
+                                (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                 screw-insert-holes))
                   (translate [0 0 -20] (cube 350 350 40))))
 
