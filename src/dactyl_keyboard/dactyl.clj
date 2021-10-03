@@ -810,18 +810,38 @@
        (key-place 1 cornerrow web-post-bl)
        (thumb-m-place thumb-post-tl))))))
 
-(def back-wall (union
-  ;(for [x (range 0 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
-  ;(for [x (range 1 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
-  (for [x (range 0 2)    ] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
-  (for [x (range 3 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
-  (for [x (range 1 2)    ] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
-  (for [x (range 4 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
-  (color [1 0 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0.4 0.4]))
-  (color [0 1 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 1 0 0 1 web-post-tr [0.4 0]))
-  (color [0 0 1 1] (key-wall-brace-flat 3 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0 0.4]))
-  )
-)
+(defn back-wall [& {:keys [extra-top-row] :or {extra-top-row false}}]
+  (union
+    ;(for [x (range 0 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
+    ;(for [x (range 1 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+    (if extra-top-row
+      (vector
+        ; x/y is placement of key, 0/0 being top-left on the right model
+        ; dx1/dy1 moves the post a bit, scaled by wall-xy-locate
+        ; ditto for the second post. So you move to key pos 0/0 and put down a
+        ; wall from its top-left to top-right position. Then you brace from key
+        ; 0/0's top-right to 1/-1's top left, etc.
+        (key-wall-brace 0 0 0 1 web-post-tl 0 0 0 1 web-post-tr)
+        (color [1 1 0 1] (key-wall-brace 0 0 0 1 web-post-tr 1 -1 0 1 web-post-tl))
+        (key-wall-brace 1 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr)
+        (color [0 1 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr [0.4 0]))
+        (color [1 0 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0.4 0.4]))
+        (color [0 0 1 1] (key-wall-brace-flat 3 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0 0.4]))
+        (key-wall-brace 3 -1 0 1 web-post-tl 3 -1 0 1 web-post-tr)
+        (color [1 1 0 1] (key-wall-brace 3 -1 0 1 web-post-tr 4 0 0 1 web-post-tl))
+        (key-wall-brace 4 0 0 1 web-post-tl 4 0 0 1 web-post-tr)
+        (color [1 1 0 1] (key-wall-brace 4 0 0 1 web-post-tr 5 0 0 1 web-post-tl))
+        (key-wall-brace 5 0 0 1 web-post-tl 5 0 0 1 web-post-tr)
+       )
+      (vector
+        (for [x (range 0 2)    ] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
+        (for [x (range 3 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
+        (for [x (range 1 2)    ] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+        (for [x (range 4 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+        (color [0 1 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 1 0 0 1 web-post-tr [0.4 0]))
+        (color [1 0 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0.4 0.4]))
+        (color [0 0 1 1] (key-wall-brace-flat 3 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0 0.4]))
+      ))))
 
 (def left-wall (union
   (for [y (range 0 (- lastrow innercol-offset))] (union
@@ -849,11 +869,11 @@
   (for [x (range (+ innercol-offset 5) ncols)] (key-wall-brace x extra-cornerrow 0 -1 web-post-bl (dec x) extra-cornerrow 0 -1 web-post-br))
   ))
 
-(def case-walls
+(defn case-walls [& {:keys [extra-top-row] :or {extra-top-row false}}]
   (union
    thumb-wall
    right-wall
-   back-wall
+   (back-wall :extra-top-row extra-top-row)
    left-wall
    front-wall
    ))
@@ -1057,7 +1077,7 @@
 (def wrest-wall-cut
   (->> (for [xyz (range 1.00 10 3)];controls the scale last number needs to be lower for thinner walls
          (union
-           (translate[1, xyz,1] case-walls)
+           (translate[1, xyz,1] (case-walls))
            ;(translate [0 0 -3])
            )
          )
@@ -1089,34 +1109,32 @@
 
 ; put it all together
 
-(def model-right (let [extra-top-row false]
-                   (difference
+(def model-right (difference
                    (union
                      (key-holes)
                      (connectors)
                      thumb
                      thumb-connectors
-                     (difference (union case-walls
+                     (difference (union (case-walls)
                                         screw-insert-outers)
                                  ;usb-holder-space
                                  ;trrs-notch
                                  ;usb-holder-notch
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
-                   (translate [0 0 -20] (cube 350 350 40)))))
+                   (translate [0 0 -20] (cube 350 350 40))))
 
-(def model-left (let [extra-top-row true]
-                  (difference
+(def model-left (difference
                   (union
                     (key-holes :extra-top-row true)
                     (connectors :extra-top-row true)
                     thumb
                     thumb-connectors
-                    (difference (union case-walls
+                    (difference (union (case-walls :extra-top-row true)
                                        screw-insert-outers)
                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
                                 screw-insert-holes))
-                  (translate [0 0 -20] (cube 350 350 40)))))
+                  (translate [0 0 -20] (cube 350 350 40))))
 
 (def plate-right
         (extrude-linear
@@ -1128,7 +1146,7 @@
                 (connectors)
                 thumb
                 thumb-connectors
-                case-walls
+                (case-walls)
                 thumbcaps-fill
                 (caps-fill)
                 screw-insert-outers)
@@ -1144,7 +1162,7 @@
                 (connectors :extra-top-row true)
                 thumb
                 thumb-connectors
-                case-walls
+                (case-walls :extra-top-row true)
                 thumbcaps-fill
                 (caps-fill :extra-top-row true)
                 screw-insert-outers)
@@ -1232,9 +1250,9 @@
 
 (spit "things/right-test.scad"
       (write-scad (union model-right
-                         ;plate-right
+                         (->> plate-right (translate [0 0 -30]))
                          thumbcaps
-                         ;(caps)
+                         (caps)
                          wrist-rest-build
                          trackball-top
                          trackball-side
@@ -1244,10 +1262,10 @@
 (spit "things/left-test.scad"
       (write-scad (mirror [-1 0 0]
                           (union model-left
-                                 ;plate-left
-                                 ;thumbcaps
-                                 ;(caps :extra-top-row true)
-                                 ;wrist-rest-build
+                                 (->> plate-left (translate [0 0 -30]))
+                                 thumbcaps
+                                 (caps :extra-top-row true)
+                                 wrist-rest-build
                                  ))))
 
 (spit "things/right.scad"
