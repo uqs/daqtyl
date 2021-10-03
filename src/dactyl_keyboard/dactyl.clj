@@ -27,7 +27,6 @@
 (def last-15u-row 2)                    ; controls which should be the last row to have 1.5u keys on the outer column
 
 (def extra-row false)                   ; adds an extra bottom row to the outer columns
-(def extra-top-row true)                ; adds an extra top row to the inner columns
 (def inner-column false)                ; adds an extra inner column (two less rows than nrows)
 
 (def column-style :standard)
@@ -282,7 +281,7 @@
 (defn key-position [column row position]
   (apply-key-geometry (partial map +) rotate-around-x rotate-around-y column row position))
 
-(def key-holes
+(defn key-holes [& {:keys [extra-top-row] :or {extra-top-row false}}]
   (apply union
          (conj
            (for [column columns
@@ -303,7 +302,8 @@
            (if extra-top-row (->> encoder-plate (key-place 2 -1)))
            (if extra-top-row (->> single-plate (key-place 3 -1)))
            )))
-(def caps
+
+(defn caps [& {:keys [extra-top-row] :or {extra-top-row false}}]
   (apply union
          (conj (for [column columns
                      row rows
@@ -321,12 +321,13 @@
                                       )
                  )
                (if extra-top-row (->> (sa-cap 1) (key-place 1 -1)))
-               (if extra-top-row (->> (sa-cap 1) (key-place 2 -1)))
+               ;not a cap, need to put an encoder wheel here) XXX
+               ;(if extra-top-row (->> (sa-cap 1) (key-place 2 -1)))
                (if extra-top-row (->> (sa-cap 1) (key-place 3 -1)))
                )))
 
 ; only used to project the shadow on the bottom plate
-(def caps-fill
+(defn caps-fill [& {:keys [extra-top-row] :or {extra-top-row false}}]
   (apply union
          (conj (for [column columns
                      row rows
@@ -336,6 +337,9 @@
                                (and inner-column (not= row cornerrow)(= column 0))
                                (not= row lastrow))]
                  (key-place column row keyhole-fill))
+               (if extra-top-row (key-place 1 -1 keyhole-fill))
+               (if extra-top-row (key-place 2 -1 keyhole-fill))
+               (if extra-top-row (key-place 3 -1 keyhole-fill))
                (list (key-place 0 0 keyhole-fill)
                      (key-place 0 1 keyhole-fill)
                      (key-place 0 2 keyhole-fill)))))
@@ -372,7 +376,7 @@
          (map (partial apply hull)
               (partition 3 1 shapes))))
 
-(def connectors
+(defn connectors [& {:keys [extra-top-row] :or {extra-top-row false}}]
   (apply union
          (concat
           ;; Row connections
@@ -1084,10 +1088,12 @@
   )
 
 ; put it all together
-(def model-right (difference
+
+(def model-right (let [extra-top-row false]
+                   (difference
                    (union
-                     key-holes
-                     connectors
+                     (key-holes)
+                     (connectors)
                      thumb
                      thumb-connectors
                      (difference (union case-walls
@@ -1097,20 +1103,20 @@
                                  ;usb-holder-notch
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
-                   (translate [0 0 -20] (cube 350 350 40))))
+                   (translate [0 0 -20] (cube 350 350 40)))))
 
-(def model-left (mirror [-1 0 0]
-                        (difference
-                          (union
-                            key-holes
-                            connectors
-                            thumb
-                            thumb-connectors
-                            (difference (union case-walls
-                                               screw-insert-outers)
-                                        (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
-                                        screw-insert-holes))
-                          (translate [0 0 -20] (cube 350 350 40)))))
+(def model-left (let [extra-top-row true]
+                  (difference
+                  (union
+                    (key-holes :extra-top-row true)
+                    (connectors :extra-top-row true)
+                    thumb
+                    thumb-connectors
+                    (difference (union case-walls
+                                       screw-insert-outers)
+                                (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [(+ (first thumborigin) 33) (- (second thumborigin) (- 56 nrows)) 0])))
+                                screw-insert-holes))
+                  (translate [0 0 -20] (cube 350 350 40)))))
 
 (def plate-right
         (extrude-linear
@@ -1118,13 +1124,29 @@
           (project
             (difference
               (union
-                key-holes
-                connectors
+                (key-holes)
+                (connectors)
                 thumb
                 thumb-connectors
                 case-walls
                 thumbcaps-fill
-                caps-fill
+                (caps-fill)
+                screw-insert-outers)
+              (translate [0 0 -10] screw-insert-screw-holes)))))
+
+(def plate-left
+        (extrude-linear
+          {:height 2.6 :center false}
+          (project
+            (difference
+              (union
+                (key-holes :extra-top-row true)
+                (connectors :extra-top-row true)
+                thumb
+                thumb-connectors
+                case-walls
+                thumbcaps-fill
+                (caps-fill :extra-top-row true)
                 screw-insert-outers)
               (translate [0 0 -10] screw-insert-screw-holes)))))
 
@@ -1151,6 +1173,8 @@
       (translate [-30 55 40])
       ))
   )
+
+; TODO: add test? var, add print out ball if set, set it in local scope for the test print, print both halves there.
 
 (def trackball-top
   (union (->> trackball
@@ -1188,40 +1212,60 @@
          (difference trackball-side-holder (hull (union left-wall (cube 1 1 1))))
          ))
 
+(spit "things/all-test.scad"
+      (write-scad (union
+                    (translate [130 0 0] (union model-right
+                                                (->> plate-right (translate [0 0 -30]))
+                                                thumbcaps
+                                                (caps)
+                                                wrist-rest-build
+                                                trackball-top
+                                                trackball-side
+                                                ))
+                    (translate [-130 0 0] (mirror [-1 0 0] (union
+                                                             model-left
+                                                             (->> plate-left (translate [0 0 -30]))
+                                                             thumbcaps
+                                                             (caps :extra-top-row true)
+                                                             wrist-rest-build
+                                                             ))))))
+
 (spit "things/right-test.scad"
       (write-scad (union model-right
                          ;plate-right
                          thumbcaps
-                         ;caps
+                         ;(caps)
                          wrist-rest-build
                          trackball-top
                          trackball-side
                          )))
 
-;(spit "things/left-test.scad"
-;      (write-scad (union model-left (mirror [-1 0 0] (union
-;                                                       ;plate-right
-;                                                       ;thumbcaps
-;                                                       ;caps
-;                                                       ;wrist-rest-build
-;                                                       )))))
 
-;(spit "things/right.scad"
-;      (write-scad (union model-right trackball-top trackball-side)))
-;
-;(spit "things/left.scad"
-;      (write-scad model-left))
-;
-;(spit "things/right-plate.scad"
-;      (write-scad plate-right))
-;
-;(spit "things/left-plate.scad"
-;      (write-scad (mirror [-1 0 0] plate-right)))
-;
-;(spit "things/right-wrist-rest.scad"
-;      (write-scad wrist-rest-build))
-;
-;(spit "things/left-wrist-rest.scad"
-;      (write-scad (scale [-1,1,1] wrist-rest-build)))
+(spit "things/left-test.scad"
+      (write-scad (mirror [-1 0 0]
+                          (union model-left
+                                 ;plate-left
+                                 ;thumbcaps
+                                 ;(caps :extra-top-row true)
+                                 ;wrist-rest-build
+                                 ))))
+
+(spit "things/right.scad"
+      (write-scad (union model-right trackball-top trackball-side)))
+
+(spit "things/left.scad"
+      (write-scad (mirror [-1 0 0] model-left)))
+
+(spit "things/right-plate.scad"
+      (write-scad plate-right))
+
+(spit "things/left-plate.scad"
+      (write-scad (mirror [-1 0 0] plate-left)))
+
+(spit "things/right-wrist-rest.scad"
+      (write-scad wrist-rest-build))
+
+(spit "things/left-wrist-rest.scad"
+      (write-scad (scale [-1,1,1] wrist-rest-build)))
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
