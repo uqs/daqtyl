@@ -919,32 +919,34 @@
          (translate (map + offset [(first position) (second position) (/ height 2)]))
          (color col))))
 
+(def bottom-plate-thickness 2.6)
+
 ; Offsets for the screw inserts dependent on extra-row & pinky-15u
 (when (and pinky-15u extra-row)
-    (def screw-offset-tr [1 7 0])
-    (def screw-offset-br [7 14 0]))
+    (def screw-offset-tr [1 7 bottom-plate-thickness])
+    (def screw-offset-br [7 14 bottom-plate-thickness]))
 (when (and pinky-15u (false? extra-row))
-    (def screw-offset-tr [1 7 0])
-    (def screw-offset-br [6.5 15.5 0]))
+    (def screw-offset-tr [1 7 bottom-plate-thickness])
+    (def screw-offset-br [6.5 15.5 bottom-plate-thickness]))
 (when (and (false? pinky-15u) extra-row)
-    (def screw-offset-tr [-3.5 6.5 0])
-    (def screw-offset-br [-3.5 -6.5 0]))
+    (def screw-offset-tr [-3.5 6.5 bottom-plate-thickness])
+    (def screw-offset-br [-3.5 -6.5 bottom-plate-thickness]))
 (when (and (false? pinky-15u) (false? extra-row))
-    (def screw-offset-tr [-2.5 8.5 0])
-    (def screw-offset-br [-6 13 0]))
+    (def screw-offset-tr [-2.5 8.5 bottom-plate-thickness])
+    (def screw-offset-br [-6 13 bottom-plate-thickness]))
 
 ; Offsets for the screw inserts dependent on thumb-style & inner-column
 (when inner-column
-    (def screw-offset-bl [14 8 0])
-    (def screw-offset-tm [9.5 -4.5 0])
-    (def screw-offset-bm [-1 -7 0]))
+    (def screw-offset-bl [14 8 bottom-plate-thickness])
+    (def screw-offset-tm [9.5 -4.5 bottom-plate-thickness])
+    (def screw-offset-bm [-1 -7 bottom-plate-thickness]))
 (when (false? inner-column)
-    (def screw-offset-bl [-3 5.5 0])
-    (def screw-offset-tm [9.5 -4.5 0])
-    (def screw-offset-bm [0 12 0]))
+    (def screw-offset-bl [-3 5.5 bottom-plate-thickness])
+    (def screw-offset-tm [9.5 -4.5 bottom-plate-thickness])
+    (def screw-offset-bm [0 12 bottom-plate-thickness]))
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
-  (union (screw-insert 0 0        bottom-radius top-radius height [6.2 10.4 0] [1 0 0]) ; red
+  (union (screw-insert 0 0        bottom-radius top-radius height [6.2 10.4 bottom-plate-thickness] [1 0 0]) ; red
          (screw-insert 0 lastrow  bottom-radius top-radius height screw-offset-bl [1 1 0]) ; yellow
          (screw-insert lastcol lastrow  bottom-radius top-radius height screw-offset-br [0 1 0]) ; green
          (screw-insert lastcol 0        bottom-radius top-radius height screw-offset-tr [0 1 1]) ; aqua
@@ -1135,7 +1137,7 @@
 
 (def plate-right
         (extrude-linear
-          {:height 2.6 :center false}
+          {:height bottom-plate-thickness :center false}
           (project
             (difference
               (union
@@ -1149,9 +1151,33 @@
                 screw-insert-outers)
               (translate [0 0 -10] screw-insert-screw-holes)))))
 
+(def plate-right-bottom
+        (extrude-linear
+          {:height bottom-plate-thickness :center false}
+          (project
+            (difference
+              (union
+                (key-holes)
+                (connectors)
+                thumb
+                thumb-connectors
+                (case-walls)
+                thumbcaps-fill
+                (caps-fill)
+                screw-insert-outers)))))
+
+(spit "things/test.scad"
+      (write-scad
+        (difference
+          model-right
+          (->> (difference
+                 plate-right-bottom
+                 (case-walls))
+               (translate [0 0 -0.1])))))
+
 (def plate-left
         (extrude-linear
-          {:height 2.6 :center false}
+          {:height bottom-plate-thickness :center false}
           (project
             (difference
               (union
