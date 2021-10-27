@@ -41,7 +41,7 @@
           (>= column 4) [0 -12 5.64]    ; original [0 -5.8 5.64]
           :else [0 0 0])))
 
-(def thumb-offsets [6 -3 7])
+(def thumb-offsets [8 -4 7])
 
 (def keyboard-z-offset 8)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
 
@@ -532,25 +532,25 @@
 ; My version of a 3-button cluster, I call it the micro cluster
 (defn thumb-r-place [shape]
   (->> shape
-       (rotate (deg2rad  14) [1 0 0])
-       (rotate (deg2rad -15) [0 1 0])
+       (rotate (deg2rad  18) [1 0 0])
+       (rotate (deg2rad -10) [0 1 0])
        (rotate (deg2rad  10) [0 0 1]) ; original 10
        (translate thumborigin)
        (translate [-15 -10 5]))) ; original 1.5u  (translate [-12 -16 3])
 (defn thumb-m-place [shape]
   (->> shape
-       (rotate (deg2rad  10) [1 0 0])
-       (rotate (deg2rad -23) [0 1 0])
+       (rotate (deg2rad  14) [1 0 0])
+       (rotate (deg2rad -18) [0 1 0])
        (rotate (deg2rad  25) [0 0 1]) ; original 10
        (translate thumborigin)
-       (translate [-35 -16 -2]))) ; original 1.5u (translate [-32 -15 -2])))
+       (translate [-35 -16 0]))) ; original 1.5u (translate [-32 -15 -2])))
 (defn thumb-l-place [shape]
   (->> shape
-       (rotate (deg2rad   6) [1 0 0])
-       (rotate (deg2rad -32) [0 1 0])
+       (rotate (deg2rad  10) [1 0 0])
+       (rotate (deg2rad -27) [0 1 0])
        (rotate (deg2rad  35) [0 0 1])
        (translate thumborigin)
-       (translate [-51 -25 -11.5]))) ;        (translate [-51 -25 -12])))
+       (translate [-51 -25 -8]))) ;        (translate [-51 -25 -12])))
 
 (defn thumb-1x-layout [shape] nil)
 
@@ -616,6 +616,7 @@
     (key-place (+ innercol-offset 3) lastrow web-post-tr)
     (key-place (+ innercol-offset 3) cornerrow web-post-br)
     )
+   ; this makes no sense here, it's not for the thumb cluster XXX
    (triangle-hulls
     (key-place (+ innercol-offset 1) cornerrow web-post-br)
     (key-place (+ innercol-offset 2) lastrow web-post-tl)
@@ -932,8 +933,8 @@
     (def screw-offset-tr [-3.5 6.5 bottom-plate-thickness])
     (def screw-offset-br [-3.5 -6.5 bottom-plate-thickness]))
 (when (and (false? pinky-15u) (false? extra-row))
-    (def screw-offset-tr [-2.5 8.5 bottom-plate-thickness])
-    (def screw-offset-br [-6 13 bottom-plate-thickness]))
+    (def screw-offset-tr [-3 8 bottom-plate-thickness])
+    (def screw-offset-br [-10 11.5 bottom-plate-thickness]))
 
 ; Offsets for the screw inserts dependent on thumb-style & inner-column
 (when inner-column
@@ -1084,7 +1085,7 @@
 
 (def wrist-rest-build
   (let [base (->> wrist-rest-base (translate [wrist_brse_position_x wrist_brse_distance_y 0])(rotate  (/ (* π wrist-rest-rotation-angle) 180)  [0 0 1]))
-        cutout (->> base (scale [0.85 0.85 0.85])(translate [0 -7 -8]))
+        cutout (->> base (scale [0.90 0.90 1.0])(translate [0 -3 -8]))
         _translate (fn [x] (translate [wrist-translate-x (- (second thumborigin) 50) 0] x))
         ]
   (difference
@@ -1166,15 +1167,6 @@
                 (caps-fill)
                 screw-insert-outers)))))
 
-(spit "things/test.scad"
-      (write-scad
-        (difference
-          model-right
-          (->> (difference
-                 plate-right-bottom
-                 (case-walls))
-               (translate [0 0 -0.1])))))
-
 (def plate-left
         (extrude-linear
           {:height bottom-plate-thickness :center false}
@@ -1191,7 +1183,22 @@
                 screw-insert-outers)
               (translate [0 0 -10] screw-insert-screw-holes)))))
 
-(def trackball (import "../trackball_bottom.stl"))
+; TODO redo this differently, use a straight cylinder also.
+
+(def trackball-stl (import "../trackball_bottom.stl"))
+
+(def trackball
+        (union
+          trackball-stl
+          (->> (sphere 17)
+               (color [1 1 1 1]))
+          ))
+
+(spit "things/test.scad"
+      (write-scad
+        (union
+          trackball
+          )))
 
 ; Trackball on the top/back of keyboard. We create a funnel as support
 ; structure and move them both by the same vector.
