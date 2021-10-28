@@ -1194,10 +1194,69 @@
                (color [1 1 1 1]))
           ))
 
+(def newtrack
+  (let [r 17
+        outer-r (+ r 4)
+        d (/ r 2)
+        c (* r 3)
+        pimple (fn [r] (->> (sphere r)
+                            (with-fn 40)))
+        cutout (hull (union
+                      (->> (cylinder 2 6)(translate [0 2 0]))
+                      (->> (cylinder 2 6)(translate [0 -2 0]))
+                ))
+        bowl (union
+               (difference
+                 (fa! 1)
+                 (fs! 1)
+                 (sphere (+ r 2))
+                 (sphere (+ r 0.1))
+                 (->> (cube c c c)
+                      (translate [0 0 (/ c 2)]))
+                 (for [deg '(0 120 240)] (->>
+                                            cutout
+                                            (translate [0 0 r])
+                                            (rotate (deg2rad 120) [1 0 0])
+                                            (rotate (deg2rad deg) [0 0 1])
+                                            ))
+                 (->> (sphere 6)(translate [0 0 (* r -1)]))
+                 )
+               (for [x [[0 1.1] [120 1.2] [240 1.3]]] (->>
+                                         (pimple (second x))
+                                         (translate [0 0 (+ r 0.6)])
+                                         (rotate (deg2rad 135) [1 0 0])
+                                         (rotate (deg2rad (+ (first x) 60)) [0 0 1])
+                                         )
+                 )
+               )
+        ring (->>
+               (difference
+                 (fa! 1)
+                 (fs! 1)
+                 (cylinder outer-r 2)
+                 (cylinder (+ r 1) 4)
+                 )
+               (translate [0 0 -1]))
+        cyl (->>
+              (difference
+                 (fa! 1)
+                 (fs! 1)
+                 (cylinder (+ outer-r 2) 50)
+                 (cylinder outer-r 51)
+                 )
+               (translate [0 0 -25]))
+        ]
+    (union
+      bowl
+      ring
+      cyl
+      )
+    ))
+
 (spit "things/test.scad"
       (write-scad
         (union
-          trackball
+          newtrack
           )))
 
 ; Trackball on the top/back of keyboard. We create a funnel as support
@@ -1260,60 +1319,60 @@
          (difference trackball-side-holder (hull (union left-wall (cube 1 1 1))))
          ))
 
-(spit "things/all-test.scad"
-      (write-scad (union
-                    (translate [130 0 0] (union model-right
-                                                (->> plate-right (translate [0 0 -30]))
-                                                thumbcaps
-                                                (caps)
-                                                wrist-rest-build
-                                                trackball-top
-                                                trackball-side
-                                                ))
-                    (translate [-130 0 0] (mirror [-1 0 0] (union
-                                                             model-left
-                                                             (->> plate-left (translate [0 0 -30]))
-                                                             thumbcaps
-                                                             (caps :extra-top-row true)
-                                                             wrist-rest-build
-                                                             ))))))
+;(spit "things/all-test.scad"
+;      (write-scad (union
+;                    (translate [130 0 0] (union model-right
+;                                                (->> plate-right (translate [0 0 -30]))
+;                                                thumbcaps
+;                                                (caps)
+;                                                wrist-rest-build
+;                                                trackball-top
+;                                                trackball-side
+;                                                ))
+;                    (translate [-130 0 0] (mirror [-1 0 0] (union
+;                                                             model-left
+;                                                             (->> plate-left (translate [0 0 -30]))
+;                                                             thumbcaps
+;                                                             (caps :extra-top-row true)
+;                                                             wrist-rest-build
+;                                                             ))))))
 
 (spit "things/right-test.scad"
       (write-scad (union model-right
-                         (->> plate-right (translate [0 0 -30]))
-                         thumbcaps
-                         (caps)
-                         wrist-rest-build
+                         ;(->> plate-right (translate [0 0 -30]))
+                         ;thumbcaps
+                         ;(caps)
+                         ;wrist-rest-build
                          trackball-top
                          trackball-side
                          )))
 
 
-(spit "things/left-test.scad"
-      (write-scad (mirror [-1 0 0]
-                          (union model-left
-                                 (->> plate-left (translate [0 0 -30]))
-                                 thumbcaps
-                                 (caps :extra-top-row true)
-                                 wrist-rest-build
-                                 ))))
+;(spit "things/left-test.scad"
+;      (write-scad (mirror [-1 0 0]
+;                          (union model-left
+;                                 (->> plate-left (translate [0 0 -30]))
+;                                 thumbcaps
+;                                 (caps :extra-top-row true)
+;                                 wrist-rest-build
+;                                 ))))
 
-(spit "things/right.scad"
-      (write-scad (union model-right trackball-top trackball-side)))
-
-(spit "things/left.scad"
-      (write-scad (mirror [-1 0 0] model-left)))
-
-(spit "things/right-plate.scad"
-      (write-scad plate-right))
-
-(spit "things/left-plate.scad"
-      (write-scad (mirror [-1 0 0] plate-left)))
-
-(spit "things/right-wrist-rest.scad"
-      (write-scad wrist-rest-build))
-
-(spit "things/left-wrist-rest.scad"
-      (write-scad (scale [-1,1,1] wrist-rest-build)))
+;(spit "things/right.scad"
+;      (write-scad (union model-right trackball-top trackball-side)))
+;
+;(spit "things/left.scad"
+;      (write-scad (mirror [-1 0 0] model-left)))
+;
+;(spit "things/right-plate.scad"
+;      (write-scad plate-right))
+;
+;(spit "things/left-plate.scad"
+;      (write-scad (mirror [-1 0 0] plate-left)))
+;
+;(spit "things/right-wrist-rest.scad"
+;      (write-scad wrist-rest-build))
+;
+;(spit "things/left-wrist-rest.scad"
+;      (write-scad (scale [-1,1,1] wrist-rest-build)))
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
