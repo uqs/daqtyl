@@ -22,24 +22,15 @@
 (def centercol 4)                       ; controls left-right tilt / tenting (higher number is more tenting)
 (def tenting-angle (/ π 9))            ; or, change this for more precise tenting control
 
-(def pinky-15u false)                   ; controls whether the outer column uses 1.5u keys
 (def first-15u-row 0)                   ; controls which should be the first row to have 1.5u keys on the outer column
 (def last-15u-row 2)                    ; controls which should be the last row to have 1.5u keys on the outer column
-
-(def extra-row false)                   ; adds an extra bottom row to the outer columns
-(def inner-column false)                ; adds an extra inner column (two less rows than nrows)
 
 (def column-style :standard)
 
 (defn column-offset [column]
-  (if inner-column
-    (cond (<= column 1) [0 -2 0]
-          (= column 3) [0 2.82 -4.5]
-          (>= column 5) [0 -12 5.64]    ; original [0 -5.8 5.64]
-          :else [0 0 0])
     (cond (= column 2) [0 2.82 -4.5]
           (>= column 4) [0 -12 5.64]    ; original [0 -5.8 5.64]
-          :else [0 0 0])))
+          :else [0 0 0]))
 
 (def thumb-offsets [8 -4 7])
 
@@ -73,8 +64,6 @@
 (def lastrow (dec nrows))
 (def cornerrow (dec lastrow))
 (def lastcol (dec ncols))
-(def extra-cornerrow (if extra-row lastrow cornerrow))
-(def innercol-offset (if inner-column 1 0))
 
 ;;;;;;;;;;;;;;;;;
 ;; Switch Hole ;;
@@ -202,11 +191,8 @@
 ;; Placement Functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def columns (range (+ innercol-offset 0) ncols))
+(def columns (range 0 ncols))
 (def rows (range 0 nrows))
-
-(def innercolumn 0)
-(def innerrows (range 0 (- nrows 2)))
 
 (def cap-top-height (+ plate-thickness sa-profile-key-height))
 (def row-radius (+ (/ (/ (+ mount-height extra-height) 2)
@@ -217,18 +203,10 @@
                       cap-top-height))
 (def column-x-delta (+ -1 (- (* column-radius (Math/sin β)))))
 
-(defn offset-for-column [col, row]
-  (if (and pinky-15u
-           (= col lastcol)
-           (<= row last-15u-row)
-           (>= row first-15u-row))
-    4.7625
-    0))
-
 (defn apply-key-geometry [translate-fn rotate-x-fn rotate-y-fn column row shape]
   (let [column-angle (* β (- centercol column))
         placed-shape (->> shape
-                          (translate-fn [(offset-for-column column, row) 0 (- row-radius)])
+                          (translate-fn [0 0 (- row-radius)])
                           (rotate-x-fn  (* α (- centerrow row)))
                           (translate-fn [0 0 row-radius])
                           (translate-fn [0 0 (- column-radius)])
@@ -286,17 +264,9 @@
          (conj
            (for [column columns
                  row rows
-                 :when (or (.contains [(+ innercol-offset 2) (+ innercol-offset 3)] column)
-                           (and (.contains [(+ innercol-offset 4) (+ innercol-offset 5)] column) extra-row (= ncols (+ innercol-offset 6)))
-                           (and (.contains [(+ innercol-offset 4)] column) extra-row (= ncols (+ innercol-offset 5)))
-                           (and inner-column (not= row cornerrow)(= column 0))
+                 :when (or (.contains [2 3] column)
                            (not= row lastrow))]
              (->> single-plate (key-place column row)))
-           ; placement for the innermost column
-           (if inner-column (apply union
-                                   (for [row innerrows]
-                                     (->> single-plate
-                                          (key-place 0 row)))))
            ; mouse keys go here, the middle one uses a different plate for the encoder
            (if extra-top-row (->> single-plate (key-place 1 -1)))
            (if extra-top-row (->> encoder-plate (key-place 2 -1)))
@@ -307,19 +277,10 @@
   (apply union
          (conj (for [column columns
                      row rows
-                     :when (or (.contains [(+ innercol-offset 2) (+ innercol-offset 3)] column)
-                               (and (.contains [(+ innercol-offset 4) (+ innercol-offset 5)] column) extra-row (= ncols (+ innercol-offset 6)))
-                               (and (.contains [(+ innercol-offset 4)] column) extra-row (= ncols (+ innercol-offset 5)))
-                               (and inner-column (not= row cornerrow)(= column 0))
+                     :when (or (.contains [2 3] column)
                                (not= row lastrow))]
-                 (->> (sa-cap (if (and pinky-15u (= column lastcol) (not= row lastrow)) 1.5 1))
+                 (->> (sa-cap 1)
                       (key-place column row)))
-               ; why is this needed, but not for the placement above?
-               (if inner-column (list (key-place 0 0 (sa-cap 1))
-                                      (key-place 0 1 (sa-cap 1))
-                                      (if (>= nrows 5) (key-place 0 2 (sa-cap 1)))
-                                      )
-                 )
                (if extra-top-row (->> (sa-cap 1) (key-place 1 -1)))
                ;not a cap, need to put an encoder wheel here) XXX
                ;(if extra-top-row (->> (sa-cap 1) (key-place 2 -1)))
@@ -331,10 +292,7 @@
   (apply union
          (conj (for [column columns
                      row rows
-                     :when (or (.contains [(+ innercol-offset 2) (+ innercol-offset 3)] column)
-                               (and (.contains [(+ innercol-offset 4) (+ innercol-offset 5)] column) extra-row (= ncols (+ innercol-offset 6)))
-                               (and (.contains [(+ innercol-offset 4)] column) extra-row (= ncols (+ innercol-offset 5)))
-                               (and inner-column (not= row cornerrow)(= column 0))
+                     :when (or (.contains [2 3] column)
                                (not= row lastrow))]
                  (key-place column row keyhole-fill))
                (if extra-top-row (key-place 1 -1 keyhole-fill))
@@ -360,17 +318,6 @@
 (def web-post-bl (translate [(+ (/ mount-width -1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] web-post))
 (def web-post-br (translate [(- (/ mount-width 1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] web-post))
 
-; wide posts for 1.5u keys in the main cluster
-(if pinky-15u
-  (do (def wide-post-tr (translate [(- (/ mount-width 1.2) post-adj)  (- (/ mount-height  2) post-adj) 0] web-post))
-    (def wide-post-tl (translate [(+ (/ mount-width -1.2) post-adj) (- (/ mount-height  2) post-adj) 0] web-post))
-    (def wide-post-bl (translate [(+ (/ mount-width -1.2) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
-    (def wide-post-br (translate [(- (/ mount-width 1.2) post-adj)  (+ (/ mount-height -2) post-adj) 0] web-post)))
-  (do (def wide-post-tr web-post-tr)
-    (def wide-post-tl web-post-tl)
-    (def wide-post-bl web-post-bl)
-    (def wide-post-br web-post-br)))
-
 (defn triangle-hulls [& shapes]
   (apply union
          (map (partial apply hull)
@@ -380,7 +327,7 @@
   (apply union
          (concat
           ;; Row connections
-          (for [column (range (+ innercol-offset 0) (dec ncols))
+          (for [column (range 0 (dec ncols))
                 row (range 0 lastrow)]
             (triangle-hulls
              (key-place (inc column) row web-post-tl)
@@ -404,97 +351,6 @@
              (key-place (inc column) row web-post-bl)
              (key-place (inc column) (inc row) web-post-tl)))
 
-          (if inner-column
-            (concat
-              ;; Row connections
-              (for [column (range 0 1)
-                    row (range 0 (- nrows 2))]
-                (triangle-hulls
-                  (key-place (inc column) row web-post-tl)
-                  (key-place column row web-post-tr)
-                  (key-place (inc column) row web-post-bl)
-                  (key-place column row web-post-br)))
-
-              ;; Column connections
-              (for [row (range 0 (dec cornerrow))]
-                (triangle-hulls
-                  (key-place innercolumn row web-post-bl)
-                  (key-place innercolumn row web-post-br)
-                  (key-place innercolumn (inc row) web-post-tl)
-                  (key-place innercolumn (inc row) web-post-tr)))
-
-              ;; Diagonal connections
-              (for [column (range 0 (dec ncols))
-                    row (range 0 2)]
-                (triangle-hulls
-                  (key-place column row web-post-br)
-                  (key-place column (inc row) web-post-tr)
-                  (key-place (inc column) row web-post-bl)
-                  (key-place (inc column) (inc row) web-post-tl)))
-              ))
-          ; Connectors between outer column and right wall when 1.5u keys are used
-          (if pinky-15u
-            (concat
-              ;; Row connections
-              (for [row (range first-15u-row (inc last-15u-row))]
-                (triangle-hulls
-                  (key-place lastcol row web-post-tr)
-                  (key-place lastcol row wide-post-tr)
-                  (key-place lastcol row web-post-br)
-                  (key-place lastcol row wide-post-br)))
-              (if-not (= last-15u-row extra-cornerrow) (for [row (range last-15u-row (inc last-15u-row))]
-                                                         (triangle-hulls
-                                                           (key-place lastcol (inc row) web-post-tr)
-                                                           (key-place lastcol row wide-post-br)
-                                                           (key-place lastcol (inc row) web-post-br))))
-              (if-not (= first-15u-row 0) (for [row (range (dec first-15u-row) first-15u-row)]
-                                            (triangle-hulls
-                                              (key-place lastcol row web-post-tr)
-                                              (key-place lastcol (inc row) wide-post-tr)
-                                              (key-place lastcol row web-post-br))))
-
-              ;; Column connections
-              (for [row (range first-15u-row last-15u-row)]
-                (triangle-hulls
-                  (key-place lastcol row web-post-br)
-                  (key-place lastcol row wide-post-br)
-                  (key-place lastcol (inc row) web-post-tr)
-                  (key-place lastcol (inc row) wide-post-tr)))
-              (if-not (= last-15u-row extra-cornerrow) (for [row (range last-15u-row (inc last-15u-row))]
-                                                         (triangle-hulls
-                                                           (key-place lastcol row web-post-br)
-                                                           (key-place lastcol row wide-post-br)
-                                                           (key-place lastcol (inc row) web-post-tr))))
-              (if-not (= first-15u-row 0) (for [row (range (dec first-15u-row) first-15u-row)]
-                                            (triangle-hulls
-                                              (key-place lastcol row web-post-br)
-                                              (key-place lastcol (inc row) wide-post-tr)
-                                              (key-place lastcol (inc row) web-post-tr))))
-              ))
-          (if extra-row
-            (concat
-              (for [column (range 3 ncols)
-                    row (range cornerrow lastrow)]
-                (triangle-hulls
-                  (key-place column row web-post-bl)
-                  (key-place column row web-post-br)
-                  (key-place column (inc row) web-post-tl)
-                  (key-place column (inc row) web-post-tr)))
-              (for [column (range 3 (dec ncols))
-                    row (range cornerrow lastrow)]
-                (triangle-hulls
-                  (key-place column row web-post-br)
-                  (key-place column (inc row) web-post-tr)
-                  (key-place (inc column) row web-post-bl)
-                  (key-place (inc column) (inc row) web-post-tl)))
-              (for [column (range 4 (dec ncols))
-                    row (range lastrow nrows)]
-                (triangle-hulls
-                  (key-place (inc column) row web-post-tl)
-                  (key-place column row web-post-tr)
-                  (key-place (inc column) row web-post-bl)
-                  (key-place column row web-post-br)))
-              ))
           (if extra-top-row
             (concat
               ;; Row connections
@@ -526,7 +382,7 @@
 
 ; Thumb cluster
 (def thumborigin
-  (map + (key-position (+ innercol-offset 1) cornerrow [(/ mount-width 2) (- (/ mount-height 2)) 0])
+  (map + (key-position 1 cornerrow [(/ mount-width 2) (- (/ mount-height 2)) 0])
        thumb-offsets))
 
 ; My version of a 3-button cluster, I call it the micro cluster
@@ -596,34 +452,34 @@
     )
    (triangle-hulls    ; top two to the main keyboard, starting on the left
     (thumb-m-place web-post-tl)
-    (key-place (+ innercol-offset 0) cornerrow web-post-bl)
+    (key-place 0 cornerrow web-post-bl)
     (thumb-m-place web-post-tr)
-    (key-place (+ innercol-offset 0) cornerrow web-post-br)
+    (key-place 0 cornerrow web-post-br)
     (thumb-r-place thumb-post-tl)
-    (key-place (+ innercol-offset 1) cornerrow web-post-bl)
+    (key-place 1 cornerrow web-post-bl)
     (thumb-r-place thumb-post-tr)
-    (key-place (+ innercol-offset 1) cornerrow web-post-br)
-    (key-place (+ innercol-offset 2) lastrow web-post-tl)
-    (key-place (+ innercol-offset 2) lastrow web-post-bl)
+    (key-place 1 cornerrow web-post-br)
+    (key-place 2 lastrow web-post-tl)
+    (key-place 2 lastrow web-post-bl)
     (thumb-r-place thumb-post-tr)
-    (key-place (+ innercol-offset 2) lastrow web-post-bl)
+    (key-place 2 lastrow web-post-bl)
     (thumb-r-place thumb-post-br)
-    (key-place (+ innercol-offset 2) lastrow web-post-br)
-    (key-place (+ innercol-offset 3) lastrow web-post-bl)
-    (key-place (+ innercol-offset 2) lastrow web-post-tr)
-    (key-place (+ innercol-offset 3) lastrow web-post-tl)
-    (key-place (+ innercol-offset 3) cornerrow web-post-bl)
-    (key-place (+ innercol-offset 3) lastrow web-post-tr)
-    (key-place (+ innercol-offset 3) cornerrow web-post-br)
+    (key-place 2 lastrow web-post-br)
+    (key-place 3 lastrow web-post-bl)
+    (key-place 2 lastrow web-post-tr)
+    (key-place 3 lastrow web-post-tl)
+    (key-place 3 cornerrow web-post-bl)
+    (key-place 3 lastrow web-post-tr)
+    (key-place 3 cornerrow web-post-br)
     )
    ; this makes no sense here, it's not for the thumb cluster XXX
    (triangle-hulls
-    (key-place (+ innercol-offset 1) cornerrow web-post-br)
-    (key-place (+ innercol-offset 2) lastrow web-post-tl)
-    (key-place (+ innercol-offset 2) cornerrow web-post-bl)
-    (key-place (+ innercol-offset 2) lastrow web-post-tr)
-    (key-place (+ innercol-offset 2) cornerrow web-post-br)
-    (key-place (+ innercol-offset 3) cornerrow web-post-bl))
+    (key-place 1 cornerrow web-post-br)
+    (key-place 2 lastrow web-post-tl)
+    (key-place 2 cornerrow web-post-bl)
+    (key-place 2 lastrow web-post-tr)
+    (key-place 2 cornerrow web-post-br)
+    (key-place 3 cornerrow web-post-bl))
    ))
 
 ;;;;;;;;;;
@@ -702,47 +558,11 @@
                    ))
 
 (def right-wall
-  (if pinky-15u
-    (union
-     ; corner between the right wall and back wall
-     (if (> first-15u-row 0)
-       (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
-       (union (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 0 1 wide-post-tr)
-              (key-wall-brace lastcol 0 0 1 wide-post-tr lastcol 0 1 0 wide-post-tr)))
-     ; corner between the right wall and front wall
-     (if (= last-15u-row extra-cornerrow)
-       (union (key-wall-brace lastcol extra-cornerrow 0 -1 web-post-br lastcol extra-cornerrow 0 -1 wide-post-br)
-              (key-wall-brace lastcol extra-cornerrow 0 -1 wide-post-br lastcol extra-cornerrow 1 0 wide-post-br))
-       (key-wall-brace lastcol extra-cornerrow 0 -1 web-post-br lastcol extra-cornerrow 1 0 web-post-br))
-
-     (if (>= first-15u-row 2)
-       (for [y (range 0 (dec first-15u-row))]
-         (union (key-wall-brace lastcol y 1 0 web-post-tr lastcol y 1 0 web-post-br)
-                (key-wall-brace lastcol y 1 0 web-post-br lastcol (inc y) 1 0 web-post-tr))))
-
-     (if (>= first-15u-row 1)
-       (for [y (range (dec first-15u-row) first-15u-row)] (key-wall-brace lastcol y 1 0 web-post-tr lastcol (inc y) 1 0 wide-post-tr)))
-
-     (for [y (range first-15u-row (inc last-15u-row))] (key-wall-brace lastcol y 1 0 wide-post-tr lastcol y 1 0 wide-post-br))
-     (for [y (range first-15u-row last-15u-row)] (key-wall-brace lastcol (inc y) 1 0 wide-post-tr lastcol y 1 0 wide-post-br))
-
-     (if (<= last-15u-row (- extra-cornerrow 1))
-       (for [y (range last-15u-row (inc last-15u-row))] (key-wall-brace lastcol y 1 0 wide-post-br lastcol (inc y) 1 0 web-post-br)))
-
-     (if (<= last-15u-row (- extra-cornerrow 2))
-       (for [y (range (inc last-15u-row) extra-cornerrow)]
-         (union (key-wall-brace lastcol y 1 0 web-post-br lastcol (inc y) 1 0 web-post-tr)
-                (key-wall-brace lastcol (inc y) 1 0 web-post-tr lastcol (inc y) 1 0 web-post-br))))
-     )
     (union (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
-           (if extra-row
-             (union (for [y (range 0 (inc lastrow))] (key-wall-brace lastcol y 1 0 web-post-tr lastcol y 1 0 web-post-br))
-                    (for [y (range 1 (inc lastrow))] (key-wall-brace lastcol (dec y) 1 0 web-post-br lastcol y 1 0 web-post-tr)))
              (union (for [y (range 0 lastrow)] (key-wall-brace lastcol y 1 0 web-post-tr lastcol y 1 0 web-post-br))
                     (for [y (range 1 lastrow)] (key-wall-brace lastcol (dec y) 1 0 web-post-br lastcol y 1 0 web-post-tr)))
-             )
-           (key-wall-brace lastcol extra-cornerrow 0 -1 web-post-br lastcol extra-cornerrow 1 0 web-post-br)
-           )))
+           (key-wall-brace lastcol cornerrow 0 -1 web-post-br lastcol cornerrow 1 0 web-post-br)
+           ))
 
 (def thumb-wall
   (union
@@ -762,29 +582,29 @@
    ; thumb tweeners
    (wall-brace thumb-r-place  0 -1 web-post-bl thumb-m-place  0 -1 web-post-br)
    (wall-brace thumb-m-place  0 -1 web-post-bl thumb-l-place  0 -1 web-post-br)
-   (wall-brace thumb-r-place  0 -1 thumb-post-br (partial key-place (+ innercol-offset 3) lastrow)  0 -1 web-post-bl)
+   (wall-brace thumb-r-place  0 -1 thumb-post-br (partial key-place 3 lastrow)  0 -1 web-post-bl)
    ; clunky bit on the top left thumb connection  (normal connectors don't work well)
    (bottom-hull
-    (left-key-place (- cornerrow innercol-offset) -1 (translate (wall-locate2 -1 0) web-post))
-    (left-key-place (- cornerrow innercol-offset) -1 (translate (wall-locate3 -1 0) web-post))
+    (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
+    (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
     (thumb-l-place (translate (wall-locate2 -0.3 1) web-post-tr))
     (thumb-l-place (translate (wall-locate3 -0.3 1) web-post-tr)))
    (hull
-    (left-key-place (- cornerrow innercol-offset) -1 (translate (wall-locate2 -1 0) web-post))
-    (left-key-place (- cornerrow innercol-offset) -1 (translate (wall-locate3 -1 0) web-post))
+    (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
+    (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
     (thumb-l-place (translate (wall-locate2 -0.3 1) web-post-tr))
     (thumb-l-place (translate (wall-locate3 -0.3 1) web-post-tr))
     (thumb-m-place web-post-tl))
    (hull
-    (left-key-place (- cornerrow innercol-offset) -1 web-post)
-    (left-key-place (- cornerrow innercol-offset) -1 (translate (wall-locate1 -1 0) web-post))
-    (left-key-place (- cornerrow innercol-offset) -1 (translate (wall-locate2 -1 0) web-post))
-    (left-key-place (- cornerrow innercol-offset) -1 (translate (wall-locate3 -1 0) web-post))
+    (left-key-place cornerrow -1 web-post)
+    (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
+    (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
+    (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
     (thumb-m-place web-post-tl))
    (hull
-    (left-key-place (- cornerrow innercol-offset) -1 web-post)
-    (left-key-place (- cornerrow innercol-offset) -1 (translate (wall-locate1 -1 0) web-post))
-    (key-place 0 (- cornerrow innercol-offset) web-post-bl)
+    (left-key-place cornerrow -1 web-post)
+    (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
+    (key-place 0 cornerrow web-post-bl)
     (thumb-m-place web-post-tl))
    (hull
     (thumb-l-place web-post-tr)
@@ -792,25 +612,7 @@
     (thumb-l-place (translate (wall-locate2 -0.3 1) web-post-tr))
     (thumb-l-place (translate (wall-locate3 -0.3 1) web-post-tr))
     (thumb-m-place web-post-tl))
-   ; connectors below the inner column to the thumb & second column
-   (if inner-column
-     (union
-      (hull
-       (key-place 0 (dec cornerrow) web-post-bl)
-       (key-place 0 (dec cornerrow) web-post-br)
-       (key-place 0 cornerrow web-post-tr))
-      (hull
-       (key-place 0 cornerrow web-post-tr)
-       (key-place 1 cornerrow web-post-tl)
-       (key-place 1 cornerrow web-post-bl))
-      (hull
-       (key-place 0 (dec cornerrow) web-post-bl)
-       (key-place 0 cornerrow web-post-tr)
-       (key-place 1 cornerrow web-post-bl))
-      (hull
-       (key-place 0 (dec cornerrow) web-post-bl)
-       (key-place 1 cornerrow web-post-bl)
-       (thumb-m-place thumb-post-tl))))))
+   ))
 
 (defn back-wall [& {:keys [extra-top-row] :or {extra-top-row false}}]
   (union
@@ -852,13 +654,13 @@
       ))))
 
 (def left-wall (union
-  (for [y (range 0 (- lastrow innercol-offset))] (union
+  (for [y (range 0 lastrow)] (union
                                                    (wall-brace (partial left-key-place y 1) -1 0 web-post (partial left-key-place y -1) -1 0 web-post)
                                                    (hull (key-place 0 y web-post-tl)
                                                          (key-place 0 y web-post-bl)
                                                          (left-key-place y  1 web-post)
                                                          (left-key-place y -1 web-post))))
-  (for [y (range 1 (- lastrow innercol-offset))] (union
+  (for [y (range 1 lastrow)] (union
                                                    (wall-brace (partial left-key-place (dec y) -1) -1 0 web-post (partial left-key-place y  1) -1 0 web-post)
                                                    (hull (key-place 0 y       web-post-tl)
                                                          (key-place 0 (dec y) web-post-bl)
@@ -871,10 +673,10 @@
 
 
 (def front-wall (union
-  (key-wall-brace (+ innercol-offset 3) lastrow  0 -1 web-post-bl (+ innercol-offset 3) lastrow   0 -1 web-post-br)
-  (key-wall-brace (+ innercol-offset 3) lastrow  0 -1 web-post-br (+ innercol-offset 4) extra-cornerrow 0 -1 web-post-bl)
-  (for [x (range (+ innercol-offset 4) ncols)] (key-wall-brace x extra-cornerrow 0 -1 web-post-bl x       extra-cornerrow 0 -1 web-post-br))
-  (for [x (range (+ innercol-offset 5) ncols)] (key-wall-brace x extra-cornerrow 0 -1 web-post-bl (dec x) extra-cornerrow 0 -1 web-post-br))
+  (key-wall-brace 3 lastrow  0 -1 web-post-bl 3 lastrow   0 -1 web-post-br)
+  (key-wall-brace 3 lastrow  0 -1 web-post-br 4 cornerrow 0 -1 web-post-bl)
+  (for [x (range 4 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl x       cornerrow 0 -1 web-post-br))
+  (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl (dec x) cornerrow 0 -1 web-post-br))
   ))
 
 (defn case-walls [& {:keys [extra-top-row] :or {extra-top-row false}}]
@@ -891,9 +693,7 @@
   (case nrows
     4 -3.5
     5 0
-    6 (if inner-column
-          3.2
-          2.2)))
+    6 2.2))
 
 (def notch-offset
   (case nrows
@@ -929,29 +729,12 @@
 
 (def bottom-plate-thickness 2.6)
 
-; Offsets for the screw inserts dependent on extra-row & pinky-15u
-(when (and pinky-15u extra-row)
-    (def screw-offset-tr [1 7 bottom-plate-thickness])
-    (def screw-offset-br [7 14 bottom-plate-thickness]))
-(when (and pinky-15u (false? extra-row))
-    (def screw-offset-tr [1 7 bottom-plate-thickness])
-    (def screw-offset-br [6.5 15.5 bottom-plate-thickness]))
-(when (and (false? pinky-15u) extra-row)
-    (def screw-offset-tr [-3.5 6.5 bottom-plate-thickness])
-    (def screw-offset-br [-3.5 -6.5 bottom-plate-thickness]))
-(when (and (false? pinky-15u) (false? extra-row))
-    (def screw-offset-tr [-3 8 bottom-plate-thickness])
-    (def screw-offset-br [-10 11.5 bottom-plate-thickness]))
+(def screw-offset-tr [-3 8 bottom-plate-thickness])
+(def screw-offset-br [-10 11.5 bottom-plate-thickness])
 
-; Offsets for the screw inserts dependent on thumb-style & inner-column
-(when inner-column
-    (def screw-offset-bl [14 8 bottom-plate-thickness])
-    (def screw-offset-tm [9.5 -4.5 bottom-plate-thickness])
-    (def screw-offset-bm [-1 -7 bottom-plate-thickness]))
-(when (false? inner-column)
-    (def screw-offset-bl [-3 5.5 bottom-plate-thickness])
-    (def screw-offset-tm [9.5 -4.5 bottom-plate-thickness])
-    (def screw-offset-bm [0 12 bottom-plate-thickness]))
+(def screw-offset-bl [-3 5.5 bottom-plate-thickness])
+(def screw-offset-tm [9.5 -4.5 bottom-plate-thickness])
+(def screw-offset-bm [0 12 bottom-plate-thickness])
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
   (union (screw-insert 0 0        bottom-radius top-radius height [6.2 10.4 bottom-plate-thickness] [1 0 0]) ; red
@@ -959,8 +742,8 @@
          (screw-insert lastcol lastrow  bottom-radius top-radius height screw-offset-br [0 1 0]) ; green
          (screw-insert lastcol 0        bottom-radius top-radius height screw-offset-tr [0 1 1]) ; aqua
          ; FIXME later
-         ;(screw-insert (+ 2 innercol-offset) 0        bottom-radius top-radius height screw-offset-tm [0 0 1]) ; blue
-         (screw-insert (+ 1 innercol-offset) lastrow  bottom-radius top-radius height screw-offset-bm [1 0 1]) ; fuchsia
+         ;(screw-insert 2 0        bottom-radius top-radius height screw-offset-tm [0 0 1]) ; blue
+         (screw-insert 1 lastrow  bottom-radius top-radius height screw-offset-bm [1 0 1]) ; fuchsia
          )
   )
 
