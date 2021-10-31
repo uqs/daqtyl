@@ -731,19 +731,19 @@
 
 (def screw-offset-tr [-3 8 bottom-plate-thickness])
 (def screw-offset-br [-10 11.5 bottom-plate-thickness])
-
+(def screw-offset-tl [6.2 10.4 bottom-plate-thickness])
 (def screw-offset-bl [-3 5.5 bottom-plate-thickness])
 (def screw-offset-tm [9.5 -4.5 bottom-plate-thickness])
 (def screw-offset-bm [0 12 bottom-plate-thickness])
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
-  (union (screw-insert 0 0        bottom-radius top-radius height [6.2 10.4 bottom-plate-thickness] [1 0 0]) ; red
+  (union (screw-insert 0 0        bottom-radius top-radius height screw-offset-tl [1 0 0]) ; red
          (screw-insert 0 lastrow  bottom-radius top-radius height screw-offset-bl [1 1 0]) ; yellow
-         (screw-insert lastcol lastrow  bottom-radius top-radius height screw-offset-br [0 1 0]) ; green
-         (screw-insert lastcol 0        bottom-radius top-radius height screw-offset-tr [0 1 1]) ; aqua
          ; FIXME later
          ;(screw-insert 2 0        bottom-radius top-radius height screw-offset-tm [0 0 1]) ; blue
          (screw-insert 1 lastrow  bottom-radius top-radius height screw-offset-bm [1 0 1]) ; fuchsia
+         (screw-insert lastcol 0        bottom-radius top-radius height screw-offset-tr [0 1 1]) ; aqua
+         (screw-insert lastcol lastrow  bottom-radius top-radius height screw-offset-br [0 1 0]) ; green
          )
   )
 
