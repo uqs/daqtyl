@@ -1183,17 +1183,6 @@
                 screw-insert-outers)
               (translate [0 0 -10] screw-insert-screw-holes)))))
 
-; TODO redo this differently, use a straight cylinder also.
-
-(def trackball-stl (import "../trackball_bottom.stl"))
-
-(def trackball
-        (union
-          trackball-stl
-          (->> (sphere 17)
-               (color [1 1 1 1]))
-          ))
-
 (def newtrack
   (let [r 17
         outer-r (+ r 4)
@@ -1237,14 +1226,15 @@
                  (cylinder (+ r 1) 4)
                  )
                (translate [0 0 -1]))
+        len 40
         cyl (->>
               (difference
                  (fa! 1)
                  (fs! 1)
-                 (cylinder (+ outer-r 2) 50)
-                 (cylinder outer-r 51)
+                 (cylinder (+ outer-r 2) len)
+                 (cylinder outer-r (+ len 1))
                  )
-               (translate [0 0 -25]))
+               (translate [0 0 (/ len -2)]))
         ]
     (union
       bowl
@@ -1253,70 +1243,35 @@
       )
     ))
 
-(spit "things/test.scad"
-      (write-scad
+
+(def trackball
         (union
           newtrack
-          )))
+          (->> (sphere 17) (color [1 1 1 1]))
+          ))
 
-; Trackball on the top/back of keyboard. We create a funnel as support
-; structure and move them both by the same vector.
-(defn move-topball [shape]
-  (->> shape
-       (translate [-30 55 40])
-       ))
-(def trackball-top-holder
-  (let [h 22 r1 22.5 r2 5]
-    (->>
-      (multmatrix [[1 0 0 0]
-                   [0 1 (deg->rad 40) 0]
-                   [(deg->rad 20) 0 1 0]]
-                  (difference (cylinder [r1 r2] h :center false)
-                              (translate [0 0 -3] (cylinder [r1 r2] h :center false))
-                              ))
-      (rotate (deg->rad 90) [1 0 0])
-      (translate [-8 -21 0])
-      (rotate (deg->rad 90) [1 0 0])
-      (translate [-30 55 40])
-      ))
-  )
+
+; Trackball on the top/back of keyboard.
 
 ; TODO: add test? var, add print out ball if set, set it in local scope for the test print, print both halves there.
 
 (def trackball-top
   (union (->> trackball
-              (rotate (deg->rad 90) [1 0 0])
-              (rotate (deg->rad 20) [0 1 0])
-              (translate [-30 55 40])
+              (translate [-30 55 30])
               (color [1 0 0 1]))
-         (difference trackball-top-holder
-                     ;(hull (union back-wall (->> (cube 1 1 1)(translate [0 -100 0]))))
-                     (->> (cube 100 100 100)(translate [0 0 -50]))
-                     )
+         ;(difference trackball-top
+         ;            ;(hull (union back-wall (->> (cube 1 1 1)(translate [0 -100 0]))))
+         ;            (->> (cube 100 100 100)(translate [0 0 -50]))
+         ;            )
          ))
 
 (defn move-sideball [shape]
   (->> shape
-       (rotate (deg->rad 90) [1 0 0])
-       (rotate (deg->rad -30) [0 0 1])
-       (rotate (deg->rad -20) [0 1 0])
-       (translate [-110 -20 70])
+       (translate [-100 -25 60])
        ))
-(def trackball-side-holder
-  (let [h 48 r1 22.9 r2 4]
-    (->> (move-sideball
-           (->> (difference (cylinder [r1 r2] h :center false)
-                            (translate [0 0 -5] (cylinder [r1 r2] h :center false))
-                            )
-                (rotate (deg->rad 90) [1 0 0])
-                (translate [0 -23.0 0])
-                )
-           ))
-    )
-  )
 (def trackball-side
   (union (->> (move-sideball trackball) (color [0 0 1 1]))
-         (difference trackball-side-holder (hull (union left-wall (cube 1 1 1))))
+         ;(difference trackball-side-holder (hull (union left-wall (cube 1 1 1))))
          ))
 
 ;(spit "things/all-test.scad"
