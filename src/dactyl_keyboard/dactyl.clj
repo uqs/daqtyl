@@ -830,8 +830,14 @@
         (color [1 0 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0.4 0.4]))
         (color [0 0 1 1] (key-wall-brace-flat 3 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0 0.4]))
         (key-wall-brace 3 -1 0 1 web-post-tl 3 -1 0 1 web-post-tr)
-        (color [1 1 0 1] (key-wall-brace 3 -1 0 1 web-post-tr 4 0 0 1 web-post-tl))
-        (key-wall-brace 4 0 0 1 web-post-tl 4 0 0 1 web-post-tr)
+        ; these use a dx=2 offset to make the wall thicker, needs also a bespoke triangle hull.
+        (color [1 1 0 1] (key-wall-brace 3 -1 0 1 web-post-tr 4 0 2 1 web-post-tl))
+        (key-wall-brace 4 0 2 1 web-post-tl 4 0 0 1 web-post-tr)
+        (color [1 0 0 1] (hull
+                           (key-place 3 -1 web-post-tr)
+                           (key-place 3  0 web-post-tr)
+                           (key-place 4  0 web-post-tl)
+                           ))
         (color [1 1 0 1] (key-wall-brace 4 0 0 1 web-post-tr 5 0 0 1 web-post-tl))
         (key-wall-brace 5 0 0 1 web-post-tl 5 0 0 1 web-post-tr)
        )
@@ -952,7 +958,8 @@
          (screw-insert 0 lastrow  bottom-radius top-radius height screw-offset-bl [1 1 0]) ; yellow
          (screw-insert lastcol lastrow  bottom-radius top-radius height screw-offset-br [0 1 0]) ; green
          (screw-insert lastcol 0        bottom-radius top-radius height screw-offset-tr [0 1 1]) ; aqua
-         (screw-insert (+ 2 innercol-offset) 0        bottom-radius top-radius height screw-offset-tm [0 0 1]) ; blue
+         ; FIXME later
+         ;(screw-insert (+ 2 innercol-offset) 0        bottom-radius top-radius height screw-offset-tm [0 0 1]) ; blue
          (screw-insert (+ 1 innercol-offset) lastrow  bottom-radius top-radius height screw-offset-bm [1 0 1]) ; fuchsia
          )
   )
@@ -1140,8 +1147,21 @@
                   ;(translate [0 0 -20] (cube 350 350 40))
                   ))
 
+; Cut away the walls from the bottom plate again, so it recedes fully. Requires sufficient keyboard-z-offset.
+(defn plate-cutout [shape & {:keys [extra-top-row] :or {extra-top-row false}}]
+  (union
+    (difference
+      shape
+      (translate [0 0 -10] screw-insert-screw-holes)
+      (translate [0 0 -3.4] plate-screw-recess)
+      (union
+        (for [xy (range 0.998 1.14 0.02)]
+          (->> (case-walls :extra-top-row extra-top-row)
+               (scale [xy xy 1.0])
+               (translate [0 0 -0.01]))))
+      )))
+
 (def plate-right
-  (difference
         (extrude-linear
           {:height bottom-plate-thickness :center false}
           (project
@@ -1155,10 +1175,7 @@
                 thumbcaps-fill
                 (caps-fill)
                 screw-insert-outers)
-              )))
-        (translate [0 0 -10] screw-insert-screw-holes)
-        (translate [0 0 -3.4] plate-screw-recess)
-        ))
+              ))))
 
 (def plate-left
   (difference
@@ -1292,7 +1309,6 @@
 
 (spit "things/right-test.scad"
       (write-scad (union model-right
-                         (->> plate-right (translate [0 0 -30]))
                          ;thumbcaps
                          ;(caps)
                          ;wrist-rest-build
