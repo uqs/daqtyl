@@ -967,6 +967,7 @@
 ; Wall Thickness W:\t1.65
 (def screw-insert-outers (screw-insert-all-shapes (+ screw-insert-bottom-radius 1.65) (+ screw-insert-top-radius 1.65) (+ screw-insert-height 1)))
 (def screw-insert-screw-holes  (screw-insert-all-shapes 1.7 1.7 350))
+(def plate-screw-recess  (screw-insert-all-shapes 3.1 1.95 2.1)) ;; creates the recess for screws in bottom plate
 
 ; Wrist rest cutout for https://github.com/crystalhand/dactyl-keyboard.git
 ;;Wrist rest to case connections
@@ -1137,6 +1138,7 @@
                   (translate [0 0 -20] (cube 350 350 40))))
 
 (def plate-right
+  (difference
         (extrude-linear
           {:height bottom-plate-thickness :center false}
           (project
@@ -1150,24 +1152,13 @@
                 thumbcaps-fill
                 (caps-fill)
                 screw-insert-outers)
-              (translate [0 0 -10] screw-insert-screw-holes)))))
-
-(def plate-right-bottom
-        (extrude-linear
-          {:height bottom-plate-thickness :center false}
-          (project
-            (difference
-              (union
-                (key-holes)
-                (connectors)
-                thumb
-                thumb-connectors
-                (case-walls)
-                thumbcaps-fill
-                (caps-fill)
-                screw-insert-outers)))))
+              )))
+        (translate [0 0 -10] screw-insert-screw-holes)
+        (translate [0 0 -3.4] plate-screw-recess)
+        ))
 
 (def plate-left
+  (difference
         (extrude-linear
           {:height bottom-plate-thickness :center false}
           (project
@@ -1181,7 +1172,11 @@
                 thumbcaps-fill
                 (caps-fill :extra-top-row true)
                 screw-insert-outers)
-              (translate [0 0 -10] screw-insert-screw-holes)))))
+              )))
+        (translate [0 0 -10] screw-insert-screw-holes)
+        (translate [0 0 -3.4] plate-screw-recess)
+        ))
+
 
 (def newtrack
   (let [r 17
@@ -1294,7 +1289,7 @@
 
 (spit "things/right-test.scad"
       (write-scad (union model-right
-                         ;(->> plate-right (translate [0 0 -30]))
+                         (->> plate-right (translate [0 0 -30]))
                          ;thumbcaps
                          ;(caps)
                          ;wrist-rest-build
