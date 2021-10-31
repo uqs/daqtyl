@@ -826,9 +826,9 @@
         (key-wall-brace 0 0 0 1 web-post-tl 0 0 0 1 web-post-tr)
         (color [1 1 0 1] (key-wall-brace 0 0 0 1 web-post-tr 1 -1 0 1 web-post-tl))
         (key-wall-brace 1 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr)
-        (color [0 1 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr [0.4 0]))
-        (color [1 0 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0.4 0.4]))
-        (color [0 0 1 1] (key-wall-brace-flat 3 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0 0.4]))
+        (color [0 1 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr [0.47 0]))
+        (color [1 0 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0.47 0.47]))
+        (color [0 0 1 1] (key-wall-brace-flat 3 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0 0.47]))
         (key-wall-brace 3 -1 0 1 web-post-tl 3 -1 0 1 web-post-tr)
         ; these use a dx=2 offset to make the wall thicker, needs also a bespoke triangle hull.
         (color [1 1 0 1] (key-wall-brace 3 -1 0 1 web-post-tr 4 0 2 1 web-post-tl))
@@ -846,9 +846,9 @@
         (for [x (range 3 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
         (for [x (range 1 2)    ] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
         (for [x (range 4 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
-        (color [0 1 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 1 0 0 1 web-post-tr [0.4 0]))
-        (color [1 0 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0.4 0.4]))
-        (color [0 0 1 1] (key-wall-brace-flat 3 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0 0.4]))
+        (color [0 1 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 1 0 0 1 web-post-tr [0.43 0]))
+        (color [1 0 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0.43 0.43]))
+        (color [0 0 1 1] (key-wall-brace-flat 3 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0 0.43]))
       ))))
 
 (def left-wall (union
