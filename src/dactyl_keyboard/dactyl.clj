@@ -43,7 +43,7 @@
 
 (def thumb-offsets [8 -4 7])
 
-(def keyboard-z-offset 8)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
+(def keyboard-z-offset 15)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
 
 (def extra-width 2.5)                   ; extra space between the base of keys; original= 2
 (def extra-height 0.5)                  ; original= 0.5
@@ -633,7 +633,9 @@
 (defn bottom [height p]
   (->> (project p)
        (extrude-linear {:height height :twist 0 :convexity 0})
-       (translate [0 0 (- (/ height 2) 10)])))
+       ; this was in the original, but it just extends everything below the xy plane and we later need to cut it off
+       ;(translate [0 0 (- (/ height 2) 10)])
+       ))
 
 (defn bottom-hull [& p]
   (hull p (bottom 0.001 p)))
@@ -760,7 +762,6 @@
    ; thumb tweeners
    (wall-brace thumb-r-place  0 -1 web-post-bl thumb-m-place  0 -1 web-post-br)
    (wall-brace thumb-m-place  0 -1 web-post-bl thumb-l-place  0 -1 web-post-br)
-   (wall-brace thumb-m-place  0  1 web-post-tl thumb-l-place  0  1 web-post-tr)
    (wall-brace thumb-r-place  0 -1 thumb-post-br (partial key-place (+ innercol-offset 3) lastrow)  0 -1 web-post-bl)
    ; clunky bit on the top left thumb connection  (normal connectors don't work well)
    (bottom-hull
@@ -1123,7 +1124,8 @@
                                  ;usb-holder-notch
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
-                   (translate [0 0 -20] (cube 350 350 40))))
+                   ;(translate [0 0 -20] (cube 350 350 40))
+                   ))
 
 (def model-left (difference
                   (union
@@ -1135,7 +1137,8 @@
                                        screw-insert-outers)
                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                 screw-insert-holes))
-                  (translate [0 0 -20] (cube 350 350 40))))
+                  ;(translate [0 0 -20] (cube 350 350 40))
+                  ))
 
 (def plate-right
   (difference
