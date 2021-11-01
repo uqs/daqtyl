@@ -645,9 +645,12 @@
        )
       (vector
         (for [x (range 0 2)    ] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
-        (for [x (range 3 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
+        (key-wall-brace 3 0 0 1 web-post-tl 3       0 0 1 web-post-tr)
+        (for [x (range 5 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
         (for [x (range 1 2)    ] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
-        (for [x (range 4 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+        (for [x (range 5 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
+        (key-wall-brace 3 0 0 1 web-post-tr 4 0 1 1 web-post-tl)
+        (key-wall-brace 4 0 1 1 web-post-tl 4 0 0 1 web-post-tr)
         (color [0 1 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 1 0 0 1 web-post-tr [0.43 0]))
         (color [1 0 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0.43 0.43]))
         (color [0 0 1 1] (key-wall-brace-flat 3 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0 0.43]))
@@ -674,8 +677,9 @@
 
 (def front-wall (union
   (key-wall-brace 3 lastrow  0 -1 web-post-bl 3 lastrow   0 -1 web-post-br)
-  (key-wall-brace 3 lastrow  0 -1 web-post-br 4 cornerrow 0 -1 web-post-bl)
-  (for [x (range 4 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl x       cornerrow 0 -1 web-post-br))
+  (key-wall-brace 3 lastrow  0 -1 web-post-br 4 cornerrow 2 -1 web-post-bl)
+  (key-wall-brace 4 cornerrow 2 -1 web-post-bl 4       cornerrow 0 -1 web-post-br)
+  (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl x       cornerrow 0 -1 web-post-br))
   (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl (dec x) cornerrow 0 -1 web-post-br))
   ))
 
