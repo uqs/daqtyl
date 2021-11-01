@@ -264,9 +264,10 @@
          (conj
            (for [column columns
                  row rows
-                 :when (or (.contains [2 3] column)
+                 :when (or (.contains [3] column)
                            (not= row lastrow))]
              (->> single-plate (key-place column row)))
+           (->> encoder-plate (key-place 2 lastrow))
            ; mouse keys go here, the middle one uses a different plate for the encoder
            (if extra-top-row (->> single-plate (key-place 1 -1)))
            (if extra-top-row (->> encoder-plate (key-place 2 -1)))
@@ -277,10 +278,12 @@
   (apply union
          (conj (for [column columns
                      row rows
-                     :when (or (.contains [2 3] column)
+                     :when (or (.contains [3] column)
                                (not= row lastrow))]
                  (->> (sa-cap 1)
                       (key-place column row)))
+               ;not a cap, need to put an encoder wheel here) XXX
+               ;(->> (sa-cap 1) (key-place 2 lastrow))
                (if extra-top-row (->> (sa-cap 1) (key-place 1 -1)))
                ;not a cap, need to put an encoder wheel here) XXX
                ;(if extra-top-row (->> (sa-cap 1) (key-place 2 -1)))
