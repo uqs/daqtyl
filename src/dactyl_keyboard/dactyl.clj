@@ -736,21 +736,14 @@
 
 (def bottom-plate-thickness 2.6)
 
-(def screw-offset-tr [-3 8 bottom-plate-thickness])
-(def screw-offset-br [-10 11.5 bottom-plate-thickness])
-(def screw-offset-tl [6.2 10.4 bottom-plate-thickness])
-(def screw-offset-bl [-3 5.5 bottom-plate-thickness])
-(def screw-offset-tm [9.5 -4.5 bottom-plate-thickness])
-(def screw-offset-bm [0 12 bottom-plate-thickness])
-
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
-  (union (screw-insert 0 0        bottom-radius top-radius height screw-offset-tl [1 0 0]) ; red
-         (screw-insert 0 lastrow  bottom-radius top-radius height screw-offset-bl [1 1 0]) ; yellow
+  (union (screw-insert 0 0        bottom-radius top-radius height [8 11 bottom-plate-thickness] [1 0 0]) ; red
+         (screw-insert 0 lastrow  bottom-radius top-radius height [-2 5 bottom-plate-thickness] [1 1 0]) ; yellow
          ; FIXME later
-         ;(screw-insert 2 0        bottom-radius top-radius height screw-offset-tm [0 0 1]) ; blue
-         (screw-insert 1 lastrow  bottom-radius top-radius height screw-offset-bm [1 0 1]) ; fuchsia
-         (screw-insert lastcol 0        bottom-radius top-radius height screw-offset-tr [0 1 1]) ; aqua
-         (screw-insert lastcol lastrow  bottom-radius top-radius height screw-offset-br [0 1 0]) ; green
+         ;(screw-insert 2 0        bottom-radius top-radius height [9.5 -4.5 bottom-plate-thickness] [0 0 1]) ; blue
+         (screw-insert 1 lastrow  bottom-radius top-radius height [6 14 bottom-plate-thickness] [1 0 1]) ; fuchsia
+         (screw-insert lastcol 0        bottom-radius top-radius height [-21 10 bottom-plate-thickness] [0 1 1]) ; aqua
+         (screw-insert lastcol lastrow  bottom-radius top-radius height [-23 12 bottom-plate-thickness] [0 1 0]) ; green
          )
   )
 
@@ -760,7 +753,8 @@
 ; Hole Diameter C: 4.1-4.4
 (def screw-insert-bottom-radius (/ 4.0 2))
 (def screw-insert-top-radius (/ 3.9 2))
-(def screw-insert-holes  (screw-insert-all-shapes screw-insert-bottom-radius screw-insert-top-radius screw-insert-height))
+(def screw-insert-holes  (->> (screw-insert-all-shapes screw-insert-bottom-radius screw-insert-top-radius screw-insert-height)
+                              (translate [0 0 -0.01])))
 
 ; Wall Thickness W:\t1.65
 (def screw-insert-outers (screw-insert-all-shapes (+ screw-insert-bottom-radius 1.65) (+ screw-insert-top-radius 1.65) (+ screw-insert-height 1)))
