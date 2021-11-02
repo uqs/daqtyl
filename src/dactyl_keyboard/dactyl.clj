@@ -140,6 +140,16 @@
                  (mirror [0 1 0])))
      )))
 
+(def encoder-cap
+  (let [x 1
+        ]
+    (->> (cylinder 6 15)
+         (rotate (deg2rad 90) [0 1 0])
+         (translate [0 0 (+ 5 8)]) ;; 8 is plate-thickness from above
+         (color [0 0 0 1])
+         )
+  ))
+
 ;;;;;;;;;;;;;;;;
 ;; SA Keycaps ;;
 ;;;;;;;;;;;;;;;;
@@ -282,11 +292,9 @@
                                (not= row lastrow))]
                  (->> (sa-cap 1)
                       (key-place column row)))
-               ;not a cap, need to put an encoder wheel here) XXX
-               ;(->> (sa-cap 1) (key-place 2 lastrow))
+               (->> encoder-cap (key-place 2 lastrow))
                (if extra-top-row (->> (sa-cap 1) (key-place 1 -1)))
-               ;not a cap, need to put an encoder wheel here) XXX
-               ;(if extra-top-row (->> (sa-cap 1) (key-place 2 -1)))
+               (if extra-top-row (->> encoder-cap (key-place 2 -1)))
                (if extra-top-row (->> (sa-cap 1) (key-place 3 -1)))
                )))
 
@@ -489,15 +497,16 @@
 ;; Case ;;
 ;;;;;;;;;;
 
-(defn bottom [height p]
+(defn bottom [p]
   (->> (project p)
-       (extrude-linear {:height height :twist 0 :convexity 0})
+       (extrude-linear {:height 1 :twist 0 :convexity 0})
        ; this was in the original, but it just extends everything below the xy plane and we later need to cut it off
-       ;(translate [0 0 (- (/ height 2) 10)])
+       ; XXX actually, not moving it down by 1mm means the object will hover above the plane
+       (translate [0 0 -1])
        ))
 
 (defn bottom-hull [& p]
-  (hull p (bottom 0.001 p)))
+  (hull p (bottom p)))
 
 (def left-wall-x-offset 4)
 (def left-wall-z-offset 1)
@@ -807,7 +816,6 @@
                                                   (translate [0 -13.4 0]))
                                   (->> (cube 18 10 201)(translate [0 -12.4 0]))))
                          ;;side fillers
-                         ;; TODO: figure out why these glitch in the OpenSCAD view, it annoys me.
                          (->> (cylinder 6.8 190)(with-fn 200) (translate [-6.15 -0.98 0]))
                          (->> (cylinder 6.8 190)(with-fn 200) (translate [6.15 -0.98 0]))
                          ;;heart shapes at bottom
@@ -823,7 +831,6 @@
 
 (def wrist-rest-base
   (->>
-    (scale [1 1 1] ;;;;scale the wrist rest to the final size after it has been cut
            (difference
              (scale [1.08 1.08 1] wrist-rest)
              (->> (cube 200 200 200)(translate [0 0 (+ (+ (/ h-offset 2) (- wrist-rest-back-height h-offset) ) 100)]) (rotate  (/ (* π wrist-rest-angle) 180)  [1 0 0])(rotate  (/ (* π wrist-rest-y-angle) 180)  [0 1 0]))
@@ -835,7 +842,7 @@
                     )
                )
              )
-           ))
+           )
   )
 
 ; These cut out the holes on the case side (so screw head sits flush), as well
@@ -868,10 +875,9 @@
 )
 
 (def wrest-wall-cut
-  (->> (for [xyz (range 1.00 10 3)];controls the scale last number needs to be lower for thinner walls
+  (->> (for [xyz (range 1.00 10 3)] ;controls the scale last number needs to be lower for thinner walls
          (union
-           (translate[1, xyz,1] (case-walls))
-           ;(translate [0 0 -3])
+           (translate [1 xyz 1] (case-walls))
            )
          )
 ))
@@ -915,7 +921,7 @@
                                  ;usb-holder-notch
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
-                   ;(translate [0 0 -20] (cube 350 350 40))
+                   cut-bottom
                    ))
 
 (def model-left (difference
@@ -928,7 +934,7 @@
                                        screw-insert-outers)
                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                 screw-insert-holes))
-                  ;(translate [0 0 -20] (cube 350 350 40))
+                  cut-bottom
                   ))
 
 ; Cut away the walls from the bottom plate again, so it recedes fully. Requires sufficient keyboard-z-offset.
@@ -1056,7 +1062,7 @@
 
 (def trackball-top
   (union (->> trackball
-              (translate [-30 55 30])
+              (translate [-30 50 (+ 30 keyboard-z-offset)])
               (color [1 0 0 1]))
          ;(difference trackball-top
          ;            ;(hull (union back-wall (->> (cube 1 1 1)(translate [0 -100 0]))))
@@ -1066,66 +1072,61 @@
 
 (defn move-sideball [shape]
   (->> shape
-       (translate [-100 -25 60])
+       (translate [-100 -25 (+ 60 keyboard-z-offset)])
        ))
 (def trackball-side
   (union (->> (move-sideball trackball) (color [0 0 1 1]))
          ;(difference trackball-side-holder (hull (union left-wall (cube 1 1 1))))
          ))
 
-;(spit "things/all-test.scad"
-;      (write-scad (union
-;                    (translate [130 0 0] (union model-right
-;                                                (->> plate-right (translate [0 0 -30]))
-;                                                thumbcaps
-;                                                (caps)
-;                                                wrist-rest-build
-;                                                trackball-top
-;                                                trackball-side
-;                                                ))
-;                    (translate [-130 0 0] (mirror [-1 0 0] (union
-;                                                             model-left
-;                                                             (->> plate-left (translate [0 0 -30]))
-;                                                             thumbcaps
-;                                                             (caps :extra-top-row true)
-;                                                             wrist-rest-build
-;                                                             ))))))
-
-(spit "things/right-test.scad"
-      (write-scad (union model-right
-                         ;thumbcaps
-                         ;(caps)
-                         ;wrist-rest-build
-                         trackball-top
-                         trackball-side
-                         )))
+(spit "things/all-test.scad"
+      (write-scad (union
+                    (translate [130 0 0] (union model-right
+                                                (->> plate-right (translate [0 0 -30]))
+                                                thumbcaps
+                                                (caps)
+                                                wrist-rest-build
+                                                trackball-top
+                                                trackball-side
+                                                ))
+                    (translate [-130 0 0] (mirror [-1 0 0] (union
+                                                             model-left
+                                                             (->> plate-left (translate [0 0 -30]))
+                                                             thumbcaps
+                                                             (caps :extra-top-row true)
+                                                             wrist-rest-build
+                                                             ))))))
 
 
-;(spit "things/left-test.scad"
-;      (write-scad (mirror [-1 0 0]
-;                          (union model-left
-;                                 (->> plate-left (translate [0 0 -30]))
-;                                 thumbcaps
-;                                 (caps :extra-top-row true)
-;                                 wrist-rest-build
-;                                 ))))
-
+(spit "things/left-test.scad"
+      (write-scad (mirror [-1 0 0]
+                          (union model-left
+                                 (->> (plate-cutout plate-left :extra-top-row true) (translate [0 0 -30]))
+                                 ;thumbcaps
+                                 ;(caps :extra-top-row true)
+                                 wrist-rest-build
+                                 ))))
+(spit "things/left.scad"
+      (write-scad (mirror [-1 0 0] model-left)))
+(spit "things/left-plate.scad"
+      (write-scad (->> (plate-cutout plate-left :extra-top-row true) (mirror [-1 0 0]))))
+(spit "things/left-palm-rest.scad"
+      (write-scad (mirror [-1 0 0] wrist-rest-build)))
+;
+;(spit "things/right-test.scad"
+;      (write-scad (union model-right
+;                         (->> (plate-cutout plate-right) (translate [0 0 -30]))
+;                         ;thumbcaps
+;                         ;(caps)
+;                         ;wrist-rest-build
+;                         trackball-top
+;                         trackball-side
+;                         )))
 ;(spit "things/right.scad"
 ;      (write-scad (union model-right trackball-top trackball-side)))
-;
-;(spit "things/left.scad"
-;      (write-scad (mirror [-1 0 0] model-left)))
-;
 ;(spit "things/right-plate.scad"
-;      (write-scad plate-right))
-;
-;(spit "things/left-plate.scad"
-;      (write-scad (mirror [-1 0 0] plate-left)))
-;
-;(spit "things/right-wrist-rest.scad"
+;      (write-scad (plate-cutout plate-right)))
+;(spit "things/right-palm-rest.scad"
 ;      (write-scad wrist-rest-build))
-;
-;(spit "things/left-wrist-rest.scad"
-;      (write-scad (scale [-1,1,1] wrist-rest-build)))
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
