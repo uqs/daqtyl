@@ -23,11 +23,13 @@ Shoutout also to the folks from OhKeycaps who inadvertently got me started on th
 ## Notable Changes
 
 - Trackball holders for the fingers of the right hand (I haven't decided on the final placement).
-- Tighter spacing, works for MT3 keycaps
-- Three button cluster based off the "mini" cluster
-- Palm rests without silicone pads
-- TODO: custom trackball holder for 2 sensors, so twisting the ball is supported.
-- 3 extra buttons for Mouse1-3. Don't ask, I got used to this setup.
+- Trackballs don't use dowels or ball bearings, but press-fit steel balls. This allows for much nicer twisting motion of the trackball (to mean wheel up/down).
+- Tighter vertical spacing, works for MT3 keycaps.
+- TODO: tighter horizontal spacing for first and last column.
+- Three button cluster based off the "mini" cluster.
+- Palm rests without silicone pads.
+- 3 extra buttons for Mouse1-3. Don't ask, I got used to this setup, my WM greatly benefits.
+- rolling rotary encoders (like a proper mouse wheel).
 
 ## Generate OpenSCAD and STL models
 
