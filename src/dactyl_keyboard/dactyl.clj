@@ -988,7 +988,7 @@
         ))
 
 
-(def newtrack
+(defn trackholder [h zdeg]
   (let [r 17
         outer-r (+ r 4)
         d (/ r 2)
@@ -1031,37 +1031,28 @@
                  (cylinder (+ r 1) 4)
                  )
                (translate [0 0 -1]))
-        len 40
+        cyl-r (/ outer-r 2)
         cyl (->>
               (difference
                  (fa! 1)
                  (fs! 1)
-                 (cylinder (+ outer-r 2) len)
-                 (cylinder outer-r (+ len 1))
+                 (cylinder [ cyl-r (+ outer-r 2) ] h)
+                 (cylinder [ cyl-r outer-r ] (+ h 1))
                  )
-               (translate [0 0 (/ len -2)]))
+               (translate [0 0 (/ h -2)]))
         ]
-    (union
-      bowl
-      ring
-      cyl
-      )
-    ))
+    (->> (union
+           bowl
+           ring
+           cyl
+           ;(sphere 17)
+           )
+         (rotate (deg2rad zdeg) [0 0 1])
+    )))
 
-
-(def trackball
-        (union
-          newtrack
-          (->> (sphere 17) (color [1 1 1 1]))
-          ))
-
-
-; Trackball on the top/back of keyboard.
-
-; TODO: add test? var, add print out ball if set, set it in local scope for the test print, print both halves there.
-
+; Trackballs on the top/back and side of keyboard.
 (def trackball-top
-  (union (->> trackball
+  (union (->> (trackholder (+ 30 keyboard-z-offset) 0)
               (translate [-30 50 (+ 30 keyboard-z-offset)])
               (color [1 0 0 1]))
          ;(difference trackball-top
@@ -1070,15 +1061,14 @@
          ;            )
          ))
 
-(defn move-sideball [shape]
-  (->> shape
-       (translate [-100 -25 (+ 60 keyboard-z-offset)])
-       ))
 (def trackball-side
-  (union (->> (move-sideball trackball) (color [0 0 1 1]))
+  (union (->> (trackholder (+ 60 keyboard-z-offset) 90)
+              (translate [-100 -25 (+ 60 keyboard-z-offset)])
+              (color [0 0 1 1]))
          ;(difference trackball-side-holder (hull (union left-wall (cube 1 1 1))))
          ))
 
+(if 0
 (spit "things/all-test.scad"
       (write-scad (union
                     (translate [130 0 0] (union model-right
@@ -1096,8 +1086,9 @@
                                                              (caps :extra-top-row true)
                                                              wrist-rest-build
                                                              ))))))
+)
 
-
+(if 0 (conj
 (spit "things/left-test.scad"
       (write-scad (mirror [-1 0 0]
                           (union model-left
@@ -1112,21 +1103,24 @@
       (write-scad (->> (plate-cutout plate-left :extra-top-row true) (mirror [-1 0 0]))))
 (spit "things/left-palm-rest.scad"
       (write-scad (mirror [-1 0 0] wrist-rest-build)))
-;
-;(spit "things/right-test.scad"
-;      (write-scad (union model-right
-;                         (->> (plate-cutout plate-right) (translate [0 0 -30]))
-;                         ;thumbcaps
-;                         ;(caps)
-;                         ;wrist-rest-build
-;                         trackball-top
-;                         trackball-side
-;                         )))
-;(spit "things/right.scad"
-;      (write-scad (union model-right trackball-top trackball-side)))
-;(spit "things/right-plate.scad"
-;      (write-scad (plate-cutout plate-right)))
-;(spit "things/right-palm-rest.scad"
-;      (write-scad wrist-rest-build))
+))
+
+(if 1 (conj
+(spit "things/right-test.scad"
+      (write-scad (union model-right
+                         (->> (plate-cutout plate-right) (translate [0 0 -30]))
+                         ;thumbcaps
+                         ;(caps)
+                         ;wrist-rest-build
+                         trackball-top
+                         trackball-side
+                         )))
+(spit "things/right.scad"
+      (write-scad (union model-right trackball-top trackball-side)))
+(spit "things/right-plate.scad"
+      (write-scad (plate-cutout plate-right)))
+(spit "things/right-palm-rest.scad"
+      (write-scad wrist-rest-build))
+))
 
 (defn -main [dum] 1)  ; dummy to make it easier to batch
