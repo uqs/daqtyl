@@ -595,13 +595,20 @@
    (bottom-hull
     (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
     (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
-    (thumb-l-place (translate (wall-locate2 -0.3 1) web-post-tr))
-    (thumb-l-place (translate (wall-locate3 -0.3 1) web-post-tr)))
+    (thumb-l-place (translate (wall-locate2 0 1) web-post-tr))
+    (thumb-l-place (translate (wall-locate3 0 1) web-post-tr))
+    )
    (hull
     (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
     (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
-    (thumb-l-place (translate (wall-locate2 -0.3 1) web-post-tr))
-    (thumb-l-place (translate (wall-locate3 -0.3 1) web-post-tr))
+    (thumb-l-place (translate (wall-locate2 0 1) web-post-tr))
+    (thumb-l-place (translate (wall-locate3 0 1) web-post-tr))
+    (thumb-m-place web-post-tl))
+   (hull
+    (thumb-l-place web-post-tr)
+    (thumb-l-place (translate (wall-locate1 0 1) web-post-tr))
+    (thumb-l-place (translate (wall-locate2 0 1) web-post-tr))
+    (thumb-l-place (translate (wall-locate3 0 1) web-post-tr))
     (thumb-m-place web-post-tl))
    ; XXX THUMB these might need to be tweaked for 1.5u keys, see also thumb-connectors
    (hull
@@ -615,12 +622,6 @@
     (left-key-place cornerrow -1 web-post)
     (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
     (key-place 0 cornerrow web-post-bl)
-    (thumb-m-place web-post-tl))
-   (hull
-    (thumb-l-place web-post-tr)
-    (thumb-l-place (translate (wall-locate1 -0.3 1) web-post-tr))
-    (thumb-l-place (translate (wall-locate2 -0.3 1) web-post-tr))
-    (thumb-l-place (translate (wall-locate3 -0.3 1) web-post-tr))
     (thumb-m-place web-post-tl))
    ))
 
@@ -848,24 +849,24 @@
 (def rest-case-cuts
   (union
     ;;right cut
-    (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 23.5 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 31.5 4.5]))
-    (->> (cube 6 3 12.2)(translate [right_wrist_connecter_x 19.0 1.5]))
+    (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 20 4.5]))
+    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 37 4.5]))
+    (->> (cube 6 3 12.2)(translate [right_wrist_connecter_x 22.0 1.5]))
     ;;middle cut
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 20 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 34.0 4.5]))
-    (->> (cube 6 3 12.2)(translate [middle_wrist_connecter_x 19.0 1.5]))
+    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 36.5 4.5]))
+    (->> (cube 6 3 12.2)(translate [middle_wrist_connecter_x 22.0 1.5]))
     ;;left
-    (->> (cylinder 1.85 60)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 21 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x (+ 29.5 nrows) 4.5]))
-    (->> (cube 6 3 12.2)(translate [left_wrist_connecter_x 19.0 1.5]))
+    (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 22 4.5]))
+    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 33.7 4.5]))
+    (->> (cube 6 3 12.2)(translate [left_wrist_connecter_x 20.0 1.5]))
     )
 )
 
 (def rest-case-connectors
   (difference
     (union
-      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 0 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 2 0])))
       (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 0 0])))
       (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 0 0])))
       )
