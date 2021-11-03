@@ -442,18 +442,13 @@
    (thumb-1x-layout single-plate)
    (thumb-15x-layout single-plate)))
 
-(def thumb-post-tr (translate [(- (/ mount-width 2) post-adj)  (- (/ mount-height  2) post-adj) 0] web-post))
-(def thumb-post-tl (translate [(+ (/ mount-width -2) post-adj) (- (/ mount-height  2) post-adj) 0] web-post))
-(def thumb-post-bl (translate [(+ (/ mount-width -2) post-adj) (+ (/ mount-height -2) post-adj) 0] web-post))
-(def thumb-post-br (translate [(- (/ mount-width 2) post-adj)  (+ (/ mount-height -2) post-adj) 0] web-post))
-
 (def thumb-connectors
   (union
    (triangle-hulls    ; top two
     (thumb-m-place web-post-tr)
     (thumb-m-place web-post-br)
-    (thumb-r-place thumb-post-tl)
-    (thumb-r-place thumb-post-bl))
+    (thumb-r-place web-post-tl)
+    (thumb-r-place web-post-bl))
    (triangle-hulls
     (thumb-m-place web-post-tl)
     (thumb-l-place web-post-tr)
@@ -462,19 +457,20 @@
     (thumb-m-place web-post-bl)
     )
    (triangle-hulls    ; top two to the main keyboard, starting on the left
+    ; XXX THUMB these might need to be tweaked for 1.5u keys, see also thumb-wall
     (thumb-m-place web-post-tl)
     (key-place 0 cornerrow web-post-bl)
     (thumb-m-place web-post-tr)
     (key-place 0 cornerrow web-post-br)
-    (thumb-r-place thumb-post-tl)
+    (thumb-r-place web-post-tl)
     (key-place 1 cornerrow web-post-bl)
-    (thumb-r-place thumb-post-tr)
+    (thumb-r-place web-post-tr)
     (key-place 1 cornerrow web-post-br)
     (key-place 2 lastrow web-post-tl)
     (key-place 2 lastrow web-post-bl)
-    (thumb-r-place thumb-post-tr)
+    (thumb-r-place web-post-tr)
     (key-place 2 lastrow web-post-bl)
-    (thumb-r-place thumb-post-br)
+    (thumb-r-place web-post-br)
     (key-place 2 lastrow web-post-br)
     (key-place 3 lastrow web-post-bl)
     (key-place 2 lastrow web-post-tr)
@@ -584,7 +580,7 @@
    ; left side
    (wall-brace thumb-l-place -1  0 web-post-tl thumb-l-place -1  0 web-post-bl)
    ; front walls
-   (wall-brace thumb-r-place  0 -1 web-post-br thumb-r-place  0 -1 thumb-post-bl)
+   (wall-brace thumb-r-place  0 -1 web-post-br thumb-r-place  0 -1 web-post-bl)
    (wall-brace thumb-m-place  0 -1 web-post-br thumb-m-place  0 -1 web-post-bl)
    (wall-brace thumb-m-place  0 -1 web-post-br thumb-m-place  0 -1 web-post-bl)
    (wall-brace thumb-l-place  0 -1 web-post-br thumb-l-place  0 -1 web-post-bl)
@@ -594,7 +590,7 @@
    ; thumb tweeners
    (wall-brace thumb-r-place  0 -1 web-post-bl thumb-m-place  0 -1 web-post-br)
    (wall-brace thumb-m-place  0 -1 web-post-bl thumb-l-place  0 -1 web-post-br)
-   (wall-brace thumb-r-place  0 -1 thumb-post-br (partial key-place 3 lastrow)  0 -1 web-post-bl)
+   (wall-brace thumb-r-place  0 -1 web-post-br (partial key-place 3 lastrow)  0 0 web-post-bl)
    ; clunky bit on the top left thumb connection  (normal connectors don't work well)
    (bottom-hull
     (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
@@ -607,12 +603,14 @@
     (thumb-l-place (translate (wall-locate2 -0.3 1) web-post-tr))
     (thumb-l-place (translate (wall-locate3 -0.3 1) web-post-tr))
     (thumb-m-place web-post-tl))
+   ; XXX THUMB these might need to be tweaked for 1.5u keys, see also thumb-connectors
    (hull
     (left-key-place cornerrow -1 web-post)
     (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
     (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
     (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
     (thumb-m-place web-post-tl))
+   ; XXX THUMB these might need to be tweaked for 1.5u keys, see also thumb-connectors
    (hull
     (left-key-place cornerrow -1 web-post)
     (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
@@ -688,8 +686,8 @@
 
 
 (def front-wall (union
-  (key-wall-brace 3 lastrow  0 -1 web-post-bl 3 lastrow   0 -1 web-post-br)
-  (key-wall-brace 3 lastrow  0 -1 web-post-br 4 cornerrow 2 -1 web-post-bl)
+  (key-wall-brace 3 lastrow  0 0 web-post-bl 3 lastrow   0 0 web-post-br)
+  (key-wall-brace 3 lastrow  0 0 web-post-br 4 cornerrow 2 -1 web-post-bl)
   (key-wall-brace 4 cornerrow 2 -1 web-post-bl 4       cornerrow 0 -1 web-post-br)
   (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl x       cornerrow 0 -1 web-post-br))
   (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl (dec x) cornerrow 0 -1 web-post-br))
