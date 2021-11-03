@@ -1039,7 +1039,11 @@
                  (cylinder [ cyl-r (+ outer-r 2) ] h)
                  (cylinder [ cyl-r outer-r ] (+ h 1))
                  )
-               (translate [0 0 (/ h -2)]))
+              (translate [0 0 (/ h -2)])
+              (multmatrix [[1 0 -0.2 0]
+                           [0 1 0.2 0]
+                           [0 0 1 0]])
+              )
         ]
     (->> (union
            bowl
@@ -1049,6 +1053,9 @@
            )
          (rotate (deg2rad zdeg) [0 0 1])
     )))
+
+(spit "things/test.scad"
+      (write-scad (trackholder 50 0)))
 
 ; Trackballs on the top/back and side of keyboard.
 (def trackball-top
@@ -1068,7 +1075,7 @@
          ;(difference trackball-side-holder (hull (union left-wall (cube 1 1 1))))
          ))
 
-(if 0
+(if nil
 (spit "things/all-test.scad"
       (write-scad (union
                     (translate [130 0 0] (union model-right
@@ -1088,7 +1095,7 @@
                                                              ))))))
 )
 
-(if 0 (conj
+(if nil (conj
 (spit "things/left-test.scad"
       (write-scad (mirror [-1 0 0]
                           (union model-left
