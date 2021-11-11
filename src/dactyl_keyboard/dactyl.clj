@@ -478,7 +478,13 @@
     (key-place 3 cornerrow web-post-bl)
     (key-place 3 lastrow web-post-tr)
     (key-place 3 cornerrow web-post-br)
+    (key-place 4 cornerrow web-post-bl)
     )
+   (triangle-hulls
+    (key-place 3 lastrow web-post-tr)
+    (key-place 3 lastrow web-post-br)
+    (key-place 3 lastrow web-post-tr)
+    (key-place 4 cornerrow web-post-bl))
    ; this makes no sense here, it's not for the thumb cluster XXX
    (triangle-hulls
     (key-place 1 cornerrow web-post-br)
@@ -638,6 +644,11 @@
         ; 0/0's top-right to 1/-1's top left, etc.
         (key-wall-brace 0 0 0 1 web-post-tl 0 0 0 1 web-post-tr)
         (color [1 1 0 1] (key-wall-brace 0 0 0 1 web-post-tr 1 -1 0 1 web-post-tl))
+        (color [1 1 0 1] (hull
+                           (key-place 1 -1 web-post-tl)
+                           (key-place 1  0 web-post-tl)
+                           (key-place 0  0 web-post-tr)
+                           ))
         (key-wall-brace 1 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr)
         (color [0 1 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr [0.47 0]))
         (color [1 0 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0.47 0.47]))
