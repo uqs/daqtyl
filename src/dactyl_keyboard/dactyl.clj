@@ -999,16 +999,19 @@
 
 
 (defn trackholder [h zdeg]
-  (let [r 17
+  (let [r 17.5
         outer-r (+ r 4)
         d (/ r 2)
         c (* r 3)
+        ; steel balls will be glued in here
         pimple (fn [r] (->> (sphere r)
                             (with-fn 40)))
+        ; the cutout for the sensor
         cutout (hull (union
-                      (->> (cylinder 2 6)(translate [0 2 0]))
-                      (->> (cylinder 2 6)(translate [0 -2 0]))
+                      (->> (cylinder 2 6)(translate [2 0 0]))
+                      (->> (cylinder 2 6)(translate [-2 0 0]))
                 ))
+        ; where the ball will sit
         bowl (union
                (difference
                  (fa! 1)
@@ -1017,22 +1020,25 @@
                  (sphere (+ r 0.1))
                  (->> (cube c c c)
                       (translate [0 0 (/ c 2)]))
-                 (for [deg '(0 120 240)] (->>
+                 (for [deg '(0)] (->>
                                             cutout
                                             (translate [0 0 r])
-                                            (rotate (deg2rad 120) [1 0 0])
+                                            (rotate (deg2rad 135) [1 0 0])
                                             (rotate (deg2rad deg) [0 0 1])
                                             ))
-                 (->> (sphere 6)(translate [0 0 (* r -1)]))
+                 ; through hole to the bottom
+                 (->> (cylinder 6 10)(translate [0 0 (* r -1)]))
                  )
-               (for [x [[0 1.1] [120 1.2] [240 1.3]]] (->>
+               ; three balls to meld/glue steel balls into
+               (for [x [[0 2] [120 2] [240 2]]] (->>
                                          (pimple (second x))
-                                         (translate [0 0 (+ r 0.6)])
+                                         (translate [0 0 (+ r 1.0)])
                                          (rotate (deg2rad 135) [1 0 0])
                                          (rotate (deg2rad (+ (first x) 60)) [0 0 1])
                                          )
                  )
                )
+        ; top outer rim connecting to the cylinder
         ring (->>
                (difference
                  (fa! 1)
@@ -1041,17 +1047,18 @@
                  (cylinder (+ r 1) 4)
                  )
                (translate [0 0 -1]))
+        ; the hollow cylinder
         cyl-r (/ outer-r 2)
         cyl (->>
               (difference
                  (fa! 1)
                  (fs! 1)
-                 (cylinder [ cyl-r (+ outer-r 2) ] h)
+                 (cylinder [ (+ cyl-r 2) (+ outer-r 2) ] h)
                  (cylinder [ cyl-r outer-r ] (+ h 1))
                  )
               (translate [0 0 (/ h -2)])
-              (multmatrix [[1 0 -0.2 0]
-                           [0 1 0.2 0]
+              (multmatrix [[1 0 -0.15 0]
+                           [0 1 0.15 0]
                            [0 0 1 0]])
               )
         ]
@@ -1059,13 +1066,17 @@
            bowl
            ring
            cyl
-           ;(sphere 17)
+           (->> (sphere 17)(with-fn 60)(translate [0 0 0.8]))
            )
          (rotate (deg2rad zdeg) [0 0 1])
     )))
 
 (spit "things/test.scad"
-      (write-scad (trackholder 50 0)))
+      (write-scad (difference
+                    (trackholder 50 0)
+                    (->> (cube 100 100 100)
+                         (translate [50 0 0]))
+                    )))
 
 ; Trackballs on the top/back and side of keyboard.
 (def trackball-top
