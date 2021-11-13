@@ -34,7 +34,7 @@
 
 (def thumb-offsets [8 -4 7])
 
-(def keyboard-z-offset 15)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
+(def keyboard-z-offset 9)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
 
 (def extra-width 2.5)                   ; extra space between the base of keys; original= 2
 (def extra-height 0.5)                  ; original= 0.5
@@ -770,8 +770,8 @@
 (def screw-insert-height 6)
 
 ; Hole Diameter C: 4.1-4.4
-(def screw-insert-bottom-radius (/ 4.0 2))
-(def screw-insert-top-radius (/ 3.9 2))
+(def screw-insert-bottom-radius (/ 4.2 2))
+(def screw-insert-top-radius (/ 4.0 2))
 (def screw-insert-holes  (->> (screw-insert-all-shapes screw-insert-bottom-radius screw-insert-top-radius screw-insert-height)
                               (translate [0 0 -0.01])))
 
@@ -955,7 +955,7 @@
       (translate [0 0 -10] screw-insert-screw-holes)
       (translate [0 0 -3.4] plate-screw-recess)
       (union
-        (for [xy (range 0.998 1.14 0.02)]
+        (for [xy (range 0.994 1.14 0.02)]
           (->> (case-walls :extra-top-row extra-top-row)
                (scale [xy xy 1.0])
                (translate [0 0 -0.01]))))
