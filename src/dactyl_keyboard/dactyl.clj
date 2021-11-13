@@ -1049,33 +1049,58 @@
                (translate [0 0 -1]))
         ; the hollow cylinder
         cyl-r (/ outer-r 2)
+        ; cutout to reach the sensor board
+        sensor-wall-cut (->> (cube 30 23 20)
+                             (translate [0 (- -1 r) (- (/ h 4) 3)]))
         cyl (->>
-              (difference
+              (union (difference
                  (fa! 1)
                  (fs! 1)
                  (cylinder [ (+ cyl-r 2) (+ outer-r 2) ] h)
                  (cylinder [ cyl-r outer-r ] (+ h 1))
+                 sensor-wall-cut
+                 )
                  )
               (translate [0 0 (/ h -2)])
-              (multmatrix [[1 0 -0.15 0]
+              (multmatrix [[1 0 -0.0 0]
                            [0 1 0.15 0]
                            [0 0 1 0]])
               )
+        ; PWM3360 board
+        sensor (difference
+                 (->> (difference
+                        (union
+                          (->> (cube 2 12 30 :center false)(translate [-14 -14 -20]))
+                          (->> (cube 2 12 26 :center false)(translate [ 12 -14 -20]))
+                          )
+                        ; actual max dimensions, but much thinner on the side.
+                        ;(cube 28.5 21.5 6.7)
+                        ; cut away the sensor cube from the supports, then also a window
+                        (->> (cube 28.5 21.5 4)(translate [0 0 (/ (- 6.7 4) 2)]))
+                        (->> (cube 28.5 21.5 10)(translate [0 3 6]))
+                        ; cut off things that would stick out, ugh, this is horrilby hacky
+                        (->> (cube 28.5 12 6)(rotate (deg2rad -35) [1 0 0])(translate [0 -9 10]))
+                        )
+                      (translate [0 0 (+ 5.35 r)]) ; half cube width plus thickness
+                      (rotate (deg2rad 135) [1 0 0])
+                      )
+                 (->> (sphere (+ r 1))(with-fn 60))
+                 )
         ]
     (->> (union
            bowl
            ring
            cyl
+           sensor
            (->> (sphere 17)(with-fn 60)(translate [0 0 0.8]))
            )
          (rotate (deg2rad zdeg) [0 0 1])
     )))
 
-(spit "things/test.scad"
+(spit "things/trackball-test.scad"
       (write-scad (difference
                     (trackholder 50 0)
-                    (->> (cube 100 100 100)
-                         (translate [50 0 0]))
+                    (->> (cube 100 200 200)(translate [50 0 0]))
                     )))
 
 ; Trackballs on the top/back and side of keyboard.
