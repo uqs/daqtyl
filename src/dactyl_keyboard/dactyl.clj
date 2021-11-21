@@ -278,7 +278,9 @@
                  :when (or (.contains [3] column)
                            (not= row lastrow))]
              (->> single-plate (key-place column row)))
-           (->> encoder-plate (key-place 2 lastrow))
+           ; XXX not symmetrical, the right side needs to rotate this 180!
+           (if extra-top-row (->> encoder-plate (key-place 2 lastrow))
+             (->> single-plate (key-place 2 lastrow)))
            ; mouse keys go here, the middle one uses a different plate for the encoder
            (if extra-top-row (->> single-plate (key-place 1 -1)))
            (if extra-top-row (->> encoder-plate (key-place 2 -1)))
@@ -291,9 +293,9 @@
                      row rows
                      :when (or (.contains [3] column)
                                (not= row lastrow))]
-                 (->> (sa-cap 1)
-                      (key-place column row)))
-               (->> encoder-cap (key-place 2 lastrow))
+                 (->> (sa-cap 1) (key-place column row)))
+               (if extra-top-row (->> encoder-cap (key-place 2 lastrow))
+                 (->> (sa-cap 1) (key-place 2 lastrow)))
                (if extra-top-row (->> (sa-cap 1) (key-place 1 -1)))
                (if extra-top-row (->> encoder-cap (key-place 2 -1)))
                (if extra-top-row (->> (sa-cap 1) (key-place 3 -1)))
