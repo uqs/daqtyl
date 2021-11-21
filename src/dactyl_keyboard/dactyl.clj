@@ -33,7 +33,7 @@
           (>= column 4) [0 -14 5.64]    ; original [0 -5.8 5.64]
           :else [0 0 0]))
 
-(def thumb-offsets [8 -4 7])
+(def thumb-offsets [10 -4 7])
 
 (def keyboard-z-offset 9)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
 
@@ -400,25 +400,25 @@
 ; My version of a 3-button cluster, I call it the micro cluster
 (defn thumb-r-place [shape]
   (->> shape
-       (rotate (deg2rad  18) [1 0 0])
-       (rotate (deg2rad -10) [0 1 0])
-       (rotate (deg2rad  10) [0 0 1]) ; original 10
+       (rotate (deg2rad  10) [1 0 0])
+       (rotate (deg2rad  -5) [0 1 0])
+       (rotate (deg2rad  15) [0 0 1])
        (translate thumborigin)
-       (translate [-15 -10 5]))) ; original 1.5u  (translate [-12 -16 3])
+       (translate [-15 -8 3])))
 (defn thumb-m-place [shape]
   (->> shape
-       (rotate (deg2rad  14) [1 0 0])
-       (rotate (deg2rad -18) [0 1 0])
-       (rotate (deg2rad  25) [0 0 1]) ; original 10
+       (rotate (deg2rad  10) [1 0 0])
+       (rotate (deg2rad   0) [0 1 0])
+       (rotate (deg2rad  25) [0 0 1])
        (translate thumborigin)
-       (translate [-35 -16 0]))) ; original 1.5u (translate [-32 -15 -2])))
+       (translate [-34 -15 2.2])))
 (defn thumb-l-place [shape]
   (->> shape
        (rotate (deg2rad  10) [1 0 0])
-       (rotate (deg2rad -27) [0 1 0])
+       (rotate (deg2rad   5) [0 1 0])
        (rotate (deg2rad  35) [0 0 1])
        (translate thumborigin)
-       (translate [-51 -25 -8]))) ;        (translate [-51 -25 -12])))
+       (translate [-51 -25 3])))
 
 (defn thumb-1x-layout [shape] nil)
 
@@ -589,7 +589,6 @@
    ; front walls
    (wall-brace thumb-r-place  0 -1 web-post-br thumb-r-place  0 -1 web-post-bl)
    (wall-brace thumb-m-place  0 -1 web-post-br thumb-m-place  0 -1 web-post-bl)
-   (wall-brace thumb-m-place  0 -1 web-post-br thumb-m-place  0 -1 web-post-bl)
    (wall-brace thumb-l-place  0 -1 web-post-br thumb-l-place  0 -1 web-post-bl)
    ; thumb corners
    (wall-brace thumb-l-place -1  0 web-post-bl thumb-l-place  0 -1 web-post-bl)
@@ -758,7 +757,7 @@
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
   (union (screw-insert 0 0        bottom-radius top-radius height [9 10.5 bottom-plate-thickness] [1 0 0]) ; red
-         (screw-insert 0 lastrow  bottom-radius top-radius height [-1 5 bottom-plate-thickness] [1 1 0]) ; yellow
+         (screw-insert 0 lastrow  bottom-radius top-radius height [0 5 bottom-plate-thickness] [1 1 0]) ; yellow
          ; FIXME later
          ;(screw-insert 2 0        bottom-radius top-radius height [9.5 -4.5 bottom-plate-thickness] [0 0 1]) ; blue
          (screw-insert 1 lastrow  bottom-radius top-radius height [5 15 bottom-plate-thickness] [1 0 1]) ; fuchsia
