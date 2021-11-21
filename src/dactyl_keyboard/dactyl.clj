@@ -14,7 +14,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;
 
 (def nrows 4)
-(def ncols 6)
+(def ncols 5)
 
 (def α (/ π 12))                        ; curvature of the columns
 (def β (/ π 36))                        ; curvature of the rows
@@ -35,7 +35,9 @@
 
 (def thumb-offsets [10 -4 7])
 
-(def keyboard-z-offset 9)               ; controls overall height; original=9 with centercol=3; use 16 for centercol=2
+; controls overall height; original=9 with centercol=3; use 16 for centercol=2
+(def keyboard-z-offset (cond (= ncols 6) 9
+                             (= ncols 5) 3))
 
 (def extra-width 2.5)                   ; extra space between the base of keys; original= 2
 (def extra-height 0.5)                  ; original= 0.5
@@ -664,8 +666,11 @@
                            (key-place 3  0 web-post-tr)
                            (key-place 4  0 web-post-tl)
                            ))
-        (color [1 1 0 1] (key-wall-brace 4 0 0 1 web-post-tr 5 0 0 1 web-post-tl))
-        (key-wall-brace 5 0 0 1 web-post-tl 5 0 0 1 web-post-tr)
+        (cond
+          (= lastcol 5) (union
+                          (color [1 1 0 1] (key-wall-brace 4 0 0 1 web-post-tr 5 0 0 1 web-post-tl))
+                          (key-wall-brace 5 0 0 1 web-post-tl 5 0 0 1 web-post-tr)
+                          ))
        )
       (vector
         (for [x (range 0 2)    ] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
@@ -763,8 +768,8 @@
          ; FIXME later
          ;(screw-insert 2 0        bottom-radius top-radius height [9.5 -4.5 bottom-plate-thickness] [0 0 1]) ; blue
          (screw-insert 1 lastrow  bottom-radius top-radius height [5 15 bottom-plate-thickness] [1 0 1]) ; fuchsia
-         (screw-insert lastcol 0        bottom-radius top-radius height [-21 9 bottom-plate-thickness] [0 1 1]) ; aqua
-         (screw-insert lastcol lastrow  bottom-radius top-radius height [-23 13 bottom-plate-thickness] [0 1 0]) ; green
+         (screw-insert lastcol 0        bottom-radius top-radius height [-21 (cond (= lastcol 4) 13 (= lastcol 5) 9) bottom-plate-thickness] [0 1 1]) ; aqua
+         (screw-insert lastcol lastrow  bottom-radius top-radius height [-21 13 bottom-plate-thickness] [0 1 0]) ; green
          )
   )
 
