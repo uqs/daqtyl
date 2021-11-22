@@ -122,7 +122,7 @@
 
 ; plate structure for the EVQWGD001 rotary encoder
 (def encoder-plate
-  (let [plate-thickness 8
+  (let [plate-thickness 3
         top-wall (->> (cube (+ encoder-width 3) 1.5 (+ plate-thickness 0.5))
                       (translate [0
                                   (+ (/ 1.5 2) (/ encoder-height 2))
@@ -132,16 +132,20 @@
                                    0
                                    (- (/ plate-thickness 2) 0.25)]))
         plate-half (union top-wall left-wall)
-        bridge (->> (cube 8 (+ encoder-height 3) (/ plate-thickness 3))
-                    (translate [0 0 (- plate-thickness (/ plate-thickness 6))]))
+        bridge (->> (cube 8 (+ encoder-height 2) (/ plate-thickness 5))
+                    (translate [-2 0 (- plate-thickness (/ plate-thickness 10))]))
         ]
-    (difference
+    (->>
      (union plate-half
             bridge
             (->> plate-half
                  (mirror [1 0 0])
                  (mirror [0 1 0])))
+     (translate [0 0 4])
      )))
+
+(spit "things/encoder-test.scad"
+      (write-scad encoder-plate))
 
 (def encoder-cap
   (let [x 1
