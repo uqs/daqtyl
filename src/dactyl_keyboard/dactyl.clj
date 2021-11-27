@@ -380,30 +380,47 @@
 
           (if extra-top-row
             (concat
-              ;; Row connections
-              (for [column (range 1 3)
-                    row [-1]]
+              ;; Row connections for the encoder plate, offset by 3.5mm
+              (for [column [1] row [-1]]
                 (triangle-hulls
-                  (key-place (inc column) row web-post-tl)
-                  (key-place column row web-post-tr)
-                  (key-place (inc column) row web-post-bl)
-                  (key-place column row web-post-br)))
+                  (key-place (inc column) row (->> web-post-tl (translate [-1 0 3.5])))
+                  (key-place column row (->> web-post-tr ))
+                  (key-place (inc column) row (->> web-post-bl (translate [-1 0 3.5])))
+                  (key-place column row (->> web-post-br )))
+                )
+              (for [column [2] row [-1]]
+                (triangle-hulls
+                  (key-place (inc column) row (->> web-post-tl (translate [0 0 0])))
+                  (key-place column row (->> web-post-tr (translate [1 0 3.5])))
+                  (key-place (inc column) row (->> web-post-bl (translate [0 0 0])))
+                  (key-place column row (->> web-post-br (translate [1 0 3.5]))))
+                )
               ;; Column connections
-              (for [column (range 1 4)
-                    row [-1]]
+              (for [column (range 1 4) row [-1]]
+                (let [z-offset (cond (= column 2) [0 0 3] :else [0 0 0])]
                 (triangle-hulls
-                  (key-place column row web-post-bl)
-                  (key-place column row web-post-br)
+                  (key-place column row (->> web-post-bl (translate z-offset)))
+                  (key-place column row (->> web-post-br (translate z-offset)))
                   (key-place column (inc row) web-post-tl)
-                  (key-place column (inc row) web-post-tr)))
+                  (key-place column (inc row) web-post-tr)
+                  )))
               ;; Diagonal connections
-              (for [column (range 1 3)
-                    row [-1]]
+              (for [column [1] row [-1]]
+                (let [z-offset [0 0 3]]
                 (triangle-hulls
                   (key-place column row web-post-br)
                   (key-place column (inc row) web-post-tr)
+                  (key-place (inc column) row (->> web-post-bl (translate z-offset)))
+                  (key-place (inc column) (inc row) web-post-tl)
+                  )))
+              (for [column [2] row [-1]]
+                (let [z-offset [0 0 3]]
+                (triangle-hulls
+                  (key-place column row (->> web-post-br (translate z-offset)))
+                  (key-place column (inc row) web-post-tr)
                   (key-place (inc column) row web-post-bl)
-                  (key-place (inc column) (inc row) web-post-tl)))
+                  (key-place (inc column) (inc row) web-post-tl)
+                  )))
               ))
           )))
 
@@ -458,7 +475,11 @@
    (thumb-1x-layout single-plate)
    (thumb-15x-layout single-plate)))
 
-(def thumb-connectors
+(defn thumb-connectors [& {:keys [encoder] :or {encoder false}}]
+  (let [z-offset (cond encoder [0 0 3] :else [0 0 0])
+        wide-left (cond encoder [-1 0 0] :else [0 0 0])
+        wide-right (cond encoder [1 0 0] :else [0 0 0])
+        ]
   (union
    (triangle-hulls    ; top two
     (thumb-m-place web-post-tr)
@@ -482,34 +503,48 @@
     (key-place 1 cornerrow web-post-bl)
     (thumb-r-place web-post-tr)
     (key-place 1 cornerrow web-post-br)
-    (key-place 2 lastrow web-post-tl)
-    (key-place 2 lastrow web-post-bl)
-    (thumb-r-place web-post-tr)
-    (key-place 2 lastrow web-post-bl)
-    (thumb-r-place web-post-br)
-    (key-place 2 lastrow web-post-br)
-    (key-place 3 lastrow web-post-bl)
-    (key-place 2 lastrow web-post-tr)
-    (key-place 3 lastrow web-post-tl)
-    (key-place 3 cornerrow web-post-bl)
-    (key-place 3 lastrow web-post-tr)
-    (key-place 3 cornerrow web-post-br)
-    (key-place 4 cornerrow web-post-bl)
     )
-   (triangle-hulls
-    (key-place 3 lastrow web-post-tr)
-    (key-place 3 lastrow web-post-br)
-    (key-place 3 lastrow web-post-tr)
-    (key-place 4 cornerrow web-post-bl))
-   ; this makes no sense here, it's not for the thumb cluster XXX
-   (triangle-hulls
+   ; snaking around the first extra key
+   (color [0 1 0 1] (triangle-hulls
+    (thumb-r-place web-post-tr)
     (key-place 1 cornerrow web-post-br)
-    (key-place 2 lastrow web-post-tl)
-    (key-place 2 cornerrow web-post-bl)
-    (key-place 2 lastrow web-post-tr)
-    (key-place 2 cornerrow web-post-br)
-    (key-place 3 cornerrow web-post-bl))
-   ))
+    (key-place 2 lastrow (->> web-post-tl (translate wide-left)(translate z-offset)))
+    (thumb-r-place web-post-tr)
+    (key-place 2 lastrow (->> web-post-bl (translate wide-left)(translate z-offset)))
+    (thumb-r-place web-post-tr)
+    (key-place 2 lastrow (->> web-post-bl (translate wide-left)(translate z-offset)))
+    (thumb-r-place web-post-br)
+    (key-place 2 lastrow (->> web-post-br (translate wide-right)(translate z-offset)))
+    (key-place 3 lastrow (->> web-post-bl (translate [0 0 0])))
+    (key-place 2 lastrow (->> web-post-tr (translate wide-right)(translate z-offset)))
+    (key-place 3 lastrow (->> web-post-tl (translate [0 0 0])))
+    ))
+   ; snaking around the second extra key
+   (triangle-hulls
+     (key-place 3 lastrow web-post-tr)
+     (key-place 3 lastrow web-post-br)
+     (key-place 3 lastrow web-post-tr)
+     (key-place 4 cornerrow web-post-bl))
+   ; connect first extra key to regular matrix
+   (color [1 0 1 1] (triangle-hulls
+                      (key-place 1 cornerrow web-post-br)
+                      (key-place 2 lastrow (->> web-post-tl (translate z-offset)))
+                      (key-place 2 cornerrow web-post-bl)
+                      (key-place 2 lastrow (->> web-post-tr (translate z-offset)))
+                      (key-place 2 cornerrow web-post-br)
+                      (key-place 3 cornerrow web-post-bl)
+                      (key-place 2 lastrow (->> web-post-tr (translate z-offset)))
+                      (key-place 3 lastrow web-post-tl)
+                      ))
+   ; connect second extra key to regular matrix
+   (color [1 1 0 1] (triangle-hulls
+                      (key-place 3 lastrow web-post-tl)
+                      (key-place 3 cornerrow web-post-bl)
+                      (key-place 3 lastrow web-post-tr)
+                      (key-place 3 cornerrow web-post-br)
+                      (key-place 4 cornerrow web-post-bl)
+                      ))
+   )))
 
 ;;;;;;;;;;
 ;; Case ;;
@@ -941,7 +976,7 @@
                      (key-holes)
                      (connectors)
                      thumb
-                     thumb-connectors
+                     (thumb-connectors)
                      (difference (union (case-walls)
                                         screw-insert-outers)
                                  ;usb-holder-space
@@ -957,7 +992,7 @@
                     (key-holes :extra-top-row true)
                     (connectors :extra-top-row true)
                     thumb
-                    thumb-connectors
+                    (thumb-connectors :encoder true)
                     (difference (union (case-walls :extra-top-row true)
                                        screw-insert-outers)
                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
