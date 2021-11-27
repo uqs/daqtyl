@@ -75,7 +75,7 @@
 (def keyswitch-height 14.15)
 (def keyswitch-width 14.15)
 (def encoder-height 14.15)
-(def encoder-width 16.15)
+(def encoder-width 17.15)
 
 (def sa-profile-key-height 12.7)
 
@@ -127,22 +127,29 @@
                       (translate [0
                                   (+ (/ 1.5 2) (/ encoder-height 2))
                                   (- (/ plate-thickness 2) 0.25)]))
-        left-wall (->> (cube 1.8 (+ encoder-height 3) (+ plate-thickness 0.5))
+        left-wall (->> (cube 1.2 (+ encoder-height 3) (+ plate-thickness 0.5))
                        (translate [(+ (/ 1.8 2) (/ encoder-width 2))
                                    0
                                    (- (/ plate-thickness 2) 0.25)]))
         plate-half (union top-wall left-wall)
-        bridge (->> (cube 8 (+ encoder-height 2) (/ plate-thickness 5))
-                    (translate [-2 0 (- plate-thickness (/ plate-thickness 10))]))
+        bridge (->> (->> (difference
+                           (cube 8 (+ encoder-height 2) (/ plate-thickness 5))
+                           ; cutouts for little nubs
+                           (->> (cube 2 2 2) (translate [-4 3 0]))
+                           (->> (cube 2 2 2) (translate [-4 -4 0]))
+                           ))
+                    (translate [-2.5 0 (- plate-thickness (/ plate-thickness 4))]))
         ]
     (->>
-     (union plate-half
-            bridge
-            (->> plate-half
-                 (mirror [1 0 0])
-                 (mirror [0 1 0])))
-     (translate [0 0 4])
-     )))
+      (difference (union plate-half
+                    bridge
+                    (->> plate-half
+                         (mirror [1 0 0])
+                         (mirror [0 1 0])))
+                  ; carve out a corner for better access to the pins
+             (->> (cube 3 3 8 :center false)(rotate (deg2rad 90)[0 0 1])(translate [9.5 -7.8 -4])))
+             (translate [0 0 4])
+             )))
 
 (spit "things/encoder-test.scad"
       (write-scad encoder-plate))
@@ -285,7 +292,7 @@
                            (not= row lastrow))]
              (->> single-plate (key-place column row)))
            ; XXX not symmetrical, the right side needs to rotate this 180!
-           (if extra-top-row (->> encoder-plate (key-place 2 lastrow))
+           (if extra-top-row (->> (->> encoder-plate (rotate (deg2rad 180) [0 0 1])) (key-place 2 lastrow))
              (->> single-plate (key-place 2 lastrow)))
            ; mouse keys go here, the middle one uses a different plate for the encoder
            (if extra-top-row (->> single-plate (key-place 1 -1)))
