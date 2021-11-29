@@ -164,6 +164,8 @@
          )
   ))
 
+(def encoder-fill (hull encoder-plate))
+
 ;;;;;;;;;;;;;;;;
 ;; SA Keycaps ;;
 ;;;;;;;;;;;;;;;;
@@ -322,12 +324,11 @@
                      :when (or (.contains [2 3] column)
                                (not= row lastrow))]
                  (key-place column row keyhole-fill))
+               (if extra-top-row (key-place 2 lastrow encoder-fill))
                (if extra-top-row (key-place 1 -1 keyhole-fill))
-               (if extra-top-row (key-place 2 -1 keyhole-fill))
+               (if extra-top-row (key-place 2 -1 encoder-fill))
                (if extra-top-row (key-place 3 -1 keyhole-fill))
-               (list (key-place 0 0 keyhole-fill)
-                     (key-place 0 1 keyhole-fill)
-                     (key-place 0 2 keyhole-fill)))))
+               )))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Web Connectors ;;
