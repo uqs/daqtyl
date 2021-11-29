@@ -811,7 +811,7 @@
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
   (union (screw-insert 0 0        bottom-radius top-radius height [9 10.5 bottom-plate-thickness] [1 0 0]) ; red
-         (screw-insert 0 lastrow  bottom-radius top-radius height [0 5 bottom-plate-thickness] [1 1 0]) ; yellow
+         (screw-insert 0 lastrow  bottom-radius top-radius height [0 2 bottom-plate-thickness] [1 1 0]) ; yellow
          ; FIXME later
          ;(screw-insert 2 0        bottom-radius top-radius height [9.5 -4.5 bottom-plate-thickness] [0 0 1]) ; blue
          (screw-insert 1 lastrow  bottom-radius top-radius height [5 15 bottom-plate-thickness] [1 0 1]) ; fuchsia
@@ -931,9 +931,9 @@
 (def rest-case-connectors
   (difference
     (union
-      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 2 0])))
-      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 0 0])))
-      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 0 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate (/ π 2) [1 0 0])(translate [right_wrist_connecter_x 2 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate (/ π 2) [1 0 0])(translate [middle_wrist_connecter_x 2 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate (/ π 2) [1 0 0])(translate [left_wrist_connecter_x -1 0])))
       )
     )
 )
@@ -963,7 +963,6 @@
            )
          _translate
          )
-    (_translate rest-case-cuts)
     wrest-wall-cut
     (_translate cutout)
     )
@@ -1009,7 +1008,7 @@
       (translate [0 0 -10] screw-insert-screw-holes)
       (translate [0 0 -3.4] plate-screw-recess)
       (union
-        (for [xy (range 0.994 1.14 0.02)]
+        (for [xy (range 0.994 1.14 0.019)]
           (->> (case-walls :extra-top-row extra-top-row)
                (scale [xy xy 1.0])
                (translate [0 0 -0.01]))))
