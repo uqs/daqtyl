@@ -1,10 +1,9 @@
-(ns dactyl-keyboard.dactyl
+(ns daqtyl
   (:refer-clojure :exclude [use import])
   (:require [clojure.core.matrix :refer [array matrix mmul]]
             [scad-clj.scad :refer :all]
             [scad-clj.model :refer :all]
             [unicode-math.core :refer :all]))
-
 
 (defn deg2rad [degrees]
   (* (/ degrees 180) pi))
@@ -834,7 +833,7 @@
 (def screw-insert-screw-holes  (screw-insert-all-shapes 1.7 1.7 350))
 (def plate-screw-recess  (screw-insert-all-shapes 3.1 1.95 2.1)) ;; creates the recess for screws in bottom plate
 
-; Wrist rest cutout for https://github.com/crystalhand/dactyl-keyboard.git
+; Wrist rest cutout from https://github.com/crystalhand/dactyl-keyboard.git
 ;;Wrist rest to case connections
 (def wrist-rest-on 1)
 (def wrist-rest-back-height 23)	;;height of the back of the wrist rest--Default 34
