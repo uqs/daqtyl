@@ -158,6 +158,7 @@
         ]
     (->> (cylinder 6 15)
          (rotate (deg2rad 90) [0 1 0])
+         ; TODO: bump z-height some more, maybe 2mm, need to wait for keycaps to decide.
          (translate [0 0 (+ 5 8)]) ;; 8 is plate-thickness from above
          (color [0 0 0 1])
          )
@@ -293,11 +294,13 @@
                            (not= row lastrow))]
              (->> single-plate (key-place column row)))
            ; XXX not symmetrical, the right side needs to rotate this 180!
-           (if extra-top-row (->> (->> encoder-plate (rotate (deg2rad 180) [0 0 1])) (key-place 2 lastrow))
+           ; we need to mirror it here, as the left model later on get applied
+           ; another mirroring operation, so we need to undo the damage here and below.
+           (if extra-top-row (->> (->> encoder-plate (mirror [-1 0 0])) (key-place 2 lastrow))
              (->> single-plate (key-place 2 lastrow)))
            ; mouse keys go here, the middle one uses a different plate for the encoder
            (if extra-top-row (->> single-plate (key-place 1 -1)))
-           (if extra-top-row (->> encoder-plate (key-place 2 -1)))
+           (if extra-top-row (->> encoder-plate (mirror [-1 0 0])(rotate (deg2rad 180)[0 0 1]) (key-place 2 -1)))
            (if extra-top-row (->> single-plate (key-place 3 -1)))
            )))
 
