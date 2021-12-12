@@ -649,7 +649,7 @@
    ; thumb tweeners
    (wall-brace thumb-r-place  0 -1 web-post-bl thumb-m-place  0 -1 web-post-br)
    (wall-brace thumb-m-place  0 -1 web-post-bl thumb-l-place  0 -1 web-post-br)
-   (wall-brace thumb-r-place  0 -1 web-post-br (partial key-place 3 lastrow)  0 0 web-post-bl)
+   (wall-brace-flat thumb-r-place  0 -1 web-post-br (partial key-place 3 lastrow)  0 -1 web-post-bl [0 -1])
    ; clunky bit on the top left thumb connection  (normal connectors don't work well)
    (bottom-hull
     (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
@@ -695,8 +695,8 @@
         ; ditto for the second post. So you move to key pos 0/0 and put down a
         ; wall from its top-left to top-right position. Then you brace from key
         ; 0/0's top-right to 1/-1's top left, etc.
-        (key-wall-brace 0 0 0 1 web-post-tl 0 0 0 1 web-post-tr)
-        (color [1 1 0 1] (key-wall-brace 0 0 0 1 web-post-tr 1 -1 0 1 web-post-tl))
+        (key-wall-brace 0 0 0 1 web-post-tl 0 0 -0.5 1 web-post-tr)
+        (color [1 1 0 1] (key-wall-brace 0 0 -0.5 1 web-post-tr 1 -1 0 1 web-post-tl))
         (color [1 1 0 1] (hull
                            (key-place 1 -1 web-post-tl)
                            (key-place 1  0 web-post-tl)
@@ -754,8 +754,8 @@
 
 
 (def front-wall (union
-  (key-wall-brace 3 lastrow  0 0 web-post-bl 3 lastrow   0 0 web-post-br)
-  (key-wall-brace 3 lastrow  0 0 web-post-br 4 cornerrow 2 -1 web-post-bl)
+  (key-wall-brace-flat 3 lastrow  0 -1 web-post-bl 3 lastrow   0 -1 web-post-br [-1 -1])
+  (key-wall-brace-flat 3 lastrow  0 -1 web-post-br 4 cornerrow 2 -1 web-post-bl [-1 0])
   (key-wall-brace 4 cornerrow 2 -1 web-post-bl 4       cornerrow 0 -1 web-post-br)
   (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl x       cornerrow 0 -1 web-post-br))
   (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl (dec x) cornerrow 0 -1 web-post-br))
