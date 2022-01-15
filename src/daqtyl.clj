@@ -74,7 +74,7 @@
 (def keyswitch-height 14.15)
 (def keyswitch-width 14.15)
 (def encoder-height 14.15)
-(def encoder-width 17.15)
+(def encoder-width 16.85)
 
 (def sa-profile-key-height 12.7)
 
@@ -137,7 +137,7 @@
                            (->> (cube 2 2 2) (translate [-4 3 0]))
                            (->> (cube 2 2 2) (translate [-4 -4 0]))
                            ))
-                    (translate [-2.5 0 (- plate-thickness (/ plate-thickness 4))]))
+                    (translate [-2.75 0 (- plate-thickness (/ plate-thickness 4))]))
         ]
     (->>
       (difference (union plate-half
@@ -146,7 +146,7 @@
                          (mirror [1 0 0])
                          (mirror [0 1 0])))
                   ; carve out a corner for better access to the pins
-             (->> (cube 3 3 8 :center false)(rotate (deg2rad 90)[0 0 1])(translate [9.5 -7.8 -4])))
+             (->> (cube 3 3 8 :center false)(rotate (deg2rad 90)[0 0 1])(translate [9.2 -7.8 -4])))
              (translate [0 0 4])
              )))
 
@@ -1051,9 +1051,9 @@
         ))
 
 (defn trackholder [l zdeg]
-  (let [r 17.5
+  (let [r 17.25
         h 70
-        outer-r (+ r 3)
+        outer-r (+ r 2)
         d (/ r 2)
         c (* r 3)
         ; steel balls will be glued in here
@@ -1069,7 +1069,7 @@
                (difference
                  (fa! 1)
                  (fs! 1)
-                 (sphere (+ r 2))
+                 (sphere (+ r 1.5))
                  (sphere (+ r 0.1))
                  (->> (cube c c c)
                       (translate [0 0 (/ c 2)]))
@@ -1086,13 +1086,13 @@
                (for [x [[0 2] [120 2] [240 2]]] (->>
                                          (pimple (second x))
                                          (translate [0 0 (+ r 1.0)])
-                                         (rotate (deg2rad 135) [1 0 0])
+                                         (rotate (deg2rad 125) [1 0 0])
                                          (rotate (deg2rad (+ (first x) 60)) [0 0 1])
                                          )
                  )
                )
         ; cutout to reach the sensor board
-        sensor-wall-cut (->> (cube 28 25 90)
+        sensor-wall-cut (->> (cube 28.2 25 90)
                              (translate [0 (* -1 r) (- (/ h 4) 3)]))
         ; top outer rim connecting to the cylinder
         ring (->>
@@ -1132,13 +1132,13 @@
                           ; actual max dimensions, but much thinner on the side.
                           ;(cube 28.5 21.5 6.7)
                           ; cut away the sensor cube from the supports, then also a window
-                          (->> (cube 28.5 21.5 4)(translate [0 0 (/ (- 6.7 4) 2)]))
+                          (->> (cube 28.5 21.5 3)(translate [0 0 1]))
                           (->> (cube 28.5 21.5 10)(translate [0 3 6]))
                           ; cut off things that would stick out, ugh, this is horribly hacky
                           (->> (cube 28.5 12 6)(rotate (deg2rad -35) [1 0 0])(translate [0 -9 10]))
                           )
                         ; turn this on to see if the sensor fits the overall model
-                        ;(->> (cube 28.5 21.5 4)(translate [0 0 (/ (- 6.7 4) 2)])) (->> (cube 21.5 21.5 8)(translate [0 3 0.5]))
+                        ;(->> (cube 28.5 21.5 3)(translate [0 0 1])) (->> (cube 21.5 21.5 8)(translate [0 3 0.5]))
                         )
                       (translate [0 0 (+ 5.35 r)]) ; half cube width plus thickness
                       (rotate (deg2rad 135) [1 0 0])
