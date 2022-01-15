@@ -1190,7 +1190,7 @@
     (->> (sphere 19.6) (translate trackball-top-pos))
   ))
 
-(if 1
+(def spit-all-test (future
 (spit "things/all-test.scad"
       (write-scad (union
                     (translate [130 0 0] (union (difference model-right
@@ -1210,9 +1210,9 @@
                                                              (caps :extra-top-row true)
                                                              wrist-rest-build
                                                              ))))))
-)
+))
 
-(if 1 (conj
+(def spit-left-test (future
 (spit "things/left-test.scad"
       (write-scad (mirror [-1 0 0]
                           (union model-left
@@ -1221,15 +1221,20 @@
                                  (caps :extra-top-row true)
                                  wrist-rest-build
                                  ))))
+))
+(def spit-left (future
 (spit "things/left.scad"
       (write-scad (mirror [-1 0 0] model-left)))
+))
+(def spit-left-plate (future
 (spit "things/left-plate.scad"
       (write-scad (->> (plate-cutout plate-left :extra-top-row true) (mirror [-1 0 0]))))
+))
+(def spit-left-palm-rest (future
 (spit "things/left-palm-rest.scad"
       (write-scad (mirror [-1 0 0] wrist-rest-build)))
 ))
-
-(if 1 (conj
+(def spit-right-test (future
 (spit "things/right-test.scad"
       (write-scad (union (difference model-right
                                      trackball-cutouts
@@ -1241,6 +1246,8 @@
                          trackball-top
                          trackball-side
                          )))
+))
+(def spit-right (future
 (spit "things/right.scad"
       (write-scad (union (difference model-right
                                      trackball-cutouts
@@ -1248,10 +1255,36 @@
                          trackball-top
                          trackball-side
                          )))
+))
+(def spit-right-plate (future
 (spit "things/right-plate.scad"
       (write-scad (plate-cutout plate-right)))
+))
+(def spit-right-palm-rest (future
 (spit "things/right-palm-rest.scad"
       (write-scad wrist-rest-build))
 ))
 
-(defn -main [dum] 1)  ; dummy to make it easier to batch
+(defn -main [& args]
+  (if (seq args)
+    (let [arg-to-func (fn [arg] (case arg
+                                  "all-test" spit-all-test
+                                  "left-test" spit-left-test
+                                  "left" spit-left
+                                  "left-plate" spit-left-plate
+                                  "left-palm-rest" spit-left-palm-rest
+                                  "right-test" spit-right-test
+                                  "right" spit-right
+                                  "right-plate" spit-right-plate
+                                  "right-palm-rest" spit-right-palm-rest
+                                  "everything" (conj nil spit-all-test spit-left-test spit-left spit-left-plate spit-left-palm-rest spit-right-test spit-right spit-right-plate spit-right-palm-rest)
+                                  ))
+          work-items (flatten (map arg-to-func args))
+          ]
+      (dorun work-items)
+      (println "threads started, please wait")
+      (run! deref work-items)
+      (println "threads ended")
+      (shutdown-agents)
+      ))
+  )
