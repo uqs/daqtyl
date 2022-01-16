@@ -437,9 +437,9 @@
   (->> shape
        (rotate (deg2rad  10) [1 0 0])
        (rotate (deg2rad  -5) [0 1 0])
-       (rotate (deg2rad  15) [0 0 1])
+       (rotate (deg2rad  17) [0 0 1])
        (translate thumborigin)
-       (translate [-15 -8 3])))
+       (translate [-14 -7.2 3])))
 (defn thumb-m-place [shape]
   (->> shape
        (rotate (deg2rad  10) [1 0 0])
@@ -451,9 +451,9 @@
   (->> shape
        (rotate (deg2rad  10) [1 0 0])
        (rotate (deg2rad   5) [0 1 0])
-       (rotate (deg2rad  35) [0 0 1])
+       (rotate (deg2rad  33) [0 0 1])
        (translate thumborigin)
-       (translate [-51 -25 3])))
+       (translate [-52 -25 3])))
 
 (defn thumb-1x-layout [shape] nil)
 
@@ -683,6 +683,18 @@
     (key-place 0 cornerrow web-post-bl)
     (thumb-m-place web-post-tl))
    ))
+
+(spit "things/thumb-test.scad"
+      (write-scad (difference
+                    (union
+                      thumb
+                      (thumb-connectors)
+                      thumb-wall)
+                    (union
+                      (->> (cube 100 100 100) (translate [10 -50 0]))
+                      (->> (cube 100 100 100) (translate [-60 -50 -18]))
+                      ))))
+
 
 (defn back-wall [& {:keys [extra-top-row] :or {extra-top-row false}}]
   (union
@@ -972,7 +984,6 @@
   )
 
 ; put it all together
-
 (def model-right (difference
                    (union
                      (key-holes)
