@@ -1201,80 +1201,129 @@
     (->> (sphere 19.6) (translate trackball-top-pos))
   ))
 
-(def spit-all-test (future
-(spit "things/all-test.scad"
-      (write-scad (union
-                    (translate [130 0 0] (union (difference model-right
-                                                            trackball-cutouts
-                                                            )
-                                                (->> (plate-cutout plate-right) (translate [0 0 -30]))
-                                                thumbcaps
-                                                (caps)
-                                                wrist-rest-build
-                                                trackball-top
-                                                trackball-side
-                                                ))
-                    (translate [-130 0 0] (mirror [-1 0 0] (union
-                                                             model-left
-                                                             (->> (plate-cutout plate-left :extra-top-row true) (translate [0 0 -30]))
-                                                             thumbcaps
-                                                             (caps :extra-top-row true)
-                                                             wrist-rest-build
-                                                             ))))))
-))
+(def spit-all-test
+  (future
+    (let [
+          file "things/all-test.scad"
+          old (try (slurp file) (catch Exception e))
+          new (write-scad
+                (union
+                  (translate [130 0 0] (union (difference model-right
+                                                          trackball-cutouts
+                                                          )
+                                              (->> (plate-cutout plate-right) (translate [0 0 -30]))
+                                              thumbcaps
+                                              (caps)
+                                              wrist-rest-build
+                                              trackball-top
+                                              trackball-side
+                                              ))
+                  (translate [-130 0 0] (mirror [-1 0 0] (union
+                                                           model-left
+                                                           (->> (plate-cutout plate-left :extra-top-row true) (translate [0 0 -30]))
+                                                           thumbcaps
+                                                           (caps :extra-top-row true)
+                                                           wrist-rest-build
+                                                           )))))
+          ]
+      (cond (not= old new) (spit file new))
+      )))
 
-(def spit-left-test (future
-(spit "things/left-test.scad"
-      (write-scad (mirror [-1 0 0]
-                          (union model-left
-                                 (->> (plate-cutout plate-left :extra-top-row true) (translate [0 0 -30]))
-                                 thumbcaps
-                                 (caps :extra-top-row true)
-                                 wrist-rest-build
-                                 ))))
-))
-(def spit-left (future
-(spit "things/left.scad"
-      (write-scad (mirror [-1 0 0] model-left)))
-))
-(def spit-left-plate (future
-(spit "things/left-plate.scad"
-      (write-scad (->> (plate-cutout plate-left :extra-top-row true) (mirror [-1 0 0]))))
-))
-(def spit-left-palm-rest (future
-(spit "things/left-palm-rest.scad"
-      (write-scad (mirror [-1 0 0] wrist-rest-build)))
-))
-(def spit-right-test (future
-(spit "things/right-test.scad"
-      (write-scad (union (difference model-right
-                                     trackball-cutouts
-                                     )
-                         (->> (plate-cutout plate-right) (translate [0 0 -30]))
-                         thumbcaps
-                         (caps)
-                         wrist-rest-build
-                         trackball-top
-                         trackball-side
-                         )))
-))
-(def spit-right (future
-(spit "things/right.scad"
-      (write-scad (union (difference model-right
-                                     trackball-cutouts
-                                     )
-                         trackball-top
-                         trackball-side
-                         )))
-))
-(def spit-right-plate (future
-(spit "things/right-plate.scad"
-      (write-scad (plate-cutout plate-right)))
-))
-(def spit-right-palm-rest (future
-(spit "things/right-palm-rest.scad"
-      (write-scad wrist-rest-build))
-))
+(def spit-left-test
+  (future
+    (let [
+          file "things/left-test.scad"
+          old (try (slurp file) (catch Exception e))
+          new (write-scad
+                (mirror [-1 0 0]
+                      (union model-left
+                             (->> (plate-cutout plate-left :extra-top-row true) (translate [0 0 -30]))
+                             thumbcaps
+                             (caps :extra-top-row true)
+                             wrist-rest-build
+                             )))
+          ]
+      (cond (not= old new) (spit file new))
+)))
+(def spit-left
+  (future
+    (let [
+          file "things/left.scad"
+          old (try (slurp file) (catch Exception e))
+          new (write-scad (mirror [-1 0 0] model-left))
+          ]
+      (cond (not= old new) (spit file new))
+)))
+(def spit-left-plate
+  (future
+    (let [
+          file "things/left-plate.scad"
+          old (try (slurp file) (catch Exception e))
+          new (write-scad (->> (plate-cutout plate-left :extra-top-row true) (mirror [-1 0 0])))
+          ]
+      (cond (not= old new) (spit file new))
+)))
+(def spit-left-palm-rest
+  (future
+    (let [
+          file "things/left-palm-rest.scad"
+          old (try (slurp file) (catch Exception e))
+          new (write-scad (mirror [-1 0 0] wrist-rest-build))
+          ]
+      (cond (not= old new) (spit file new))
+)))
+(def spit-right-test
+  (future
+    (let [
+          file "things/right-test.scad"
+          old (try (slurp file) (catch Exception e))
+          new (write-scad
+                (union (difference model-right
+                                   trackball-cutouts
+                                   )
+                       (->> (plate-cutout plate-right) (translate [0 0 -30]))
+                       thumbcaps
+                       (caps)
+                       wrist-rest-build
+                       trackball-top
+                       trackball-side
+                       ))
+          ]
+      (cond (not= old new) (spit file new))
+)))
+(def spit-right
+  (future
+    (let [
+          file "things/right.scad"
+          old (try (slurp file) (catch Exception e))
+          new (write-scad
+                (union (difference model-right
+                                   trackball-cutouts
+                                   )
+                       trackball-top
+                       trackball-side
+                       ))
+          ]
+      (cond (not= old new) (spit file new))
+)))
+(def spit-right-plate
+  (future
+    (let [
+          file "things/right-plate.scad"
+          old (try (slurp file) (catch Exception e))
+          new (write-scad (plate-cutout plate-right))
+          ]
+      (cond (not= old new) (spit file new))
+)))
+(def spit-right-palm-rest
+  (future
+    (let [
+          file "things/right-palm-rest.scad"
+          old (try (slurp file) (catch Exception e))
+          new (write-scad wrist-rest-build)
+          ]
+      (cond (not= old new) (spit file new))
+)))
 
 (defn -main [& args]
   (if (seq args)
