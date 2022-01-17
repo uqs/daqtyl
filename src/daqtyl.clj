@@ -126,8 +126,8 @@
                       (translate [0
                                   (+ (/ 1.5 2) (/ encoder-height 2))
                                   (/ plate-thickness 2)]))
-        left-wall (->> (cube 1.2 (+ encoder-height 3) plate-thickness)
-                       (translate [(+ (/ 1.8 2) (/ encoder-width 2))
+        left-wall (->> (cube 1.6 (+ encoder-height 3) plate-thickness)
+                       (translate [(+ (/ 2.2 2) (/ encoder-width 2))
                                    0
                                    (/ plate-thickness 2)]))
         plate-half (union top-wall left-wall)
@@ -1003,6 +1003,15 @@
     )
   )
   )
+
+(spit "things/encoder-welltest.scad"
+      (write-scad (intersection (->> (cube 60 140 50)(translate [-35 0 30]))
+                    (union
+                      (key-holes :extra-top-row true)
+                      (connectors :extra-top-row true)
+                      (thumb-connectors)
+                      )))
+      )
 
 ; put it all together
 (def model-right (difference
