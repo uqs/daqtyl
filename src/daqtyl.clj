@@ -479,106 +479,6 @@
    (thumb-1x-layout single-plate)
    (thumb-15x-layout single-plate)))
 
-(defn thumb-connectors [& {:keys [encoder] :or {encoder false}}]
-  (let [z-offset (cond encoder [0 0 3] :else [0 0 0])
-        wide-left (cond encoder [-1 0 0] :else [0 0 0])
-        wide-right (cond encoder [1 0 0] :else [0 0 0])
-        ]
-  (union
-   (triangle-hulls    ; top two
-    (thumb-m-place web-post-tr)
-    (thumb-m-place web-post-br)
-    (thumb-r-place web-post-tl)
-    (thumb-r-place web-post-bl))
-   (triangle-hulls
-    (thumb-m-place web-post-tl)
-    (thumb-l-place web-post-tr)
-    (thumb-m-place web-post-bl)
-    (thumb-l-place web-post-br)
-    (thumb-m-place web-post-bl)
-    )
-   ; The steep bit from thumb key up towards main keyboard, it's many parts.
-   ; Need to do special things for 1.5u keys, sigh.
-   (let [
-         left-offset [-0.4 2 0.4]
-         right-offset [1.2 2 0.0]
-         ]
-     (union
-       (color [0 1 1 1] (hull
-        (left-key-place cornerrow -1 web-post)
-        (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
-        (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
-        (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
-        (thumb-m-place web-post-tl :offset left-offset)))
-       (color [1 0 1 1] (hull
-        (left-key-place cornerrow -1 web-post)
-        (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
-        (key-place 0 cornerrow web-post-bl)
-        (thumb-m-place web-post-tl :offset left-offset)))
-       (color [0 1 0 1] (triangle-hulls
-        (thumb-m-place web-post-tl :offset left-offset)
-        (key-place 0 cornerrow web-post-bl)
-        (thumb-m-place web-post-tr :offset right-offset)
-        (key-place 0 cornerrow web-post-br)
-        ))
-       (color [1 0 0 1] (triangle-hulls
-        (thumb-m-place web-post-tl)
-        (thumb-m-place web-post-tl :offset left-offset)
-        (thumb-m-place web-post-tr :offset right-offset)
-        (thumb-m-place web-post-tr)
-        (thumb-m-place web-post-tl)
-        ))
-     ))
-   (triangle-hulls
-    (thumb-m-place web-post-tr)
-    (key-place 0 cornerrow web-post-br)
-    (thumb-r-place web-post-tl)
-    (key-place 1 cornerrow web-post-bl)
-    (thumb-r-place web-post-tr)
-    (key-place 1 cornerrow web-post-br)
-    )
-   ; snaking around the first extra key
-   (color [0 1 0 1] (triangle-hulls
-    (thumb-r-place web-post-tr)
-    (key-place 1 cornerrow web-post-br)
-    (key-place 2 lastrow (->> web-post-tl (translate wide-left)(translate z-offset)))
-    (thumb-r-place web-post-tr)
-    (key-place 2 lastrow (->> web-post-bl (translate wide-left)(translate z-offset)))
-    (thumb-r-place web-post-tr)
-    (key-place 2 lastrow (->> web-post-bl (translate wide-left)(translate z-offset)))
-    (thumb-r-place web-post-br)
-    (key-place 2 lastrow (->> web-post-br (translate wide-right)(translate z-offset)))
-    (key-place 3 lastrow (->> web-post-bl (translate [0 0 0])))
-    (key-place 2 lastrow (->> web-post-tr (translate wide-right)(translate z-offset)))
-    (key-place 3 lastrow (->> web-post-tl (translate [0 0 0])))
-    ))
-   ; snaking around the second extra key
-   (triangle-hulls
-     (key-place 3 lastrow web-post-tr)
-     (key-place 3 lastrow web-post-br)
-     (key-place 3 lastrow web-post-tr)
-     (key-place 4 cornerrow web-post-bl))
-   ; connect first extra key to regular matrix
-   (color [1 0 1 1] (triangle-hulls
-                      (key-place 1 cornerrow web-post-br)
-                      (key-place 2 lastrow (->> web-post-tl (translate z-offset)))
-                      (key-place 2 cornerrow web-post-bl)
-                      (key-place 2 lastrow (->> web-post-tr (translate z-offset)))
-                      (key-place 2 cornerrow web-post-br)
-                      (key-place 3 cornerrow web-post-bl)
-                      (key-place 2 lastrow (->> web-post-tr (translate z-offset)))
-                      (key-place 3 lastrow web-post-tl)
-                      ))
-   ; connect second extra key to regular matrix
-   (color [1 1 0 1] (triangle-hulls
-                      (key-place 3 lastrow web-post-tl)
-                      (key-place 3 cornerrow web-post-bl)
-                      (key-place 3 lastrow web-post-tr)
-                      (key-place 3 cornerrow web-post-br)
-                      (key-place 4 cornerrow web-post-bl)
-                      ))
-   )))
-
 ;;;;;;;;;;
 ;; Case ;;
 ;;;;;;;;;;
@@ -661,6 +561,108 @@
                     (for [y (range 1 lastrow)] (key-wall-brace lastcol (dec y) 1 0 web-post-br lastcol y 1 0 web-post-tr)))
            (key-wall-brace lastcol cornerrow 0 -1 web-post-br lastcol cornerrow 1 0 web-post-br)
            ))
+
+(defn thumb-connectors [& {:keys [encoder] :or {encoder false}}]
+  (let [z-offset (cond encoder [0 0 3] :else [0 0 0])
+        wide-left (cond encoder [-1 0 0] :else [0 0 0])
+        wide-right (cond encoder [1 0 0] :else [0 0 0])
+        ]
+  (union
+   (triangle-hulls    ; top two
+    (thumb-m-place web-post-tr)
+    (thumb-m-place web-post-br)
+    (thumb-r-place web-post-tl)
+    (thumb-r-place web-post-bl))
+   (triangle-hulls
+    (thumb-m-place web-post-tl)
+    (thumb-l-place web-post-tr)
+    (thumb-m-place web-post-bl)
+    (thumb-l-place web-post-br)
+    (thumb-m-place web-post-bl)
+    )
+   ; The steep bit from thumb key up towards main keyboard, it's many parts.
+   ; Need to do special things for 1.5u keys, sigh.
+   (let [
+         left-offset [-1.5 6 1.3]
+         right-offset [1.2 6 0.4]
+         ]
+     (union
+       (color [0 1 1 1] (hull
+        (left-key-place cornerrow -1 web-post)
+        (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
+        (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
+        (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
+        (thumb-m-place web-post-tl :offset left-offset)))
+       (color [1 0 1 1] (hull
+        (left-key-place cornerrow -1 web-post)
+        (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
+        (key-place 0 cornerrow web-post-bl)
+        (thumb-m-place web-post-tl :offset left-offset)))
+       (color [0 1 0 1] (triangle-hulls
+        (thumb-m-place web-post-tl :offset left-offset)
+        (key-place 0 cornerrow web-post-bl)
+        (thumb-m-place web-post-tr :offset right-offset)
+        (key-place 0 cornerrow web-post-br)
+        ))
+       (color [1 0 0 1] (triangle-hulls
+        (thumb-m-place web-post-tl)
+        (thumb-m-place web-post-tl :offset left-offset)
+        (thumb-m-place web-post-tr :offset right-offset)
+        (key-place 0 cornerrow web-post-br)
+        (thumb-m-place web-post-tr)
+        (thumb-m-place web-post-tr :offset right-offset)
+        (thumb-m-place web-post-tl)
+        ))
+     ))
+   (triangle-hulls
+    (thumb-m-place web-post-tr)
+    (key-place 0 cornerrow web-post-br)
+    (thumb-r-place web-post-tl)
+    (key-place 1 cornerrow web-post-bl)
+    (thumb-r-place web-post-tr)
+    (key-place 1 cornerrow web-post-br)
+    )
+   ; snaking around the first extra key
+   (color [0 1 0 1] (triangle-hulls
+    (thumb-r-place web-post-tr)
+    (key-place 1 cornerrow web-post-br)
+    (key-place 2 lastrow (->> web-post-tl (translate wide-left)(translate z-offset)))
+    (thumb-r-place web-post-tr)
+    (key-place 2 lastrow (->> web-post-bl (translate wide-left)(translate z-offset)))
+    (thumb-r-place web-post-tr)
+    (key-place 2 lastrow (->> web-post-bl (translate wide-left)(translate z-offset)))
+    (thumb-r-place web-post-br)
+    (key-place 2 lastrow (->> web-post-br (translate wide-right)(translate z-offset)))
+    (key-place 3 lastrow (->> web-post-bl (translate [0 0 0])))
+    (key-place 2 lastrow (->> web-post-tr (translate wide-right)(translate z-offset)))
+    (key-place 3 lastrow (->> web-post-tl (translate [0 0 0])))
+    ))
+   ; snaking around the second extra key
+   (triangle-hulls
+     (key-place 3 lastrow web-post-tr)
+     (key-place 3 lastrow web-post-br)
+     (key-place 3 lastrow web-post-tr)
+     (key-place 4 cornerrow web-post-bl))
+   ; connect first extra key to regular matrix
+   (color [1 0 1 1] (triangle-hulls
+                      (key-place 1 cornerrow web-post-br)
+                      (key-place 2 lastrow (->> web-post-tl (translate z-offset)))
+                      (key-place 2 cornerrow web-post-bl)
+                      (key-place 2 lastrow (->> web-post-tr (translate z-offset)))
+                      (key-place 2 cornerrow web-post-br)
+                      (key-place 3 cornerrow web-post-bl)
+                      (key-place 2 lastrow (->> web-post-tr (translate z-offset)))
+                      (key-place 3 lastrow web-post-tl)
+                      ))
+   ; connect second extra key to regular matrix
+   (color [1 1 0 1] (triangle-hulls
+                      (key-place 3 lastrow web-post-tl)
+                      (key-place 3 cornerrow web-post-bl)
+                      (key-place 3 lastrow web-post-tr)
+                      (key-place 3 cornerrow web-post-br)
+                      (key-place 4 cornerrow web-post-bl)
+                      ))
+   )))
 
 (def thumb-wall
   (union
