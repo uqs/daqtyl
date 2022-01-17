@@ -119,25 +119,27 @@
 
 ; plate structure for the EVQWGD001 rotary encoder
 (def encoder-height 14.15)
-(def encoder-width 16.50)
+(def encoder-width 16.00)
 (def encoder-plate
-  (let [plate-thickness 3
-        top-wall (->> (cube (+ encoder-width 3) 1.5 (+ plate-thickness 0.5))
+  (let [plate-thickness 3.5
+        top-wall (->> (cube (+ encoder-width 3) 1.5 plate-thickness)
                       (translate [0
                                   (+ (/ 1.5 2) (/ encoder-height 2))
-                                  (- (/ plate-thickness 2) 0.25)]))
-        left-wall (->> (cube 1.2 (+ encoder-height 3) (+ plate-thickness 0.5))
+                                  (/ plate-thickness 2)]))
+        left-wall (->> (cube 1.2 (+ encoder-height 3) plate-thickness)
                        (translate [(+ (/ 1.8 2) (/ encoder-width 2))
                                    0
-                                   (- (/ plate-thickness 2) 0.25)]))
+                                   (/ plate-thickness 2)]))
         plate-half (union top-wall left-wall)
+        bridge-thickness 1.5
+        bridge-top-recess 0.8
         bridge (->> (->> (difference
-                           (cube 8 (+ encoder-height 2) (/ plate-thickness 5))
+                           (cube 8 (+ encoder-height 2) bridge-thickness)
                            ; cutouts for little nubs
                            (->> (cube 2 2 2) (translate [-4 3 0]))
                            (->> (cube 2 2 2) (translate [-4 -4 0]))
                            ))
-                    (translate [-2.5 0 (- plate-thickness (/ plate-thickness 4))]))
+                    (translate [-2.5 0 (- (- (/ plate-thickness 1) (/ bridge-thickness 2)) bridge-top-recess)]))
         ]
     (->>
       (difference (union plate-half
@@ -147,7 +149,7 @@
                          (mirror [0 1 0])))
                   ; carve out a corner for better access to the pins
              (->> (cube 3 5 8 :center false)(rotate (deg2rad 90)[0 0 1])(translate [8.55 -7.8 -4])))
-             (translate [0 0 4])
+             (translate [0 0 3.75])
              )))
 
 (spit "things/encoder-test.scad"
@@ -583,7 +585,7 @@
    ; The steep bit from thumb key up towards main keyboard, it's many parts.
    ; Need to do special things for 1.5u keys, sigh.
    (let [
-         left-offset [-1.5 6 1.3]
+         left-offset [-1.3 4.5 0.99]
          right-offset [1.2 6 0.4]
          ]
      (union
