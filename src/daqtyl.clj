@@ -1220,7 +1220,7 @@
     (->> (sphere 19.6) (translate trackball-top-pos))
   ))
 
-(def spit-all-test
+(defn spit-all-test []
   (future
     (let [
           file "things/all-test.scad"
@@ -1248,7 +1248,7 @@
       (cond (not= old new) (spit file new))
       )))
 
-(def spit-left-test
+(defn spit-left-test []
   (future
     (let [
           file "things/left-test.scad"
@@ -1264,7 +1264,7 @@
           ]
       (cond (not= old new) (spit file new))
 )))
-(def spit-left
+(defn spit-left []
   (future
     (let [
           file "things/left.scad"
@@ -1273,7 +1273,7 @@
           ]
       (cond (not= old new) (spit file new))
 )))
-(def spit-left-plate
+(defn spit-left-plate []
   (future
     (let [
           file "things/left-plate.scad"
@@ -1282,7 +1282,7 @@
           ]
       (cond (not= old new) (spit file new))
 )))
-(def spit-left-palm-rest
+(defn spit-left-palm-rest []
   (future
     (let [
           file "things/left-palm-rest.scad"
@@ -1291,7 +1291,7 @@
           ]
       (cond (not= old new) (spit file new))
 )))
-(def spit-right-test
+(defn spit-right-test []
   (future
     (let [
           file "things/right-test.scad"
@@ -1310,7 +1310,7 @@
           ]
       (cond (not= old new) (spit file new))
 )))
-(def spit-right
+(defn spit-right []
   (future
     (let [
           file "things/right.scad"
@@ -1325,7 +1325,7 @@
           ]
       (cond (not= old new) (spit file new))
 )))
-(def spit-right-plate
+(defn spit-right-plate []
   (future
     (let [
           file "things/right-plate.scad"
@@ -1334,7 +1334,7 @@
           ]
       (cond (not= old new) (spit file new))
 )))
-(def spit-right-palm-rest
+(defn spit-right-palm-rest []
   (future
     (let [
           file "things/right-palm-rest.scad"
@@ -1347,16 +1347,16 @@
 (defn -main [& args]
   (if (seq args)
     (let [arg-to-func (fn [arg] (case arg
-                                  "all-test" spit-all-test
-                                  "left-test" spit-left-test
-                                  "left" spit-left
-                                  "left-plate" spit-left-plate
-                                  "left-palm-rest" spit-left-palm-rest
-                                  "right-test" spit-right-test
-                                  "right" spit-right
-                                  "right-plate" spit-right-plate
-                                  "right-palm-rest" spit-right-palm-rest
-                                  "everything" (conj nil spit-all-test spit-left-test spit-left spit-left-plate spit-left-palm-rest spit-right-test spit-right spit-right-plate spit-right-palm-rest)
+                                  "all-test" (spit-all-test)
+                                  "left-test" (spit-left-test)
+                                  "left" (spit-left)
+                                  "left-plate" (spit-left-plate)
+                                  "left-palm-rest" (spit-left-palm-rest)
+                                  "right-test" (spit-right-test)
+                                  "right" (spit-right)
+                                  "right-plate" (spit-right-plate)
+                                  "right-palm-rest" (spit-right-palm-rest)
+                                  "everything" (conj nil (spit-all-test) (spit-left-test) (spit-left) (spit-left-plate) (spit-left-palm-rest) (spit-right-test) (spit-right) (spit-right-plate) (spit-right-palm-rest))
                                   ))
           work-items (flatten (map arg-to-func args))
           ]
