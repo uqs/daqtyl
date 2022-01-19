@@ -998,7 +998,11 @@
          _translate
          )
     wrest-wall-cut
-    (_translate cutout)
+    ; This doesn't save material, actually. It's better to have this solid and
+    ; use 20% infill, which uses 74g of material, vs. the cutout, adding more
+    ; wall surface and resulting in 84g of material needed (and much longer
+    ; print time, due to supports)
+    ;(_translate cutout)
     )
   )
   )
