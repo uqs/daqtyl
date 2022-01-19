@@ -1213,14 +1213,14 @@
 ; Trackballs on the top/back and side of keyboard.
 (def trackball-top-pos [-30 50 (+ 30 keyboard-z-offset)])
 (def trackball-top
-  (union (->> (trackholder (last trackball-top-pos) 0)
+  (union (->> (trackholder (last trackball-top-pos) -90)
               (translate trackball-top-pos)
               (color [1 0 0 1]))
          ))
 
 (def trackball-side-pos [-99 -20 (+ 55 keyboard-z-offset)])
 (def trackball-side
-  (union (->> (trackholder (last trackball-side-pos) 90)
+  (union (->> (trackholder (last trackball-side-pos) 180)
               (translate trackball-side-pos)
               (color [0 0 1 1]))
          ))
@@ -1235,6 +1235,28 @@
     (->> (cube 28 20 50) (translate [-30 43 0]))
     (->> (sphere 19.6) (translate trackball-top-pos))
   ))
+
+(spit "things/sensor-welltest.scad"
+      (write-scad (intersection ;(->> (cube 60 140 50)(translate [-35 0 30]))
+                                (union
+                                  (difference
+                                    (union
+                                      (key-holes)
+                                      (connectors)
+                                      (thumb-connectors)
+                                      thumb
+                                      left-wall
+                                      (back-wall)
+                                      )
+                                    (->> (cube 20 28 30)(translate [-92 0 39]))
+                                    (->> (cube 20 28 40)(translate [-50 47 25]))
+                                    trackball-cutouts
+                                    )
+                                  trackball-top
+                                  trackball-side
+                                  )
+                                ))
+      )
 
 (defn spit-all-test []
   (future
