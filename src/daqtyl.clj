@@ -121,7 +121,7 @@
 (def encoder-height 14.15)
 (def encoder-width 16.00)
 (def encoder-plate
-  (let [plate-thickness 3.5
+  (let [plate-thickness 4.0
         top-wall (->> (cube (+ encoder-width 3) 1.5 plate-thickness)
                       (translate [0
                                   (+ (/ 1.5 2) (/ encoder-height 2))
@@ -148,7 +148,7 @@
                          (mirror [1 0 0])
                          (mirror [0 1 0])))
                   ; carve out a corner for better access to the pins
-             (->> (cube 3 5 8 :center false)(rotate (deg2rad 90)[0 0 1])(translate [8.55 -7.8 -4])))
+             (->> (cube 3 5 20 :center false)(rotate (deg2rad 90)[0 0 1])(translate [8.55 -7.8 -4])))
              (translate [0 0 3.75])
              )))
 
@@ -298,11 +298,11 @@
            ; XXX not symmetrical, the right side needs to rotate this 180!
            ; we need to mirror it here, as the left model later on get applied
            ; another mirroring operation, so we need to undo the damage here and below.
-           (if extra-top-row (->> (->> encoder-plate (mirror [-1 0 0])) (key-place 2 lastrow))
+           (if extra-top-row (->> encoder-plate (mirror [-1 0 0]) (translate [0 0 3]) (key-place 2 lastrow))
              (->> single-plate (key-place 2 lastrow)))
            ; mouse keys go here, the middle one uses a different plate for the encoder
            (if extra-top-row (->> single-plate (key-place 1 -1)))
-           (if extra-top-row (->> encoder-plate (mirror [-1 0 0])(rotate (deg2rad 180)[0 0 1]) (key-place 2 -1)))
+           (if extra-top-row (->> encoder-plate (mirror [-1 0 0]) (translate [0 0 3]) (rotate (deg2rad 180)[0 0 1]) (key-place 2 -1)))
            (if extra-top-row (->> single-plate (key-place 3 -1)))
            )))
 
@@ -384,49 +384,48 @@
              (key-place (inc column) (inc row) web-post-tl)))
 
           (if extra-top-row
-            (concat
-              ;; Row connections for the encoder plate, offset by 3.5mm
-              (for [column [1] row [-1]]
-                (triangle-hulls
-                  (key-place (inc column) row (->> web-post-tl (translate [-1 0 3.5])))
-                  (key-place column row (->> web-post-tr ))
-                  (key-place (inc column) row (->> web-post-bl (translate [-1 0 3.5])))
-                  (key-place column row (->> web-post-br )))
-                )
-              (for [column [2] row [-1]]
-                (triangle-hulls
-                  (key-place (inc column) row (->> web-post-tl (translate [0 0 0])))
-                  (key-place column row (->> web-post-tr (translate [1 0 3.5])))
-                  (key-place (inc column) row (->> web-post-bl (translate [0 0 0])))
-                  (key-place column row (->> web-post-br (translate [1 0 3.5]))))
-                )
-              ;; Column connections
-              (for [column (range 1 4) row [-1]]
-                (let [z-offset (cond (= column 2) [0 0 3] :else [0 0 0])]
-                (triangle-hulls
-                  (key-place column row (->> web-post-bl (translate z-offset)))
-                  (key-place column row (->> web-post-br (translate z-offset)))
-                  (key-place column (inc row) web-post-tl)
-                  (key-place column (inc row) web-post-tr)
-                  )))
-              ;; Diagonal connections
-              (for [column [1] row [-1]]
-                (let [z-offset [0 0 3]]
-                (triangle-hulls
-                  (key-place column row web-post-br)
-                  (key-place column (inc row) web-post-tr)
-                  (key-place (inc column) row (->> web-post-bl (translate z-offset)))
-                  (key-place (inc column) (inc row) web-post-tl)
-                  )))
-              (for [column [2] row [-1]]
-                (let [z-offset [0 0 3]]
-                (triangle-hulls
-                  (key-place column row (->> web-post-br (translate z-offset)))
-                  (key-place column (inc row) web-post-tr)
-                  (key-place (inc column) row web-post-bl)
-                  (key-place (inc column) (inc row) web-post-tl)
-                  )))
-              ))
+            (let [z-offset 6]
+              (concat
+                ;; Row connections for the encoder plate, offset by 3.5mm
+                (for [column [1] row [-1]]
+                  (triangle-hulls
+                    (key-place (inc column) row (->> web-post-tl (translate [-1 0 z-offset])))
+                    (key-place column row (->> web-post-tr ))
+                    (key-place (inc column) row (->> web-post-bl (translate [-1 0 z-offset])))
+                    (key-place column row (->> web-post-br )))
+                  )
+                (for [column [2] row [-1]]
+                  (triangle-hulls
+                    (key-place (inc column) row (->> web-post-tl (translate [0 0 0])))
+                    (key-place column row (->> web-post-tr (translate [1 0 z-offset])))
+                    (key-place (inc column) row (->> web-post-bl (translate [0 0 0])))
+                    (key-place column row (->> web-post-br (translate [1 0 z-offset]))))
+                  )
+                ;; Column connections
+                (for [column (range 1 4) row [-1]]
+                  (let [z-offset (cond (= column 2) [0 0 z-offset] :else [0 0 0])]
+                    (triangle-hulls
+                      (key-place column row (->> web-post-bl (translate z-offset)))
+                      (key-place column row (->> web-post-br (translate z-offset)))
+                      (key-place column (inc row) web-post-tl)
+                      (key-place column (inc row) web-post-tr)
+                      )))
+                ;; Diagonal connections
+                (for [column [1] row [-1]]
+                  (triangle-hulls
+                    (key-place column row web-post-br)
+                    (key-place column (inc row) web-post-tr)
+                    (key-place (inc column) row (->> web-post-bl (translate [0 0 z-offset])))
+                    (key-place (inc column) (inc row) web-post-tl)
+                    ))
+                (for [column [2] row [-1]]
+                  (triangle-hulls
+                    (key-place column row (->> web-post-br (translate [0 0 z-offset])))
+                    (key-place column (inc row) web-post-tr)
+                    (key-place (inc column) row web-post-bl)
+                    (key-place (inc column) (inc row) web-post-tl)
+                    ))
+              )))
           )))
 
 ; Thumb cluster
@@ -565,7 +564,7 @@
            ))
 
 (defn thumb-connectors [& {:keys [encoder] :or {encoder false}}]
-  (let [z-offset (cond encoder [0 0 3] :else [0 0 0])
+  (let [z-offset (cond encoder [0 0 6] :else [0 0 0])
         wide-left (cond encoder [-1 0 0] :else [0 0 0])
         wide-right (cond encoder [1 0 0] :else [0 0 0])
         ]
@@ -1005,12 +1004,14 @@
   )
 
 (spit "things/encoder-welltest.scad"
-      (write-scad (intersection (->> (cube 60 140 50)(translate [-35 0 30]))
+      (write-scad (mirror [-1 0 0]
+                          (intersection ;(->> (cube 60 140 50)(translate [-35 0 30]))
                     (union
                       (key-holes :extra-top-row true)
                       (connectors :extra-top-row true)
-                      (thumb-connectors)
-                      )))
+                      (thumb-connectors :encoder true)
+                      thumb
+                      ))))
       )
 
 ; put it all together
