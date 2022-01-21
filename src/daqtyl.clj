@@ -27,7 +27,7 @@
 (def column-style :standard)
 
 (defn column-offset [column]
-    (cond (= column 0) [1 0 0]
+    (cond (= column 0) [1.5 0 -0.2]
           (= column 2) [0 2.82 -4.5]
           (>= column 4) [0 -14 5.64]    ; original [0 -5.8 5.64]
           :else [0 0 0]))
@@ -1213,12 +1213,17 @@
 ; Trackballs on the top/back and side of keyboard.
 (def trackball-top-pos [-30 50 (+ 30 keyboard-z-offset)])
 (def trackball-top
-  (union (->> (trackholder (last trackball-top-pos) -90)
-              (translate trackball-top-pos)
-              (color [1 0 0 1]))
-         ))
+  (difference
+    (union (->> (trackholder (last trackball-top-pos) -90)
+                (translate trackball-top-pos)
+                (color [1 0 0 1]))
+           )
+    (->> (cube 40 5 20)(rotate (deg2rad -10) [0 0 1]) (translate trackball-top-pos)(translate [0 -21 0]))
+    )
+  )
 
-(def trackball-side-pos [-99 -20 (+ 55 keyboard-z-offset)])
+
+(def trackball-side-pos [-98 -10 (+ 55 keyboard-z-offset)])
 (def trackball-side
   (union (->> (trackholder (last trackball-side-pos) 180)
               (translate trackball-side-pos)
@@ -1229,11 +1234,14 @@
 (def trackball-cutouts
   (union
     (fa! 1)
-    (->> (cube 20 28 80) (translate [-88 -20 9]))
+    (->> (cube 20 20 80) (translate [-88 -10 9]))
     (->> (sphere 19.6) (translate trackball-side-pos))
     ; top side
-    (->> (cube 28 20 50) (translate [-30 43 0]))
+    (->> (cube 20 20 50) (translate [-40 43 0]))
     (->> (sphere 19.6) (translate trackball-top-pos))
+    ; for the 90 degree rotated holders, ugh FIXME
+    (->> (cube 20 28 40)(translate [-94 10 39]))
+    (->> (cube 20 28 50)(translate [-50 47 20]))
   ))
 
 (spit "things/sensor-welltest.scad"
@@ -1245,11 +1253,8 @@
                                       (connectors)
                                       (thumb-connectors)
                                       thumb
-                                      left-wall
-                                      (back-wall)
+                                      (case-walls)
                                       )
-                                    (->> (cube 20 28 30)(translate [-92 0 39]))
-                                    (->> (cube 20 28 40)(translate [-50 47 25]))
                                     trackball-cutouts
                                     )
                                   trackball-top
