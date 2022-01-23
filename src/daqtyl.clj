@@ -508,53 +508,36 @@
 (defn wall-locate2 [dx dy] [(* dx wall-xy-offset) (* dy wall-xy-offset) wall-z-offset])
 (defn wall-locate3 [dx dy] [(* dx (+ wall-xy-offset wall-thickness)) (* dy (+ wall-xy-offset wall-thickness)) wall-z-offset])
 
-(defn wall-brace [place1 dx1 dy1 post1 place2 dx2 dy2 post2]
+(defn wall-brace [place1 dx1 dy1 post1 place2 dx2 dy2 post2
+                  & {:keys [topoffset bottomoffset] :or {topoffset [[0 0 0] [0 0 0]] bottomoffset [0 0]}}]
   (union
    (hull
-    (place1 post1)
-    (place1 (translate (wall-locate1 dx1 dy1) post1))
-    (place1 (translate (wall-locate2 dx1 dy1) post1))
-    (place1 (translate (wall-locate3 dx1 dy1) post1))
-    (place2 post2)
-    (place2 (translate (wall-locate1 dx2 dy2) post2))
-    (place2 (translate (wall-locate2 dx2 dy2) post2))
-    (place2 (translate (wall-locate3 dx2 dy2) post2)))
-   (bottom-hull
-    (place1 (translate (wall-locate2 dx1 dy1) post1))
-    (place1 (translate (wall-locate3 dx1 dy1) post1))
-    (place2 (translate (wall-locate2 dx2 dy2) post2))
-    (place2 (translate (wall-locate3 dx2 dy2) post2)))))
-
-(defn key-wall-brace [x1 y1 dx1 dy1 post1 x2 y2 dx2 dy2 post2]
-  (wall-brace (partial key-place x1 y1) dx1 dy1 post1
-              (partial key-place x2 y2) dx2 dy2 post2))
-
-; TODO: merge this with wall-brace somehow, optional args or something.
-(defn wall-brace-flat [place1 dx1 dy1 post1 place2 dx2 dy2 post2 yoffset]
-  (union
-   (hull
-    (place1 post1)
-    (place1 (translate (wall-locate1 dx1 dy1) post1))
-    (place1 (translate (wall-locate2 dx1 (- dy1 (first yoffset))) post1))
-    (place1 (translate (wall-locate3 dx1 (- dy1 (first yoffset))) post1))
-    (place2 post2)
-    (place2 (translate (wall-locate1 dx2 dy2) post2))
-    (place2 (translate (wall-locate2 dx2 (- dy2 (last yoffset))) post2))
-    (place2 (translate (wall-locate3 dx2 (- dy2 (last yoffset))) post2))
+    (->> (place1 post1) (translate (first topoffset)))
+    (->> (place1 (translate (wall-locate1 dx1 dy1) post1)) (translate (first topoffset)))
+    ; bottomoffset only applies to the bottom
+    (place1 (translate (wall-locate2 dx1 (- dy1 (first bottomoffset))) post1))
+    (place1 (translate (wall-locate3 dx1 (- dy1 (first bottomoffset))) post1))
+    (->> (place2 post2) (translate (last topoffset)))
+    (->> (place2 (translate (wall-locate1 dx2 dy2) post2)) (translate (last topoffset)))
+    ; bottomoffset only applies to the bottom
+    (place2 (translate (wall-locate2 dx2 (- dy2 (last bottomoffset))) post2))
+    (place2 (translate (wall-locate3 dx2 (- dy2 (last bottomoffset))) post2))
     )
+   ; bottomoffset only applies to the bottom
    (bottom-hull
-     (place1 (translate (wall-locate2 dx1 (- dy1 (first yoffset))) post1))
-     (place1 (translate (wall-locate3 dx1 (- dy1 (first yoffset))) post1))
-     (place2 (translate (wall-locate2 dx2 (- dy2 (last yoffset))) post2))
-     (place2 (translate (wall-locate3 dx2 (- dy2 (last yoffset))) post2))
+     (place1 (translate (wall-locate2 dx1 (- dy1 (first bottomoffset))) post1))
+     (place1 (translate (wall-locate3 dx1 (- dy1 (first bottomoffset))) post1))
+     (place2 (translate (wall-locate2 dx2 (- dy2 (last bottomoffset))) post2))
+     (place2 (translate (wall-locate3 dx2 (- dy2 (last bottomoffset))) post2))
     )
    ))
 
-(defn key-wall-brace-flat [x1 y1 dx1 dy1 post1 x2 y2 dx2 dy2 post2 yoffset]
-  (wall-brace-flat (partial key-place x1 y1) dx1 dy1 post1
-                   (partial key-place x2 y2) dx2 dy2 post2
-                   yoffset
-                   ))
+(defn key-wall-brace [x1 y1 dx1 dy1 post1 x2 y2 dx2 dy2 post2
+                      & {:keys [topoffset bottomoffset] :or {topoffset [[0 0 0] [0 0 0]] bottomoffset [0 0]}}]
+  (wall-brace (partial key-place x1 y1) dx1 dy1 post1
+              (partial key-place x2 y2) dx2 dy2 post2
+              :bottomoffset bottomoffset :topoffset topoffset
+              ))
 
 (def right-wall
     (union (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
@@ -682,7 +665,7 @@
    ; thumb tweeners
    (wall-brace thumb-r-place  0 -1 web-post-bl thumb-m-place  0 -1 web-post-br)
    (wall-brace thumb-m-place  0 -1 web-post-bl thumb-l-place  0 -1 web-post-br)
-   (wall-brace-flat thumb-r-place  0 -1 web-post-br (partial key-place 3 lastrow)  0 -1 web-post-bl [0 -1])
+   (wall-brace thumb-r-place  0 -1 web-post-br (partial key-place 3 lastrow)  0 -1 web-post-bl :bottomoffset [0 -1])
    ; clunky bit on the top left thumb connection  (normal connectors don't work well)
    (bottom-hull
     (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
@@ -735,9 +718,13 @@
                            (key-place 0  0 web-post-tr)
                            ))
         (key-wall-brace 1 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr)
-        (color [0 1 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr [0.47 0]))
-        (color [1 0 0 1] (key-wall-brace-flat 2 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0.47 0.47]))
-        (color [0 0 1 1] (key-wall-brace-flat 3 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr [0 0.47]))
+        (let [a 0.47
+              b [1 -2.0 4]]
+          (union
+            (color [0 1 0 1] (key-wall-brace 2 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr :bottomoffset [a 0] :topoffset [b [0 0 0]]))
+            (color [1 0 0 1] (key-wall-brace 2 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr :bottomoffset [a a] :topoffset [b b]))
+            (color [0 0 1 1] (key-wall-brace 3 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr :bottomoffset [0 a] :topoffset [[0 0 0] b]))
+            ))
         (key-wall-brace 3 -1 0 1 web-post-tl 3 -1 0 1 web-post-tr)
         ; these use a dx=2 offset to make the wall thicker, needs also a bespoke triangle hull.
         (color [1 1 0 1] (key-wall-brace 3 -1 0 1 web-post-tr 4 0 2 1 web-post-tl))
@@ -761,9 +748,9 @@
         (for [x (range 5 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
         (key-wall-brace 3 0 0 1 web-post-tr 4 0 1 1 web-post-tl)
         (key-wall-brace 4 0 1 1 web-post-tl 4 0 0 1 web-post-tr)
-        (color [0 1 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 1 0 0 1 web-post-tr [0.43 0]))
-        (color [1 0 0 1] (key-wall-brace-flat 2 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0.43 0.43]))
-        (color [0 0 1 1] (key-wall-brace-flat 3 0 0 1 web-post-tl 2 0 0 1 web-post-tr [0 0.43]))
+        (color [0 1 0 1] (key-wall-brace 2 0 0 1 web-post-tl 1 0 0 1 web-post-tr :bottomoffset [0.43 0]))
+        (color [1 0 0 1] (key-wall-brace 2 0 0 1 web-post-tl 2 0 0 1 web-post-tr :bottomoffset [0.43 0.43]))
+        (color [0 0 1 1] (key-wall-brace 3 0 0 1 web-post-tl 2 0 0 1 web-post-tr :bottomoffset [0 0.43]))
       ))))
 
 (def left-wall (union
@@ -786,8 +773,8 @@
 
 
 (def front-wall (union
-  (key-wall-brace-flat 3 lastrow  0 -1 web-post-bl 3 lastrow   0 -1 web-post-br [-1 -1])
-  (key-wall-brace-flat 3 lastrow  0 -1 web-post-br 4 cornerrow 2 -1 web-post-bl [-1 0])
+  (key-wall-brace 3 lastrow  0 -1 web-post-bl 3 lastrow   0 -1 web-post-br :bottomoffset [-1 -1])
+  (key-wall-brace 3 lastrow  0 -1 web-post-br 4 cornerrow 2 -1 web-post-bl :bottomoffset [-1 0])
   (key-wall-brace 4 cornerrow 2 -1 web-post-bl 4       cornerrow 0 -1 web-post-br)
   (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl x       cornerrow 0 -1 web-post-br))
   (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl (dec x) cornerrow 0 -1 web-post-br))
@@ -1262,6 +1249,18 @@
                                   )
                                 ))
       )
+
+(spit "things/encoder-walltest.scad"
+      (write-scad (union
+                    (->> single-plate (key-place 1 -1))
+                    (->> encoder-plate (mirror [-1 0 0]) (translate [0 0 3]) (rotate (deg2rad 180)[0 0 1]) (key-place 2 -1))
+                    (->> single-plate (key-place 3 -1))
+                    (key-wall-brace 1 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr)
+                    (color [0 1 0 1] (key-wall-brace 2 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr :bottomoffset [0.47 0] :topoffset [[0 -3 5] [0 0 0]]))
+                    (color [1 0 0 1] (key-wall-brace 2 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr :bottomoffset [0.47 0.47] :topoffset [[0 -3 5] [0 -3 5]]))
+                    (color [0 0 1 1] (key-wall-brace 3 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr :bottomoffset [0 0.47] :topoffset [[0 0 0] [0 -3 5]]))
+                    (key-wall-brace 3 -1 0 1 web-post-tl 3 -1 0 1 web-post-tr)
+                    )))
 
 (defn spit-all-test []
   (future
