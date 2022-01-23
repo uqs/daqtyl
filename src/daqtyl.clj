@@ -439,6 +439,9 @@
        thumb-offsets))
 
 ; My version of a 3-button cluster, I call it the micro cluster
+; TODO: need to tilt them forward a bit more, waiting for stupid Drop keycaps
+; to arrive to see how exactly they would fit.
+; Also might open up the angle a bit more, to press them more with the tip of the thumb.
 (defn thumb-r-place [shape]
   (->> shape
        (rotate (deg2rad  10) [1 0 0])
@@ -940,21 +943,24 @@
 ; These cut out the holes on the case side (so screw head sits flush), as well
 ; as the cube to receive the nut on the connector itself.
 (def rest-case-cuts
+  (let [
+        nut-cube (cube 5.5 2.5 12.2)
+        ]
   (union
     ;;right cut
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 20 4.5]))
     (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 37 4.5]))
-    (->> (cube 6 3 12.2)(translate [right_wrist_connecter_x 22.0 1.5]))
+    (->> nut-cube (translate [right_wrist_connecter_x 22.0 1.5]))
     ;;middle cut
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 20 4.5]))
     (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 38 4.5]))
-    (->> (cube 6 3 12.2)(translate [middle_wrist_connecter_x 22.0 1.5]))
+    (->> nut-cube (translate [middle_wrist_connecter_x 22.0 1.5]))
     ;;left
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 22 4.5]))
     (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 34.5 4.5]))
-    (->> (cube 6 3 12.2)(translate [left_wrist_connecter_x 20.0 1.5]))
+    (->> nut-cube (translate [left_wrist_connecter_x 20.0 1.5]))
     )
-)
+))
 
 (def rest-case-connectors
   (difference
@@ -1212,7 +1218,7 @@
                 (translate trackball-top-pos)
                 (color [1 0 0 1]))
            )
-    (->> (cube 40 5 20)(rotate (deg2rad -10) [0 0 1]) (translate trackball-top-pos)(translate [0 -21 0]))
+    (->> (cube 40 5 30)(rotate (deg2rad -0) [0 0 1]) (translate trackball-top-pos)(translate [0 -20.2 0]))
     )
   )
 
