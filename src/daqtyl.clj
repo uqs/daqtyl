@@ -350,6 +350,11 @@
 (def web-post-bl (translate [(+ (/ mount-width -1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] web-post))
 (def web-post-br (translate [(- (/ mount-width 1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] web-post))
 
+(def slim-web-post (->> (cube post-size post-size (/ web-thickness 2))
+                        (translate [0 0 (+ (/ web-thickness -4)
+                                           plate-thickness)])))
+(def slim-web-post-tl (translate [(+ (/ mount-width -1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] slim-web-post))
+
 (defn triangle-hulls [& shapes]
   (apply union
          (map (partial apply hull)
@@ -610,7 +615,8 @@
    (color [0 1 0 1] (triangle-hulls
     (thumb-r-place web-post-tr)
     (key-place 1 cornerrow web-post-br)
-    (key-place 2 lastrow (->> web-post-tl (translate wide-left)(translate z-offset)))
+    ; the full z-offset would make the keycap north of it collide when pressed.
+    (key-place 2 lastrow (->> slim-web-post-tl (translate wide-left)(translate [0 0 (/ (last z-offset) 2)])))
     (thumb-r-place web-post-tr)
     (key-place 2 lastrow (->> web-post-bl (translate wide-left)(translate z-offset)))
     (thumb-r-place web-post-tr)
@@ -621,7 +627,7 @@
     (key-place 2 lastrow (->> web-post-tr (translate wide-right)(translate z-offset)))
     (key-place 3 lastrow (->> web-post-tl (translate [0 0 0])))
     ))
-   ; snaking around the second extra key
+   ; second extra key to pinky column
    (triangle-hulls
      (key-place 3 lastrow web-post-tr)
      (key-place 3 lastrow web-post-br)
@@ -630,7 +636,8 @@
    ; connect first extra key to regular matrix
    (color [1 0 1 1] (triangle-hulls
                       (key-place 1 cornerrow web-post-br)
-                      (key-place 2 lastrow (->> web-post-tl (translate z-offset)))
+                      ; the full z-offset would make the keycap north of it collide when pressed.
+                      (key-place 2 lastrow (->> slim-web-post-tl (translate [0 0 (/ (last z-offset) 2)])))
                       (key-place 2 cornerrow web-post-bl)
                       (key-place 2 lastrow (->> web-post-tr (translate z-offset)))
                       (key-place 2 cornerrow web-post-br)
@@ -831,11 +838,11 @@
 (def bottom-plate-thickness 2.6)
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
-  (union (screw-insert 0 0        bottom-radius top-radius height [9 10.5 bottom-plate-thickness] [1 0 0]) ; red
-         (screw-insert 0 lastrow  bottom-radius top-radius height [0 2 bottom-plate-thickness] [1 1 0]) ; yellow
+  (union (screw-insert 0 0        bottom-radius top-radius height [9 10.0 bottom-plate-thickness] [1 0 0]) ; red
+         (screw-insert 0 lastrow  bottom-radius top-radius height [-1 4 bottom-plate-thickness] [1 1 0]) ; yellow
          ; FIXME later
          ;(screw-insert 2 0        bottom-radius top-radius height [9.5 -4.5 bottom-plate-thickness] [0 0 1]) ; blue
-         (screw-insert 1 lastrow  bottom-radius top-radius height [5 15 bottom-plate-thickness] [1 0 1]) ; fuchsia
+         (screw-insert 1 lastrow  bottom-radius top-radius height [5 16.5 bottom-plate-thickness] [1 0 1]) ; fuchsia
          (screw-insert lastcol 0        bottom-radius top-radius height [-21 (cond (= lastcol 4) 13 (= lastcol 5) 9) bottom-plate-thickness] [0 1 1]) ; aqua
          (screw-insert lastcol lastrow  bottom-radius top-radius height [-21 13 bottom-plate-thickness] [0 1 0]) ; green
          )
@@ -940,11 +947,11 @@
     (->> (cube 6 3 12.2)(translate [right_wrist_connecter_x 22.0 1.5]))
     ;;middle cut
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 20 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 36.5 4.5]))
+    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 38 4.5]))
     (->> (cube 6 3 12.2)(translate [middle_wrist_connecter_x 22.0 1.5]))
     ;;left
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 22 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 33.7 4.5]))
+    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 34.5 4.5]))
     (->> (cube 6 3 12.2)(translate [left_wrist_connecter_x 20.0 1.5]))
     )
 )
