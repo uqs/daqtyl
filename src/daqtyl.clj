@@ -1062,9 +1062,10 @@
                (translate [0 0 -0.01]))))
       )))
 
+; Not using bottom-plate-thickness fully, as the print won't be that exact anyway.
 (def plate-right
         (extrude-linear
-          {:height bottom-plate-thickness :center false}
+          {:height (- bottom-plate-thickness 0.05) :center false}
           (project
             (difference
               (union
@@ -1081,7 +1082,7 @@
 (def plate-left
   (difference
         (extrude-linear
-          {:height bottom-plate-thickness :center false}
+          {:height (- bottom-plate-thickness 0.05) :center false}
           (project
             (difference
               (union
@@ -1337,6 +1338,7 @@
           ]
       (cond (not= old new) (spit file new))
 )))
+; printing these with 0.2mm layer height doesn't produce quite as nice ridges, try 0.3mm next!
 (defn spit-left-palm-rest []
   (future
     (let [
