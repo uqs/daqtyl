@@ -872,7 +872,7 @@
 (def wrist-rest-angle 5) 	;;angle of the wrist rest--Default 20
 (def wrist-rest-rotation-angle 9);;0 default The angle in counter clockwise the wrist rest is at
 (def wrist-rest-ledge 0)	;;The height of ledge the silicone wrist rest fits inside
-(def wrist-rest-y-angle 10)	;;0 Default.  Controls the wrist rest y axis tilt (left to right)
+(def wrist-rest-y-angle 5)	;;0 Default.  Controls the wrist rest y axis tilt (left to right)
 
 (def wrist-translate-x (+ (first thumborigin) 10))
 (def right_wrist_connecter_x   (if (== ncols 5) 13 17))
@@ -880,7 +880,7 @@
 (def left_wrist_connecter_x    (if (== ncols 5) -25 -25))
 (def wrist_right_nut_y         (if (== ncols 5) 10 20.5))
 (def wrist_brse_position_x -1)
-(def wrist_brse_distance_y -35)     ;; Distance from wrist rest to keyboard
+(def wrist_brse_distance_y -40)     ;; Distance from wrist rest to keyboard
 
 (def cut-bottom
   (->>(cube 300 300 100)(translate [0 0 -50]))
@@ -944,7 +944,7 @@
 ; as the cube to receive the nut on the connector itself.
 (def rest-case-cuts
   (let [
-        nut-cube (cube 5.5 2.5 12.2)
+        nut-cube (cube 5.7 2.5 12.2)
         ]
   (union
     ;;right cut
@@ -1338,7 +1338,8 @@
           ]
       (cond (not= old new) (spit file new))
 )))
-; printing these with 0.2mm layer height doesn't produce quite as nice ridges, try 0.3mm next!
+; Print these with 0.30mm layer height, for nice ridges to prevent palm from
+; slipping. 20% infill is ok, 30% feels better.
 (defn spit-left-palm-rest []
   (future
     (let [
