@@ -1103,13 +1103,14 @@
         outer-r (+ r 1)
         d (/ r 2)
         c (* r 3)
+        sensor-angle (deg2rad 180)
         ; steel balls will be glued in here
         pimple (fn [r] (->> (sphere r)
                             (with-fn 40)))
         ; the cutout for the sensor
         cutout (hull (union
-                      (->> (cylinder 2.5 6)(translate [2 0 0]))
-                      (->> (cylinder 2.5 6)(translate [-2 0 0]))
+                      (->> (cylinder 2.7 6)(translate [2 0 0]))
+                      (->> (cylinder 2.7 6)(translate [-2 0 0]))
                 ))
         ; where the ball will sit
         bowl (union
@@ -1123,7 +1124,7 @@
                  (for [deg '(0)] (->>
                                             cutout
                                             (translate [0 0 r])
-                                            (rotate (deg2rad 135) [1 0 0])
+                                            (rotate sensor-angle [1 0 0])
                                             (rotate (deg2rad deg) [0 0 1])
                                             ))
                  ; through hole to the bottom
@@ -1139,8 +1140,8 @@
                  )
                )
         ; cutout to reach the sensor board
-        sensor-wall-cut (->> (cube 28.2 25 90)
-                             (translate [0 (* -1 r) (- (/ h 4) 3)]))
+        sensor-wall-cut (->> (cube 28.2 25 h)
+                             (translate [0 (* -1 r) -16]))
         ; top outer rim connecting to the cylinder
         ring (->>
                (difference
@@ -1148,12 +1149,10 @@
                  (fs! 1)
                  (cylinder outer-r 2)
                  (cylinder (+ r 1) 4)
-                 ;; FIXME results in ugly edges, maybe rotate around z-axis by 45 deg
-                 sensor-wall-cut
                  )
                (translate [0 0 -1]))
         ; the hollow cylinder
-        cyl-r (/ outer-r 2)
+        cyl-r (/ outer-r 1)
         cyl (->>
               (union (difference
                  (fa! 1)
@@ -1164,40 +1163,91 @@
                  )
                  )
               (translate [0 0 (/ h -2)])
-              (multmatrix [[1 0 -0.0 0]
-                           [0 1 0.15 0]
-                           [0 0 1 0]])
+              ;(multmatrix [[1 0 -0.0 0]
+              ;             [0 1 0.15 0]
+              ;             [0 0 1 0]])
               )
         ; PWM3360 board
         sensor (difference
                  (->> (union
-                        (difference
-                          (union
-                            (->> (cube 2 12 30 :center false)(translate [-14 -14 -20]))
-                            (->> (cube 2 12 30 :center false)(translate [ 12 -14 -20]))
-                            )
-                          ; actual max dimensions, but much thinner on the side.
-                          ;(cube 28.5 21.5 6.7)
-                          ; cut away the sensor cube from the supports, then also a window
-                          (->> (cube 28.5 21.5 3)(translate [0 0 0.5]))
-                          (->> (cube 28.5 21.5 10)(translate [0 4 6]))
-                          ; cut off things that would stick out, ugh, this is horribly hacky
-                          (->> (cube 28.5 12 6)(rotate (deg2rad -35) [1 0 0])(translate [0 -9 8]))
-                          )
+                        ;(difference
+                        ;  (union
+                        ;    (->> (cube 2 18 h :center false)(translate [-14 -14 -20]))
+                        ;    (->> (cube 2 18 h :center false)(translate [ 12 -14 -20]))
+                        ;    )
+                        ;  ; actual max dimensions, but much thinner on the side.
+                        ;  ;(cube 28.5 21.5 6.7)
+                        ;  ; cut away the sensor cube from the supports, then also a window
+                        ;  (->> (cube 28.5 21.5 3)(translate [0 0 0.5]))
+                        ;  ;(->> (cube 28.5 21.5 10)(translate [0 4 6]))
+                        ;  ; cut off things that would stick out, ugh, this is horribly hacky
+                        ;  ;(->> (cube 28.5 12 6)(rotate (deg2rad -35) [1 0 0])(translate [0 -9 8]))
+                        ;  )
                         ; turn this on to see if the sensor fits the overall model
-                        ;(->> (cube 28.5 21.5 3)(translate [0 0 1])) (->> (cube 21.5 21.5 8)(translate [0 3 0.5]))
+                        ;(color [0 0 0 1] (->> (cube 28.5 21.5 3)(translate [0 0 0.5])) (->> (cube 21.5 21.5 8)(translate [0 3 0.5])))
                         )
                       (translate [0 0 (+ 5.35 r)]) ; half cube width plus thickness
-                      (rotate (deg2rad 135) [1 0 0])
+                      (rotate sensor-angle [1 0 0])
                       )
                  (->> (sphere (+ r 1))(with-fn 60))
                  )
+        side-supports (intersection
+                        (union
+                          (->>
+                            (cube 10 30 40)
+                            (multmatrix [[1 0 0.15 0]
+                                         [0 1 0 0]
+                                         [0 0 1 0]])
+                            (translate [-20 0 -44.3]))
+                          (->>
+                            (cube 10 30 40)
+                            (multmatrix [[1 0 -0.15 0]
+                                         [0 1 0 0]
+                                         [0 0 1 0]])
+                            (translate [20 0 -44.3]))
+                          ; backwall
+                          (->>
+                            (cube 40 10 40)
+                            (multmatrix [[1 0 0 0]
+                                         [0 1 -0.15 0]
+                                         [0 0 1 0]])
+                            (translate [0 16 -44.3]))
+                          ; backstop
+                          (->>
+                            (cube 40 3 4)
+                            (translate [0 12.3 -23]))
+                          ; upper walls
+                          (->>
+                            (cube 10 30 50)
+                            (multmatrix [[1 0 0.90 0]
+                                         [0 1 0 0]
+                                         [0 0 1 0]])
+                            (translate [-20 0 -23]))
+                          (->>
+                            (cube 10 30 50)
+                            (multmatrix [[1 0 -0.90 0]
+                                         [0 1 0 0]
+                                         [0 0 1 0]])
+                            (translate [20 0 -23]))
+                          ; upper back wall
+                          (->>
+                            (cube 50 30 50)
+                            (multmatrix [[1 0 0 0]
+                                         [0 1 -0.60 0]
+                                         [0 0 1 0]])
+                            (translate [0 27 -23]))
+                          )
+                        (difference (hull cyl)
+                                    (sphere (+ r 0.5))
+                                    )
+                        )
         ]
     (difference
       (->> (union
            bowl
            ring
            cyl
+           side-supports
            sensor
            ;(->> (sphere 17)(with-fn 60)(translate [0 0 0.8]))
            )
