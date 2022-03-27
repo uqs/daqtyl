@@ -965,17 +965,17 @@
 (def rest-case-connectors
   (difference
     (union
-      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate (/ π 2) [1 0 0])(translate [right_wrist_connecter_x 2 0])))
-      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate (/ π 2) [1 0 0])(translate [middle_wrist_connecter_x 2 0])))
-      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate (/ π 2) [1 0 0])(translate [left_wrist_connecter_x -1 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate (/ π 2) [1 0 0])(translate [right_wrist_connecter_x 5 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate (/ π 2) [1 0 0])(translate [middle_wrist_connecter_x 5 0])))
+      (scale [1 1 1.6] (->> (cylinder 6 60)(with-fn 200) (rotate (/ π 2) [1 0 0])(translate [left_wrist_connecter_x 5 0])))
       )
     )
 )
 
 (def wrest-wall-cut
-  (->> (for [xyz (range 1.00 10 3)] ;controls the scale last number needs to be lower for thinner walls
+  (->> (for [xyz (range 0 10 1)] ;controls the scale last number needs to be lower for thinner walls
          (union
-           (translate [1 xyz 1] (case-walls))
+           (translate [0 xyz 0] (case-walls))
            )
          )
 ))
@@ -1042,7 +1042,7 @@
                     thumb
                     (thumb-connectors :encoder true)
                     (difference (union (case-walls :extra-top-row true)
-                                       screw-insert-outers)
+                                       );screw-insert-outers)
                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                 screw-insert-holes))
                   cut-bottom
