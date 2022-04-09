@@ -458,14 +458,14 @@
 ; Also might open up the angle a bit more, to press them more with the tip of the thumb.
 (defn thumb-r-place [shape]
   (->> shape
-       (rotate (deg2rad  10) [1 0 0])
+       (rotate (deg2rad  15) [1 0 0])
        (rotate (deg2rad  -5) [0 1 0])
        (rotate (deg2rad  17) [0 0 1])
        (translate thumborigin)
        (translate [-14 -7.2 3])))
 (defn thumb-m-place [shape & {:keys [offset] :or {offset [0 0 0]}}]
   (->> shape
-       (rotate (deg2rad  10) [1 0 0])
+       (rotate (deg2rad  15) [1 0 0])
        (rotate (deg2rad   0) [0 1 0])
        (rotate (deg2rad  25.5) [0 0 1])
        (translate thumborigin)
@@ -473,7 +473,7 @@
        (translate [-34 -15 2.2])))
 (defn thumb-l-place [shape]
   (->> shape
-       (rotate (deg2rad  10) [1 0 0])
+       (rotate (deg2rad  15) [1 0 0])
        (rotate (deg2rad   5) [0 1 0])
        (rotate (deg2rad  33) [0 0 1])
        (translate thumborigin)
@@ -569,7 +569,7 @@
            ))
 
 (defn thumb-connectors [& {:keys [encoder] :or {encoder false}}]
-  (let [z-offset (cond encoder [0 0 6] :else [0 0 0])
+  (let [z-offset (cond encoder [0 0 7] :else [0 0 0])
         wide-left (cond encoder [-1 0 0] :else [0 0 0])
         wide-right (cond encoder [1 0 0] :else [0 0 0])
         ]
@@ -963,15 +963,15 @@
   (union
     ;;right cut
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 20 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 37 4.5]))
+    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 37.2 4.5]))
     (->> nut-cube (translate [right_wrist_connecter_x 22.0 1.5]))
     ;;middle cut
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 20 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 38 4.5]))
+    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 38.5 4.5]))
     (->> nut-cube (translate [middle_wrist_connecter_x 22.0 1.5]))
     ;;left
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 22 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 34.5 4.5]))
+    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 35.5 4.5]))
     (->> nut-cube (translate [left_wrist_connecter_x 20.0 1.5]))
     )
 ))
@@ -1056,7 +1056,7 @@
                     thumb
                     (thumb-connectors :encoder true)
                     (difference (union (case-walls :extra-top-row true)
-                                       );screw-insert-outers)
+                                       screw-insert-outers)
                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                 screw-insert-holes))
                   cut-bottom
