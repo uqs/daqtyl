@@ -27,10 +27,22 @@
 (def column-style :standard)
 
 (defn column-offset [column]
-    (cond (= column 0) [1.5 0 -0.2]
+    (cond (= column 0) [1.5 0 0.2]
           (= column 2) [0 2.82 -4.5]
-          (>= column 4) [0 -14 5.64]    ; original [0 -5.8 5.64]
+          (>= column 4) [0 -16.5 5.64]    ; original [0 -5.8 5.64]
           :else [0 0 0]))
+
+(defn column-rotation [column]
+    (cond (= column 0) 0
+          (= column 2) 0
+          (>= column 4) (deg2rad 10)
+          :else 0))
+
+(defn column-twist [column]
+    (cond (= column 0) (deg2rad 5)
+          (= column 2) 0
+          (>= column 4) 0
+          :else 0))
 
 (def thumb-offsets [10 -4 7])
 
@@ -234,12 +246,14 @@
 (defn apply-key-geometry [translate-fn rotate-x-fn rotate-y-fn column row shape]
   (let [column-angle (* β (- centercol column))
         placed-shape (->> shape
+                          (rotate-y-fn  (column-twist column))
                           (translate-fn [0 0 (- row-radius)])
                           (rotate-x-fn  (* α (- centerrow row)))
                           (translate-fn [0 0 row-radius])
                           (translate-fn [0 0 (- column-radius)])
                           (rotate-y-fn  column-angle)
                           (translate-fn [0 0 column-radius])
+                          (rotate-x-fn (column-rotation column))
                           (translate-fn (column-offset column)))
         column-z-delta (* column-radius (- 1 (Math/cos column-angle)))
         placed-shape-ortho (->> shape
