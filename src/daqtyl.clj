@@ -594,11 +594,16 @@
          ]
      (union
        (color [0 1 1 1] (hull
-        (left-key-place cornerrow -1 web-post)
         (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
         (left-key-place cornerrow -1 (translate (wall-locate2 -1 0) web-post))
         (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
-        (thumb-m-place web-post-tl :offset left-offset)))
+        (thumb-m-place web-post-tl :offset left-offset)
+        ))
+       (color [0 0 0 1] (hull
+        (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
+        (thumb-m-place web-post-tl :offset left-offset)
+        (thumb-m-place web-post-tl)
+        ))
        (color [1 0 1 1] (hull
         (left-key-place cornerrow -1 web-post)
         (left-key-place cornerrow -1 (translate (wall-locate1 -1 0) web-post))
@@ -764,6 +769,7 @@
                           (key-wall-brace 5 0 0 1 web-post-tl 5 0 0 1 web-post-tr)
                           ))
        )
+      ; else
       (vector
         (for [x (range 0 2)    ] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
         (key-wall-brace 3 0 0 1 web-post-tl 3       0 0 1 web-post-tr)
