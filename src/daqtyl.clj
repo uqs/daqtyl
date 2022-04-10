@@ -226,6 +226,28 @@
 (def keyhole-fill (->> (cube keyswitch-height keyswitch-width plate-thickness)
                        (translate [0 0 (/ plate-thickness 2)])))
 
+;;;;;;;;;;;;;;;;;;;;
+;; Web Connectors ;;
+;;;;;;;;;;;;;;;;;;;;
+
+(def web-thickness 4.5)
+(def post-size 0.1)
+(def web-post (->> (cube post-size post-size web-thickness)
+                   (translate [0 0 (+ (/ web-thickness -2)
+                                      plate-thickness)])))
+
+(def post-adj (/ post-size 2))
+(def web-post-tr (translate [(- (/ mount-width 1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] web-post))
+(def web-post-tl (translate [(+ (/ mount-width -1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] web-post))
+(def web-post-bl (translate [(+ (/ mount-width -1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] web-post))
+(def web-post-br (translate [(- (/ mount-width 1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] web-post))
+
+(def slim-web-post (->> (cube post-size post-size (/ web-thickness 2))
+                        (translate [0 0 (+ (/ web-thickness -4)
+                                           plate-thickness)])))
+; this no longer seems to make any difference
+(def slim-web-post-tl (translate [(+ (/ mount-width -1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] slim-web-post))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Placement Functions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -286,17 +308,23 @@
 ; TODO: if the shape is web-post-bl,br, etc, then translate further outward somehow.
 ; TODO: could merge with key-place, but need to know about left/right side then ...
 (defn enc-place [column row shape]
-    (cond (= row -1) (->> shape
+  (let [shape-or-post (cond (= shape slim-web-post-tl) (->> shape (translate [-1 0 0]))
+                            (= shape web-post-tl) (->> shape (translate [-1 0 0]))
+                            (= shape web-post-tr) (->> shape (translate [1 0 0]))
+                            (= shape web-post-br) (->> shape (translate [1 0 0]))
+                            (= shape web-post-bl) (->> shape (translate [-1 0 0]))
+                            :else shape)]
+    (cond (= row -1) (->> shape-or-post
                           (translate [0 0 8])
                           (rotate (deg2rad -10)[1 0 0])
                           (key-place column row))
-          (= row 3) (->> shape
+          (= row 3) (->> shape-or-post
                          (rotate (deg2rad 10)[1 0 0])
                          (rotate (deg2rad -10)[0 1 0])
                          (translate [-2 -4 11])
                          (key-place column row))
           :else (key-place column row shape)
-    ))
+          )))
 
 (defn rotate-around-x [angle position]
   (mmul
@@ -362,27 +390,6 @@
                (if extra-top-row (key-place 2 -1 encoder-fill))
                (if extra-top-row (key-place 3 -1 keyhole-fill))
                )))
-
-;;;;;;;;;;;;;;;;;;;;
-;; Web Connectors ;;
-;;;;;;;;;;;;;;;;;;;;
-
-(def web-thickness 4.5)
-(def post-size 0.1)
-(def web-post (->> (cube post-size post-size web-thickness)
-                   (translate [0 0 (+ (/ web-thickness -2)
-                                      plate-thickness)])))
-
-(def post-adj (/ post-size 2))
-(def web-post-tr (translate [(- (/ mount-width 1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] web-post))
-(def web-post-tl (translate [(+ (/ mount-width -1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] web-post))
-(def web-post-bl (translate [(+ (/ mount-width -1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] web-post))
-(def web-post-br (translate [(- (/ mount-width 1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] web-post))
-
-(def slim-web-post (->> (cube post-size post-size (/ web-thickness 2))
-                        (translate [0 0 (+ (/ web-thickness -4)
-                                           plate-thickness)])))
-(def slim-web-post-tl (translate [(+ (/ mount-width -1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] slim-web-post))
 
 (defn triangle-hulls [& shapes]
   (apply union
