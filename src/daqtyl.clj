@@ -161,7 +161,6 @@
                          (mirror [0 1 0])))
                   ; carve out a corner for better access to the pins
              (->> (cube 3 5 20 :center false)(rotate (deg2rad 90)[0 0 1])(translate [8.55 -7.8 -4])))
-             (translate [0 0 3.75])
              )))
 
 (spit "things/encoder-test.scad"
@@ -284,6 +283,21 @@
                       (fn [angle obj] (rotate angle [0 1 0] obj))
                       column row shape))
 
+; TODO: if the shape is web-post-bl,br, etc, then translate further outward somehow.
+; TODO: could merge with key-place, but need to know about left/right side then ...
+(defn enc-place [column row shape]
+    (cond (= row -1) (->> shape
+                          (translate [0 0 8])
+                          (rotate (deg2rad -10)[1 0 0])
+                          (key-place column row))
+          (= row 3) (->> shape
+                         (rotate (deg2rad 10)[1 0 0])
+                         (rotate (deg2rad -10)[0 1 0])
+                         (translate [-2 -4 11])
+                         (key-place column row))
+          :else (key-place column row shape)
+    ))
+
 (defn rotate-around-x [angle position]
   (mmul
    [[1 0 0]
@@ -312,11 +326,12 @@
            ; XXX not symmetrical, the right side needs to rotate this 180!
            ; we need to mirror it here, as the left model later on get applied
            ; another mirroring operation, so we need to undo the damage here and below.
-           (if extra-top-row (->> encoder-plate (mirror [-1 0 0]) (translate [0 0 3]) (key-place 2 lastrow))
+           (if extra-top-row
+             (->> encoder-plate (mirror [-1 0 0]) (enc-place 2 lastrow))
              (->> single-plate (key-place 2 lastrow)))
            ; mouse keys go here, the middle one uses a different plate for the encoder
            (if extra-top-row (->> single-plate (key-place 1 -1)))
-           (if extra-top-row (->> encoder-plate (mirror [-1 0 0]) (translate [0 0 3]) (rotate (deg2rad 180)[0 0 1]) (key-place 2 -1)))
+           (if extra-top-row (->> encoder-plate (mirror [-1 0 0]) (rotate (deg2rad 180)[0 0 1]) (enc-place 2 -1)))
            (if extra-top-row (->> single-plate (key-place 3 -1)))
            )))
 
@@ -403,48 +418,47 @@
              (key-place (inc column) (inc row) web-post-tl)))
 
           (if extra-top-row
-            (let [z-offset 6]
               (concat
-                ;; Row connections for the encoder plate, offset by 3.5mm
+                ;; Row connections for the encoder plate
                 (for [column [1] row [-1]]
                   (triangle-hulls
-                    (key-place (inc column) row (->> web-post-tl (translate [-1 0 z-offset])))
-                    (key-place column row (->> web-post-tr ))
-                    (key-place (inc column) row (->> web-post-bl (translate [-1 0 z-offset])))
-                    (key-place column row (->> web-post-br )))
+                    (enc-place (inc column) row web-post-tl)
+                    (key-place column row web-post-tr)
+                    (enc-place (inc column) row web-post-bl)
+                    (key-place column row web-post-br))
                   )
                 (for [column [2] row [-1]]
                   (triangle-hulls
-                    (key-place (inc column) row (->> web-post-tl (translate [0 0 0])))
-                    (key-place column row (->> web-post-tr (translate [1 0 z-offset])))
-                    (key-place (inc column) row (->> web-post-bl (translate [0 0 0])))
-                    (key-place column row (->> web-post-br (translate [1 0 z-offset]))))
+                    (key-place (inc column) row web-post-tl)
+                    (enc-place column row web-post-tr)
+                    (key-place (inc column) row web-post-bl)
+                    (enc-place column row web-post-br))
                   )
                 ;; Column connections
                 (for [column (range 1 4) row [-1]]
-                  (let [z-offset (cond (= column 2) [0 0 z-offset] :else [0 0 0])]
+                  (let [place-func (cond (= column 2) enc-place :else key-place)]
                     (triangle-hulls
-                      (key-place column row (->> web-post-bl (translate z-offset)))
-                      (key-place column row (->> web-post-br (translate z-offset)))
-                      (key-place column (inc row) web-post-tl)
-                      (key-place column (inc row) web-post-tr)
+                      (place-func column row web-post-bl)
+                      (place-func column row web-post-br)
+                      (place-func column (inc row) web-post-tl)
+                      (place-func column (inc row) web-post-tr)
                       )))
                 ;; Diagonal connections
                 (for [column [1] row [-1]]
                   (triangle-hulls
                     (key-place column row web-post-br)
                     (key-place column (inc row) web-post-tr)
-                    (key-place (inc column) row (->> web-post-bl (translate [0 0 z-offset])))
+                    (enc-place (inc column) row web-post-bl)
                     (key-place (inc column) (inc row) web-post-tl)
                     ))
                 (for [column [2] row [-1]]
                   (triangle-hulls
-                    (key-place column row (->> web-post-br (translate [0 0 z-offset])))
+                    (enc-place column row web-post-br)
                     (key-place column (inc row) web-post-tr)
                     (key-place (inc column) row web-post-bl)
                     (key-place (inc column) (inc row) web-post-tl)
                     ))
-              )))
+              ))
           )))
 
 ; Thumb cluster
@@ -561,6 +575,13 @@
               :bottomoffset bottomoffset :topoffset topoffset
               ))
 
+(defn enc-wall-brace [place1 dx1 dy1 post1 place2 dx2 dy2 post2
+                      & {:keys [topoffset bottomoffset] :or {topoffset [[0 0 0] [0 0 0]] bottomoffset [0 0]}}]
+  (wall-brace (partial place1) dx1 dy1 post1
+              (partial place2) dx2 dy2 post2
+              :bottomoffset bottomoffset :topoffset topoffset
+              ))
+
 (def right-wall
     (union (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
              (union (for [y (range 0 lastrow)] (key-wall-brace lastcol y 1 0 web-post-tr lastcol y 1 0 web-post-br))
@@ -569,10 +590,7 @@
            ))
 
 (defn thumb-connectors [& {:keys [encoder] :or {encoder false}}]
-  (let [z-offset (cond encoder [0 0 7] :else [0 0 0])
-        wide-left (cond encoder [-1 0 0] :else [0 0 0])
-        wide-right (cond encoder [1 0 0] :else [0 0 0])
-        ]
+  (let [ place-func (cond encoder enc-place :else key-place) ]
   (union
    (triangle-hulls    ; top two
     (thumb-m-place web-post-tr)
@@ -638,16 +656,16 @@
     (thumb-r-place web-post-tr)
     (key-place 1 cornerrow web-post-br)
     ; the full z-offset would make the keycap north of it collide when pressed.
-    (key-place 2 lastrow (->> slim-web-post-tl (translate wide-left)(translate [0 0 (/ (last z-offset) 2)])))
+    (place-func 2 lastrow slim-web-post-tl)
     (thumb-r-place web-post-tr)
-    (key-place 2 lastrow (->> web-post-bl (translate wide-left)(translate z-offset)))
+    (place-func 2 lastrow web-post-bl)
     (thumb-r-place web-post-tr)
-    (key-place 2 lastrow (->> web-post-bl (translate wide-left)(translate z-offset)))
+    (place-func 2 lastrow web-post-bl)
     (thumb-r-place web-post-br)
-    (key-place 2 lastrow (->> web-post-br (translate wide-right)(translate z-offset)))
-    (key-place 3 lastrow (->> web-post-bl (translate [0 0 0])))
-    (key-place 2 lastrow (->> web-post-tr (translate wide-right)(translate z-offset)))
-    (key-place 3 lastrow (->> web-post-tl (translate [0 0 0])))
+    (place-func 2 lastrow web-post-br)
+    (key-place 3 lastrow web-post-bl)
+    (place-func 2 lastrow web-post-tr)
+    (key-place 3 lastrow web-post-tl)
     ))
    ; second extra key to pinky column
    (triangle-hulls
@@ -659,12 +677,12 @@
    (color [1 0 1 1] (triangle-hulls
                       (key-place 1 cornerrow web-post-br)
                       ; the full z-offset would make the keycap north of it collide when pressed.
-                      (key-place 2 lastrow (->> slim-web-post-tl (translate [0 0 (/ (last z-offset) 2)])))
-                      (key-place 2 cornerrow web-post-bl)
-                      (key-place 2 lastrow (->> web-post-tr (translate z-offset)))
-                      (key-place 2 cornerrow web-post-br)
+                      (place-func 2 lastrow slim-web-post-tl)
+                      (place-func 2 cornerrow web-post-bl)
+                      (place-func 2 lastrow web-post-tr)
+                      (place-func 2 cornerrow web-post-br)
                       (key-place 3 cornerrow web-post-bl)
-                      (key-place 2 lastrow (->> web-post-tr (translate z-offset)))
+                      (place-func 2 lastrow web-post-tr)
                       (key-place 3 lastrow web-post-tl)
                       ))
    ; connect second extra key to regular matrix
@@ -747,13 +765,11 @@
                            (key-place 0  0 web-post-tr)
                            ))
         (key-wall-brace 1 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr)
-        (let [a 0.47
-              b [1 -2.0 4]]
-          (union
-            (color [0 1 0 1] (key-wall-brace 2 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr :bottomoffset [a 0] :topoffset [b [0 0 0]]))
-            (color [1 0 0 1] (key-wall-brace 2 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr :bottomoffset [a a] :topoffset [b b]))
-            (color [0 0 1 1] (key-wall-brace 3 -1 0 1 web-post-tl 2 -1 0 1 web-post-tr :bottomoffset [0 a] :topoffset [[0 0 0] b]))
-            ))
+        (union
+          (color [0 1 0 1] (enc-wall-brace (partial enc-place 2 -1) 0 1 web-post-tl (partial key-place 1 -1) 0 1 web-post-tr))
+          (color [1 0 0 1] (enc-wall-brace (partial enc-place 2 -1) 0 1 web-post-tl (partial enc-place 2 -1) 0 1 web-post-tr))
+          (color [0 0 1 1] (enc-wall-brace (partial key-place 3 -1) 0 1 web-post-tl (partial enc-place 2 -1) 0 1 web-post-tr))
+          )
         (key-wall-brace 3 -1 0 1 web-post-tl 3 -1 0 1 web-post-tr)
         ; these use a dx=2 offset to make the wall thicker, needs also a bespoke triangle hull.
         (color [1 1 0 1] (key-wall-brace 3 -1 0 1 web-post-tr 4 0 2 1 web-post-tl))
