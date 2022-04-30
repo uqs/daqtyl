@@ -1061,87 +1061,10 @@
                       ))))
       )
 
-; put it all together
-(def model-right (difference
-                   (union
-                     (key-holes)
-                     (connectors)
-                     thumb
-                     (thumb-connectors)
-                     (difference (union (case-walls)
-                                        screw-insert-outers)
-                                 ;usb-holder-space
-                                 ;trrs-notch
-                                 ;usb-holder-notch
-                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
-                                 screw-insert-holes))
-                   cut-bottom
-                   ))
-
-(def model-left (difference
-                  (union
-                    (key-holes :extra-top-row true)
-                    (connectors :extra-top-row true)
-                    thumb
-                    (thumb-connectors :encoder true)
-                    (difference (union (case-walls :extra-top-row true)
-                                       screw-insert-outers)
-                                (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
-                                screw-insert-holes))
-                  cut-bottom
-                  ))
-
-; Cut away the walls from the bottom plate again, so it recedes fully. Requires sufficient keyboard-z-offset.
-(defn plate-cutout [shape & {:keys [extra-top-row] :or {extra-top-row false}}]
-  (union
-    (difference
-      shape
-      (translate [0 0 -10] screw-insert-screw-holes)
-      (translate [0 0 -3.4] plate-screw-recess)
-      (union
-        (for [xy (range 0.994 1.14 0.019)]
-          (->> (case-walls :extra-top-row extra-top-row)
-               (scale [xy xy 1.0])
-               (translate [0 0 -0.01]))))
-      )))
-
-; Not using bottom-plate-thickness fully, as the print won't be that exact anyway.
-(def plate-right
-        (extrude-linear
-          {:height (- bottom-plate-thickness 0.05) :center false}
-          (project
-            (difference
-              (union
-                (key-holes)
-                (connectors)
-                thumb
-                (thumb-connectors)
-                (case-walls)
-                thumbcaps-fill
-                (caps-fill)
-                screw-insert-outers)
-              ))))
-
-(def plate-left
-  (difference
-        (extrude-linear
-          {:height (- bottom-plate-thickness 0.05) :center false}
-          (project
-            (difference
-              (union
-                (key-holes :extra-top-row true)
-                (connectors :extra-top-row true)
-                thumb
-                (thumb-connectors :encoder true)
-                (case-walls :extra-top-row true)
-                thumbcaps-fill
-                (caps-fill :extra-top-row true)
-                screw-insert-outers)
-              )))
-        ))
-
+(def trackball-r (/ 34 2))  ; 34 mm ball
+(def trackball-outer-r (+ trackball-r 2.5))
 (defn trackholder [l zdeg]
-  (let [r 17.00
+  (let [r trackball-r
         h 70
         outer-r (+ r 1)
         d (/ r 2)
@@ -1188,7 +1111,7 @@
                )
         ; cutout to reach the sensor board
         sensor-wall-cut (->> (cube 28.2 25 h)
-                             (translate [0 (* -1 r) -16]))
+                             (translate [0 (* -1 r) -18]))
         ; top outer rim connecting to the cylinder
         ring (->>
                (difference
@@ -1324,41 +1247,42 @@
                     )))
 
 ; Trackballs on the top/back and side of keyboard.
-(def trackball-top-pos [-30 50 (+ 30 keyboard-z-offset)])
+(def trackball-top-height (+ 35 keyboard-z-offset))
+(def trackball-top-pos [-38 50 trackball-top-height])
 (def trackball-top
   (difference
-    (union (->> (trackholder (last trackball-top-pos) -90)
+    (union (->> (trackholder (last trackball-top-pos) 0)
                 (translate trackball-top-pos)
                 (color [1 0 0 1]))
            )
-    (->> (cube 40 5 30)(rotate (deg2rad -0) [0 0 1]) (translate trackball-top-pos)(translate [0 -20.2 0]))
+    (->> (cube 40 5 40)(rotate (deg2rad -0) [0 0 1]) (translate trackball-top-pos)(translate [0 -20.2 0]))
     )
   )
 
-
-(def trackball-side-pos [-98 -10 (+ 55 keyboard-z-offset)])
+(def trackball-side-height (+ 55 keyboard-z-offset))
+(def trackball-side-pos [-98 -10 trackball-side-height])
 (def trackball-side
-  (union (->> (trackholder (last trackball-side-pos) 180)
+  (union (->> (trackholder (last trackball-side-pos) 94)
               (translate trackball-side-pos)
               (color [0 0 1 1]))
          ))
 
-; janky ass way to cut through to the trackball holders left side
+; janky ass way to cut through to the trackball holders left&top side
 (def trackball-cutouts
   (union
     (fa! 1)
-    (->> (cube 20 20 80) (translate [-88 -10 9]))
-    (->> (sphere 19.6) (translate trackball-side-pos))
-    ; top side
-    (->> (cube 20 20 50) (translate [-40 43 0]))
-    (->> (sphere 19.6) (translate trackball-top-pos))
+    ; top
+    (->> (cylinder trackball-outer-r trackball-top-height) (translate trackball-top-pos)(translate [0 0 (/ trackball-top-height -2)]))
+    (->> (cube 28.5 20 40) (translate trackball-top-pos)(translate [0 (- 0 trackball-r) -42]))
+    ; side
+    (->> (cylinder trackball-outer-r trackball-side-height) (translate trackball-side-pos) (translate [0 0 (/ trackball-side-height -2)]))
     ; for the 90 degree rotated holders, ugh FIXME
-    (->> (cube 20 28 40)(translate [-94 10 39]))
-    (->> (cube 20 28 50)(translate [-50 47 20]))
+    ;(->> (cube 20 28 40)(translate [-94 10 39]))
+    ;(->> (cube 20 28 50)(translate [-50 47 20]))
   ))
 
 (spit "things/sensor-welltest.scad"
-      (write-scad (intersection ;(->> (cube 60 140 50)(translate [-35 0 30]))
+      (write-scad (intersection (->> (cube 53 60 50)(translate [-35 42 30]))
                                 (union
                                   (difference
                                     (union
@@ -1366,15 +1290,94 @@
                                       (connectors)
                                       (thumb-connectors)
                                       thumb
-                                      (case-walls)
+                                      (difference (case-walls) trackball-cutouts)
                                       )
-                                    trackball-cutouts
                                     )
                                   trackball-top
                                   trackball-side
                                   )
                                 ))
       )
+
+; put it all together
+(def model-right (difference
+                   (union
+                     (key-holes)
+                     (connectors)
+                     (thumb-connectors)
+                     thumb
+                     (difference (union (case-walls)
+                                        screw-insert-outers)
+                                 ;usb-holder-space
+                                 ;trrs-notch
+                                 ;usb-holder-notch
+                                 trackball-cutouts
+                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
+                                 screw-insert-holes))
+                   cut-bottom
+                   ))
+
+(def model-left (difference
+                  (union
+                    (key-holes :extra-top-row true)
+                    (connectors :extra-top-row true)
+                    thumb
+                    (thumb-connectors :encoder true)
+                    (difference (union (case-walls :extra-top-row true)
+                                       screw-insert-outers)
+                                (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
+                                screw-insert-holes))
+                  cut-bottom
+                  ))
+
+; Cut away the walls from the bottom plate again, so it recedes fully. Requires sufficient keyboard-z-offset.
+(defn plate-cutout [shape & {:keys [extra-top-row] :or {extra-top-row false}}]
+  (union
+    (difference
+      shape
+      (translate [0 0 -10] screw-insert-screw-holes)
+      (translate [0 0 -3.4] plate-screw-recess)
+      (union
+        (for [xy (range 0.994 1.14 0.019)]
+          (->> (case-walls :extra-top-row extra-top-row)
+               (scale [xy xy 1.0])
+               (translate [0 0 -0.01]))))
+      )))
+
+; Not using bottom-plate-thickness fully, as the print won't be that exact anyway.
+(def plate-right
+        (extrude-linear
+          {:height (- bottom-plate-thickness 0.05) :center false}
+          (project
+            (difference
+              (union
+                (key-holes)
+                (connectors)
+                thumb
+                (thumb-connectors)
+                (case-walls)
+                thumbcaps-fill
+                (caps-fill)
+                screw-insert-outers)
+              ))))
+
+(def plate-left
+  (difference
+        (extrude-linear
+          {:height (- bottom-plate-thickness 0.05) :center false}
+          (project
+            (difference
+              (union
+                (key-holes :extra-top-row true)
+                (connectors :extra-top-row true)
+                thumb
+                (thumb-connectors :encoder true)
+                (case-walls :extra-top-row true)
+                thumbcaps-fill
+                (caps-fill :extra-top-row true)
+                screw-insert-outers)
+              )))
+        ))
 
 (spit "things/encoder-walltest.scad"
       (write-scad (union
@@ -1395,9 +1398,7 @@
           old (try (slurp file) (catch Exception e))
           new (write-scad
                 (union
-                  (translate [130 0 0] (union (difference model-right
-                                                          trackball-cutouts
-                                                          )
+                  (translate [130 0 0] (union model-right
                                               (->> (plate-cutout plate-right) (translate [0 0 -30]))
                                               thumbcaps
                                               (caps)
@@ -1467,9 +1468,7 @@
           file "things/right-test.scad"
           old (try (slurp file) (catch Exception e))
           new (write-scad
-                (union (difference model-right
-                                   trackball-cutouts
-                                   )
+                (union model-right
                        (->> (plate-cutout plate-right) (translate [0 0 -30]))
                        thumbcaps
                        (caps)
@@ -1486,9 +1485,7 @@
           file "things/right.scad"
           old (try (slurp file) (catch Exception e))
           new (write-scad
-                (union (difference model-right
-                                   trackball-cutouts
-                                   )
+                (union model-right
                        trackball-top
                        trackball-side
                        ))
