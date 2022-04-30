@@ -1235,7 +1235,8 @@
                         ; should rotate this better to simulate whether sensor board can be inserted
                         ;(->> (union (->> (cube 21.5 21.5 8)(rotate (deg2rad 30) [1 0 0])(translate [0 20 5]))) )
                         )
-                      (translate [0 0 (+ 5.35 r)]) ; half cube width plus thickness
+                      ; TODO: reduce this due to offset from pimples
+                      (translate [0 0 (+ 5.00 r)]) ; half cube width plus thickness
                       (rotate sensor-angle [1 0 0])
                       )
                  (->> (sphere (+ r 1))(with-fn 60))
@@ -1258,45 +1259,45 @@
                             (multmatrix [[1 0 0.15 0]
                                          [0 1 0 0]
                                          [0 0 1 0]])
-                            (translate [-20 0 -44.3]))
+                            (translate [-20 0 (- -26.8 r)]))
                           ; right wall/support
                           (->>
                             rounded-side-support
                             (multmatrix [[1 0 -0.15 0]
                                          [0 1 0 0]
                                          [0 0 1 0]])
-                            (translate [20 0 -44.3]))
+                            (translate [20 0 (- -26.8 r)]))
                           ; backwall
                           (->>
                             (cube 40 10 40)
                             (multmatrix [[1 0 0 0]
                                          [0 1 -0.15 0]
                                          [0 0 1 0]])
-                            (translate [0 16 -44.3]))
+                            (translate [0 16 (- -26.8 r)]))
                           ; backstop
                           (->>
                             (cube 40 3 4)
-                            (translate [0 12.3 -23]))
+                            (translate [0 12.3 (- -5.5 r)]))
                           ; upper walls
                           (->>
                             (cube 10 30 50)
                             (multmatrix [[1 0 0.90 0]
                                          [0 1 0 0]
                                          [0 0 1 0]])
-                            (translate [-20 0 -23]))
+                            (translate [-20 0 (- -5.5 r)]))
                           (->>
                             (cube 10 30 50)
                             (multmatrix [[1 0 -0.90 0]
                                          [0 1 0 0]
                                          [0 0 1 0]])
-                            (translate [20 0 -23]))
+                            (translate [20 0 (- -5.5 r)]))
                           ; upper back wall
                           (->>
                             (cube 50 30 50)
                             (multmatrix [[1 0 0 0]
                                          [0 1 -0.60 0]
                                          [0 0 1 0]])
-                            (translate [0 27 -23]))
+                            (translate [0 27 (- -5.5 r)]))
                           )
                         (difference (hull cyl)
                                     (sphere (+ r 0.5))
