@@ -1148,8 +1148,12 @@
         c (* r 3)
         sensor-angle (deg2rad 180)
         ; steel balls will be glued in here
-        pimple (fn [r] (->> (sphere r)
-                            (with-fn 40)))
+        pimple (fn [r] (difference
+                         (->> (sphere r)
+                              (with-fn 40))
+                         ; snip off 4mm from the top of the pimple
+                         (->> (sphere 4) (with-fn 40) (translate [0 0 (+ (- -4 r) 0.4)]))
+                         ))
         ; the cutout for the sensor
         cutout (hull (union
                       (->> (cylinder 2.7 6)(translate [2 0 0]))
@@ -1228,22 +1232,36 @@
                         ;  )
                         ; turn this on to see if the sensor fits the overall model
                         ;(color [0 0 0 1] (->> (cube 28.5 21.5 3)(translate [0 0 0.5])) (->> (cube 21.5 21.5 8)(translate [0 3 0.5])))
+                        ; should rotate this better to simulate whether sensor board can be inserted
+                        ;(->> (union (->> (cube 21.5 21.5 8)(rotate (deg2rad 30) [1 0 0])(translate [0 20 5]))) )
                         )
                       (translate [0 0 (+ 5.35 r)]) ; half cube width plus thickness
                       (rotate sensor-angle [1 0 0])
                       )
                  (->> (sphere (+ r 1))(with-fn 60))
                  )
+        rounded-side-support (->>
+                               (hull
+                                 (->> (cylinder 15 10) (translate [15 -15 0]))
+                                 (->> (cube 2 2 10) (translate [1 -29 0]))
+                                 (->> (cube 2 2 10) (translate [39 -29 0]))
+                                 (->> (cube 2 2 10) (translate [39 -1 0])))
+                               (rotate (deg2rad 180) [1 0 0])
+                               (rotate (deg2rad 90) [0 1 0])
+                               (translate [0 -15 20])
+                               )
         side-supports (intersection
                         (union
+                          ; left wall/support
                           (->>
-                            (cube 10 30 40)
+                            rounded-side-support
                             (multmatrix [[1 0 0.15 0]
                                          [0 1 0 0]
                                          [0 0 1 0]])
                             (translate [-20 0 -44.3]))
+                          ; right wall/support
                           (->>
-                            (cube 10 30 40)
+                            rounded-side-support
                             (multmatrix [[1 0 -0.15 0]
                                          [0 1 0 0]
                                          [0 0 1 0]])
