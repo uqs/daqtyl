@@ -167,15 +167,12 @@
       (write-scad encoder-plate))
 
 (def encoder-cap
-  (let [x 1
-        ]
-    (->> (cylinder 6 15)
-         (rotate (deg2rad 90) [0 1 0])
-         ; TODO: bump z-height some more, maybe 2mm, need to wait for keycaps to decide.
-         (translate [0 0 (+ 5 8)]) ;; 8 is plate-thickness from above
-         (color [0 0 0 1])
-         )
-  ))
+  (->> (cylinder 6 15)
+       (rotate (deg2rad 90) [0 1 0])
+       (translate [0 0 10])
+       (color [0 1 0 0.3])
+       )
+  )
 
 (def encoder-fill (hull encoder-plate))
 
@@ -305,8 +302,7 @@
                       (fn [angle obj] (rotate angle [0 1 0] obj))
                       column row shape))
 
-; TODO: if the shape is web-post-bl,br, etc, then translate further outward somehow.
-; TODO: could merge with key-place, but need to know about left/right side then ...
+; NOTE: could merge with key-place, but need to know about left/right side then ...
 (defn enc-place [column row shape]
   (let [shape-or-post (cond (= shape slim-web-post-tl) (->> shape (translate [-1 0 0]))
                             (= shape web-post-tl) (->> shape (translate [-1 0 0]))
@@ -321,6 +317,7 @@
           (= row 3) (->> shape-or-post
                          (rotate (deg2rad 10)[1 0 0])
                          (rotate (deg2rad -10)[0 1 0])
+                         (rotate (deg2rad -5)[0 0 1])
                          (translate [-2 -4 11])
                          (key-place column row))
           :else (key-place column row shape)
@@ -370,10 +367,10 @@
                      :when (or (.contains [3] column)
                                (not= row lastrow))]
                  (->> (sa-cap 1) (key-place column row)))
-               (if extra-top-row (->> encoder-cap (key-place 2 lastrow))
+               (if extra-top-row (->> encoder-cap (enc-place 2 lastrow))
                  (->> (sa-cap 1) (key-place 2 lastrow)))
                (if extra-top-row (->> (sa-cap 1) (key-place 1 -1)))
-               (if extra-top-row (->> encoder-cap (key-place 2 -1)))
+               (if extra-top-row (->> encoder-cap (enc-place 2 -1)))
                (if extra-top-row (->> (sa-cap 1) (key-place 3 -1)))
                )))
 
@@ -382,12 +379,13 @@
   (apply union
          (conj (for [column columns
                      row rows
-                     :when (or (.contains [2 3] column)
+                     :when (or (.contains [3] column)
                                (not= row lastrow))]
                  (key-place column row keyhole-fill))
-               (if extra-top-row (key-place 2 lastrow encoder-fill))
+               (if extra-top-row (enc-place 2 lastrow encoder-fill)
+                 (key-place 2 lastrow keyhole-fill))
                (if extra-top-row (key-place 1 -1 keyhole-fill))
-               (if extra-top-row (key-place 2 -1 encoder-fill))
+               (if extra-top-row (enc-place 2 -1 encoder-fill))
                (if extra-top-row (key-place 3 -1 keyhole-fill))
                )))
 
@@ -1358,7 +1356,8 @@
                 (case-walls)
                 thumbcaps-fill
                 (caps-fill)
-                screw-insert-outers)
+                ;screw-insert-outers
+                )
               ))))
 
 (def plate-left
@@ -1375,7 +1374,8 @@
                 (case-walls :extra-top-row true)
                 thumbcaps-fill
                 (caps-fill :extra-top-row true)
-                screw-insert-outers)
+                ;screw-insert-outers
+                )
               )))
         ))
 
