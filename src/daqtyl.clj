@@ -1111,7 +1111,7 @@
                )
         ; cutout to reach the sensor board
         sensor-wall-cut (->> (cube 28.2 25 h)
-                             (translate [0 (* -1 r) -18]))
+                             (translate [0 (* -1 r) -22]))
         ; top outer rim connecting to the cylinder
         ring (->>
                (difference
@@ -1248,19 +1248,19 @@
 
 ; Trackballs on the top/back and side of keyboard.
 (def trackball-top-height (+ 35 keyboard-z-offset))
-(def trackball-top-pos [-38 50 trackball-top-height])
+(def trackball-top-pos [-38 (+ 30.5 trackball-outer-r) trackball-top-height])
 (def trackball-top
   (difference
     (union (->> (trackholder (last trackball-top-pos) 0)
                 (translate trackball-top-pos)
                 (color [1 0 0 1]))
            )
-    (->> (cube 40 5 40)(rotate (deg2rad -0) [0 0 1]) (translate trackball-top-pos)(translate [0 -20.2 0]))
+    (->> (cube 40 5 50)(rotate (deg2rad -0) [0 0 1]) (translate trackball-top-pos)(translate [0 (- -1 trackball-outer-r) 0]))
     )
   )
 
 (def trackball-side-height (+ 55 keyboard-z-offset))
-(def trackball-side-pos [-98 -10 trackball-side-height])
+(def trackball-side-pos [(- -77 trackball-outer-r) -10 trackball-side-height])
 (def trackball-side
   (union (->> (trackholder (last trackball-side-pos) 94)
               (translate trackball-side-pos)
@@ -1282,7 +1282,7 @@
   ))
 
 (spit "things/sensor-welltest.scad"
-      (write-scad (intersection (->> (cube 53 60 50)(translate [-35 42 30]))
+      (write-scad (intersection (->> (cube 65 80 50)(translate [-35 50 30]))
                                 (union
                                   (difference
                                     (union
