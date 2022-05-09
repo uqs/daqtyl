@@ -536,7 +536,7 @@
 (defn bottom-hull [& p]
   (hull p (bottom p)))
 
-(def left-wall-x-offset 4)
+(def left-wall-x-offset 2)  ; TODO reduce this further, but that needs some wall fixes
 (def left-wall-z-offset 1)
 
 (defn left-key-position [row direction]
@@ -883,12 +883,12 @@
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
   (union (screw-insert 0 0        bottom-radius top-radius height [9 10.0 bottom-plate-thickness] [1 0 0]) ; red
-         (screw-insert 0 lastrow  bottom-radius top-radius height [-1 4 bottom-plate-thickness] [1 1 0]) ; yellow
+         (screw-insert 0 lastrow  bottom-radius top-radius height [1.0 13 bottom-plate-thickness] [1 1 0]) ; yellow
          ; FIXME later
          ;(screw-insert 2 0        bottom-radius top-radius height [9.5 -4.5 bottom-plate-thickness] [0 0 1]) ; blue
-         (screw-insert 1 lastrow  bottom-radius top-radius height [5 16.5 bottom-plate-thickness] [1 0 1]) ; fuchsia
+         (screw-insert 1 lastrow  bottom-radius top-radius height [-50 0 bottom-plate-thickness] [1 0 1]) ; fuchsia
          (screw-insert lastcol 0        bottom-radius top-radius height [-21 (cond (= lastcol 4) 13 (= lastcol 5) 9) bottom-plate-thickness] [0 1 1]) ; aqua
-         (screw-insert lastcol lastrow  bottom-radius top-radius height [-21 13 bottom-plate-thickness] [0 1 0]) ; green
+         (screw-insert lastcol lastrow  bottom-radius top-radius height [-21 13.9 bottom-plate-thickness] [0 1 0]) ; green
          )
   )
 
@@ -903,7 +903,7 @@
 
 ; Wall Thickness W:  2.1--3.0
 (def screw-insert-outers (screw-insert-all-shapes (+ screw-insert-bottom-radius 3.0) (+ screw-insert-top-radius 2.1) (+ screw-insert-height 1.1)))
-(def screw-insert-screw-holes  (screw-insert-all-shapes 1.7 1.7 350))
+(def screw-insert-screw-holes  (screw-insert-all-shapes 1.7 1.7 35))
 (def plate-screw-recess  (screw-insert-all-shapes 3.1 1.95 2.1)) ;; creates the recess for screws in bottom plate
 
 ; Wrist rest cutout from https://github.com/crystalhand/dactyl-keyboard.git
@@ -990,15 +990,15 @@
   (union
     ;;right cut
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 20 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 37.2 4.5]))
+    (->> (cylinder 2.9 10)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [right_wrist_connecter_x 39.6 4.5]))
     (->> nut-cube (translate [right_wrist_connecter_x 22.0 1.5]))
     ;;middle cut
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 20 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 38.5 4.5]))
+    (->> (cylinder 2.9 10)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [middle_wrist_connecter_x 40.9 4.5]))
     (->> nut-cube (translate [middle_wrist_connecter_x 22.0 1.5]))
     ;;left
     (->> (cylinder 1.85 50)(with-fn 30) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 22 4.5]))
-    (->> (cylinder 2.9 5.2)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 35.5 4.5]))
+    (->> (cylinder 2.9 10)(with-fn 50) (rotate  (/  π 2)  [1 0 0])(translate [left_wrist_connecter_x 37.9 4.5]))
     (->> nut-cube (translate [left_wrist_connecter_x 20.0 1.5]))
     )
 ))
@@ -1348,7 +1348,7 @@
       (translate [0 0 -10] screw-insert-screw-holes)
       (translate [0 0 -3.4] plate-screw-recess)
       (union
-        (for [xy (range 0.994 1.14 0.019)]
+        (for [xy (range 0.994 1.14 0.015)]
           (->> (case-walls :extra-top-row extra-top-row)
                (scale [xy xy 1.0])
                (translate [0 0 -0.01]))))
