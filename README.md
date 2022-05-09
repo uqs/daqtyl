@@ -23,13 +23,15 @@ Shoutout also to the folks from OhKeycaps who inadvertently got me started on th
 ## Notable Changes
 
 - Trackball holders for the fingers of the right hand (I haven't decided on the final placement).
-- Trackballs don't use dowels or ball bearings, but press-fit steel balls. This allows for much nicer twisting motion of the trackball (to mean wheel up/down).
+- Trackballs don't use dowels or ball bearings, but press-fit steel balls. I prefer the feel of this, but might try BTUs also.
 - Tighter vertical spacing, works for MT3 keycaps.
-- TODO: tighter horizontal spacing for first and last column.
+- Tighter horizontal spacing for first and last column. First column also slanted inwards.
 - Three button cluster based off the "mini" cluster.
 - Palm rests without silicone pads.
 - 3 extra buttons for Mouse1-3. Don't ask, I got used to this setup, my WM greatly benefits.
-- rolling rotary encoders (like a proper mouse wheel).
+- Rolling rotary encoders (like a proper mouse wheel), again, can't decide on final placement yet.
+- Support for 34mm and 44mm trackballs.
+- TODO: MCU holder is still missing!
 
 ## Generate OpenSCAD and STL models
 
@@ -44,7 +46,7 @@ This requires the unreleased (yet) version of scad-clj, you should be able to cl
 
 ## License
 
-Copyright © 2015-2021 Matthew Adereth, Tom Short, Leo Lou, carbonfet, crystalhands, and Ulrich Spörlein.
+Copyright © 2015-2022 Matthew Adereth, Tom Short, Leo Lou, carbonfet, crystalhands, and Ulrich Spörlein.
 
 The source code for generating the models is distributed under the [GNU AFFERO GENERAL PUBLIC LICENSE Version 3](LICENSE).
 
