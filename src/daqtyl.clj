@@ -1075,11 +1075,6 @@
                          ; snip off 4mm from the top of the pimple
                          (->> (sphere 4) (with-fn 40) (translate [0 0 (+ (- -4 r) 0.4)]))
                          ))
-        ; the cutout for the sensor
-        cutout (hull (union
-                      (->> (cylinder 2.7 6)(translate [2 0 0]))
-                      (->> (cylinder 2.7 6)(translate [-2 0 0]))
-                ))
         ; where the ball will sit
         bowl (union
                (difference
@@ -1089,14 +1084,8 @@
                  (sphere (+ r 0.1))
                  (->> (cube c c c)
                       (translate [0 0 (/ c 2)]))
-                 (for [deg '(0)] (->>
-                                            cutout
-                                            (translate [0 0 r])
-                                            (rotate sensor-angle [1 0 0])
-                                            (rotate (deg2rad deg) [0 0 1])
-                                            ))
                  ; through hole to the bottom
-                 (->> (cylinder 8 10)(translate [0 0 (* r -1)]))
+                 (->> (cylinder 10 10)(translate [0 0 (* r -1)]))
                  )
                ; three d=4mm balls to meld/glue steel balls into
                (for [x [[0 2] [120 2] [240 2]]] (->>
@@ -1174,10 +1163,10 @@
                  )
         rounded-side-support (->>
                                (hull
-                                 (->> (cylinder 15 10) (translate [15 -15 0]))
-                                 (->> (cube 2 2 10) (translate [1 -29 0]))
-                                 (->> (cube 2 2 10) (translate [39 -29 0]))
-                                 (->> (cube 2 2 10) (translate [39 -1 0])))
+                                 (->> (cylinder 15 13) (translate [15 -15 0]))
+                                 (->> (cube 2 2 13) (translate [1 -29 0]))
+                                 (->> (cube 2 2 13) (translate [39 -29 0]))
+                                 (->> (cube 2 2 13) (translate [39 -1 0])))
                                (rotate (deg2rad 180) [1 0 0])
                                (rotate (deg2rad 90) [0 1 0])
                                (translate [0 -15 20])
@@ -1190,25 +1179,25 @@
                             (multmatrix [[1 0 0.15 0]
                                          [0 1 0 0]
                                          [0 0 1 0]])
-                            (translate [-20 0 (- -26.0 r)]))
+                            (translate [-20 0 (- -26.5 r)]))
                           ; right wall/support
                           (->>
                             rounded-side-support
                             (multmatrix [[1 0 -0.15 0]
                                          [0 1 0 0]
                                          [0 0 1 0]])
-                            (translate [20 0 (- -26.0 r)]))
+                            (translate [20 0 (- -26.5 r)]))
                           ; backwall
                           (->>
                             (cube 40 20 40)
                             (multmatrix [[1 0 0 0]
                                          [0 1 -0.15 0]
                                          [0 0 1 0]])
-                            (translate [0 21 (- -26.0 r)]))
+                            (translate [0 21 (- -26.5 r)]))
                           ; backstop
                           (->>
                             (cube 40 3 4)
-                            (translate [0 12.3 (- -4.0 r)]))
+                            (translate [0 12.3 (- -4.5 r)]))
                           ; upper walls
                           (->>
                             (cube 10 30 50)
@@ -1237,14 +1226,14 @@
         ]
     (difference
       (->> (union
-           bowl
-           ring
-           cyl
-           side-supports
-           sensor
-           ;(->> (sphere trackball-r)(with-fn 60)(translate [0 0 0.8]))
-           )
-         (rotate (deg2rad zdeg) [0 0 1]))
+             bowl
+             ring
+             cyl
+             side-supports
+             sensor
+             ;(->> (sphere trackball-r)(with-fn 60)(translate [0 0 0.8]))
+             )
+           (rotate (deg2rad zdeg) [0 0 1]))
       (->> (cube 100 100 100)(translate [0 0 (- -50 l)]))
     )))
 
