@@ -27,15 +27,15 @@
 (def column-style :standard)
 
 (defn column-offset [column]
-    (cond (= column 0) [1.5 0 0.2]
+    (cond (= column 0) [1.4 0 0.3]
           (= column 2) [0 2.82 -4.5]
-          (>= column 4) [0 -16.5 5.64]    ; original [0 -5.8 5.64]
+          (>= column 4) [0 -14.5 5.64]    ; original [0 -5.8 5.64]
           :else [0 0 0]))
 
 (defn column-rotation [column]
     (cond (= column 0) 0
           (= column 2) 0
-          (>= column 4) (deg2rad 10)
+          (>= column 4) (deg2rad 5)
           :else 0))
 
 (defn column-twist [column]
@@ -477,14 +477,14 @@
 ; Also might open up the angle a bit more, to press them more with the tip of the thumb.
 (defn thumb-r-place [shape]
   (->> shape
-       (rotate (deg2rad  15) [1 0 0])
+       (rotate (deg2rad  18) [1 0 0])
        (rotate (deg2rad  -5) [0 1 0])
        (rotate (deg2rad  17) [0 0 1])
        (translate thumborigin)
        (translate [-14 -7.2 3])))
 (defn thumb-m-place [shape & {:keys [offset] :or {offset [0 0 0]}}]
   (->> shape
-       (rotate (deg2rad  15) [1 0 0])
+       (rotate (deg2rad  18) [1 0 0])
        (rotate (deg2rad   0) [0 1 0])
        (rotate (deg2rad  25.5) [0 0 1])
        (translate thumborigin)
@@ -492,7 +492,7 @@
        (translate [-34 -15 2.2])))
 (defn thumb-l-place [shape]
   (->> shape
-       (rotate (deg2rad  15) [1 0 0])
+       (rotate (deg2rad  18) [1 0 0])
        (rotate (deg2rad   5) [0 1 0])
        (rotate (deg2rad  33) [0 0 1])
        (translate thumborigin)
@@ -825,8 +825,8 @@
 
 (def front-wall (union
   (key-wall-brace 3 lastrow  0 -1 web-post-bl 3 lastrow   0 -1 web-post-br :bottomoffset [-1 -1])
-  (key-wall-brace 3 lastrow  0 -1 web-post-br 4 cornerrow 2 -1 web-post-bl :bottomoffset [-1 0])
-  (key-wall-brace 4 cornerrow 2 -1 web-post-bl 4       cornerrow 0 -1 web-post-br)
+  (key-wall-brace 3 lastrow  0 -1 web-post-br 4 cornerrow 1 -1 web-post-bl :bottomoffset [-1 0])
+  (key-wall-brace 4 cornerrow 1 -1 web-post-bl 4 cornerrow 0 -1 web-post-br)
   (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl x       cornerrow 0 -1 web-post-br))
   (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl (dec x) cornerrow 0 -1 web-post-br))
   ))
