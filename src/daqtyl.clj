@@ -1059,7 +1059,7 @@
                       ))))
       )
 
-(def trackball-r (+ (/ 44 2) 1))  ; 34 mm ball plus offset
+(def trackball-r (+ (/ 44 2) 0.5))  ; 34 mm ball plus offset
 (def trackball-outer-r (+ trackball-r 2.5))
 (defn trackholder [l zdeg]
   (let [r trackball-r
@@ -1179,21 +1179,21 @@
                             (multmatrix [[1 0 0.15 0]
                                          [0 1 0 0]
                                          [0 0 1 0]])
-                            (translate [-20 0 (- -26.5 r)]))
+                            (translate [-20 0 (- -26.0 r)]))
                           ; right wall/support
                           (->>
                             rounded-side-support
                             (multmatrix [[1 0 -0.15 0]
                                          [0 1 0 0]
                                          [0 0 1 0]])
-                            (translate [20 0 (- -26.5 r)]))
+                            (translate [20 0 (- -26.0 r)]))
                           ; backwall
                           (->>
                             (cube 40 20 40)
                             (multmatrix [[1 0 0 0]
                                          [0 1 -0.15 0]
                                          [0 0 1 0]])
-                            (translate [0 21 (- -26.5 r)]))
+                            (translate [0 21 (- -26.0 r)]))
                           ; backstop
                           (->>
                             (cube 40 3 4)
@@ -1281,7 +1281,7 @@
   ))
 
 (spit "things/sensor-welltest.scad"
-      (write-scad (intersection (->> (cube 65 80 50)(translate [-35 50 30]))
+      (write-scad (intersection (->> (cube 65 80 60)(translate [-35 50 30]))
                                 (union
                                   (difference
                                     (union
@@ -1292,7 +1292,7 @@
                                       (difference (case-walls) trackball-cutouts)
                                       )
                                     )
-                                  trackball-top
+                                  (difference trackball-top (->> (hull (back-wall))(translate [0 -2.4 -8])))
                                   trackball-side
                                   )
                                 ))
