@@ -27,7 +27,7 @@
 (def column-style :standard)
 
 (defn column-offset [column]
-    (cond (= column 0) [1.4 0 0.3]
+    (cond (= column 0) [1.35 0 0.3]
           (= column 2) [0 2.82 -4.5]
           (>= column 4) [0 -14.5 5.64]    ; original [0 -5.8 5.64]
           :else [0 0 0]))
@@ -494,9 +494,9 @@
   (->> shape
        (rotate (deg2rad  18) [1 0 0])
        (rotate (deg2rad   5) [0 1 0])
-       (rotate (deg2rad  33) [0 0 1])
+       (rotate (deg2rad  32) [0 0 1])
        (translate thumborigin)
-       (translate [-52 -25 3])))
+       (translate [-52.2 -25.2 3])))
 
 (defn thumb-1x-layout [shape] nil)
 
@@ -612,8 +612,8 @@
    ; The steep bit from thumb key up towards main keyboard, it's many parts.
    ; Need to do special things for 1.5u keys, sigh.
    (let [
-         left-offset [-1.3 4.5 0.99]
-         right-offset [1.2 6 0.4]
+         left-offset [-0.1 4.5 0.8]
+         right-offset [1.2 6 -0.5]
          ]
      (union
        (color [0 1 1 1] (hull
@@ -622,7 +622,7 @@
         (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
         (thumb-m-place web-post-tl :offset left-offset)
         ))
-       (color [0 0 0 1] (hull
+       (color [0.8 0.5 0 1] (hull
         (left-key-place cornerrow -1 (translate (wall-locate3 -1 0) web-post))
         (thumb-m-place web-post-tl :offset left-offset)
         (thumb-m-place web-post-tl)
@@ -1101,7 +1101,7 @@
                                (cube 28.6 20 h)
                                (->> (cylinder 14.3 20)
                                     (rotate (deg2rad 90) [1 0 0])
-                                    (scale [1 1 0.95])
+                                    (scale [1 1 0.75])
                                     (translate [0 0 (/ h 2)])
                                     )
                                )
@@ -1245,9 +1245,18 @@
 
 ; Trackballs on the top/back and side of keyboard.
 (def trackball-top-height (+ 35 keyboard-z-offset))
-(def trackball-top-pos [-42 (+ 30 trackball-outer-r) trackball-top-height])
+(def trackball-top-pos [-38 (+ 30 trackball-outer-r) trackball-top-height])
 (def trackball-top-cylinder-difference
-    (->> (cube 40 5 50)(rotate (deg2rad -0) [0 0 1]) (translate trackball-top-pos)(translate [0 (- -0.3 trackball-outer-r) 0])))
+    (->> (union
+           (cube 40 5 50)(rotate (deg2rad -0) [0 0 1])
+           (->>
+             (sphere (/ trackball-outer-r 0.75))
+             (scale [1 1 0.4])
+             (translate [0 0 5])
+             )
+           )
+         (translate trackball-top-pos)
+         (translate [0 (- -0.3 trackball-outer-r) 0])))
 (def trackball-top
   (difference
     (union (->> (trackholder (last trackball-top-pos) 0)
@@ -1259,29 +1268,36 @@
   )
 
 (def trackball-side-height (+ 52 keyboard-z-offset))
-(def trackball-side-pos [(- -77 trackball-outer-r) -10 trackball-side-height])
+(def trackball-side-pos [(- -75 trackball-outer-r) -5 trackball-side-height])
+(def trackball-side-cylinder-difference
+    (->> (cube 40 5 50)(rotate (deg2rad 90) [0 0 1]) (translate trackball-side-pos)(translate [(+ -0.3 trackball-outer-r) 0 0])))
 (def trackball-side
-  (union (->> (trackholder (last trackball-side-pos) 94)
-              (translate trackball-side-pos)
-              (color [0 0 1 1]))
-         ))
+  (difference
+    (union (->> (trackholder (last trackball-side-pos) 94)
+                (translate trackball-side-pos)
+                (color [0 0 1 1]))
+           )
+    ;trackball-side-cylinder-difference
+    )
+  )
 
 ; janky ass way to cut through to the trackball holders left&top side
 (def trackball-cutouts
   (union
     (fa! 1)
     ; top
-    (difference
-      (->> (cylinder trackball-outer-r trackball-top-height) (translate trackball-top-pos)(translate [0 0 (/ trackball-top-height -2)]))
-      trackball-top-cylinder-difference
+    (union
+      (->> (cylinder trackball-r trackball-top-height) (translate trackball-top-pos)(translate [0 0 (/ trackball-top-height -2)]))
+      (->> (cylinder trackball-outer-r trackball-top-height) (translate trackball-top-pos)(translate [0 0 (- (/ trackball-top-height -2) 20)]))
+      ;trackball-top-cylinder-difference
       )
     ;(->> (cube 28.5 20 40) (translate trackball-top-pos)(translate [0 (- 0 trackball-r) -42]))
     ; side
-    (->> (cylinder trackball-outer-r trackball-side-height) (translate trackball-side-pos) (translate [0 0 (/ trackball-side-height -2)]))
+    (->> (cylinder trackball-outer-r (+ trackball-side-height 10)) (translate trackball-side-pos) (translate [0 0 (+ (/ trackball-side-height -2) 5)]))
   ))
 
 (spit "things/sensor-welltest.scad"
-      (write-scad (intersection (->> (cube 65 80 60)(translate [-35 50 30]))
+      (write-scad (intersection (->> (cube 55 80 60)(translate [-38 50 30]))
                                 (union
                                   (difference
                                     (union
@@ -1310,9 +1326,9 @@
                                  ;usb-holder-space
                                  ;trrs-notch
                                  ;usb-holder-notch
-                                 trackball-cutouts
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
+                   trackball-cutouts
                    cut-bottom
                    ))
 
@@ -1487,8 +1503,13 @@
           old (try (slurp file) (catch Exception e))
           new (write-scad
                 (union model-right
-                       trackball-top
-                       trackball-side
+                       ;trackball-top
+                       (difference trackball-top (->> (hull (back-wall))(translate [0 -3.3 -8])))
+                       ;trackball-side
+                       (difference trackball-side
+                                   (->> (hull left-wall)(translate [2.2 0 -10]))
+                                   (difference (hull (->> single-plate (key-place 0 1))) (->> single-plate (key-place 0 1)))
+                                   )
                        ))
           ]
       (cond (not= old new) (spit file new))
