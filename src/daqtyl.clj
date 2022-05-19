@@ -14,6 +14,7 @@
 
 (def nrows 4)
 (def ncols 5)
+(def extra-row-col 5)             ; 5th or 4th column is the last for the extra row
 
 (def α (/ π 12))                        ; curvature of the columns
 (def β (/ π 36))                        ; curvature of the rows
@@ -357,7 +358,9 @@
            ; mouse keys go here, the middle one uses a different plate for the encoder
            (if extra-top-row (->> single-plate (key-place 1 -1)))
            (if extra-top-row (->> encoder-plate (mirror [-1 0 0]) (rotate (deg2rad 180)[0 0 1]) (enc-place 2 -1)))
-           (if extra-top-row (->> single-plate (key-place 3 -1)))
+           (if extra-top-row
+             (for [col (range 3 extra-row-col)]
+               (->> single-plate (key-place col -1))))
            )))
 
 (defn caps [& {:keys [extra-top-row] :or {extra-top-row false}}]
@@ -371,7 +374,9 @@
                  (->> (sa-cap 1) (key-place 2 lastrow)))
                (if extra-top-row (->> (sa-cap 1) (key-place 1 -1)))
                (if extra-top-row (->> encoder-cap (enc-place 2 -1)))
-               (if extra-top-row (->> (sa-cap 1) (key-place 3 -1)))
+               (if extra-top-row
+                 (for [col (range 3 extra-row-col)]
+                   (->> (sa-cap 1) (key-place col -1))))
                )))
 
 ; only used to project the shadow on the bottom plate
@@ -386,7 +391,9 @@
                  (key-place 2 lastrow keyhole-fill))
                (if extra-top-row (key-place 1 -1 keyhole-fill))
                (if extra-top-row (enc-place 2 -1 encoder-fill))
-               (if extra-top-row (key-place 3 -1 keyhole-fill))
+               (if extra-top-row
+                 (for [col (range 3 extra-row-col)]
+                   (key-place col -1 keyhole-fill)))
                )))
 
 (defn triangle-hulls [& shapes]
@@ -439,8 +446,15 @@
                     (key-place (inc column) row web-post-bl)
                     (enc-place column row web-post-br))
                   )
+                (for [column (range 3 (dec extra-row-col)) row [-1]]
+                  (triangle-hulls
+                    (key-place (inc column) row web-post-tl)
+                    (key-place column row web-post-tr)
+                    (key-place (inc column) row web-post-bl)
+                    (key-place column row web-post-br))
+                  )
                 ;; Column connections
-                (for [column (range 1 4) row [-1]]
+                (for [column (range 1 extra-row-col) row [-1]]
                   (let [place-func (cond (= column 2) enc-place :else key-place)]
                     (triangle-hulls
                       (place-func column row web-post-bl)
@@ -459,6 +473,13 @@
                 (for [column [2] row [-1]]
                   (triangle-hulls
                     (enc-place column row web-post-br)
+                    (key-place column (inc row) web-post-tr)
+                    (key-place (inc column) row web-post-bl)
+                    (key-place (inc column) (inc row) web-post-tl)
+                    ))
+                (for [column (range 3 (dec extra-row-col)) row [-1]]
+                  (triangle-hulls
+                    (key-place column row web-post-br)
                     (key-place column (inc row) web-post-tr)
                     (key-place (inc column) row web-post-bl)
                     (key-place (inc column) (inc row) web-post-tl)
@@ -587,12 +608,15 @@
               :bottomoffset bottomoffset :topoffset topoffset
               ))
 
-(def right-wall
-    (union (key-wall-brace lastcol 0 0 1 web-post-tr lastcol 0 1 0 web-post-tr)
-             (union (for [y (range 0 lastrow)] (key-wall-brace lastcol y 1 0 web-post-tr lastcol y 1 0 web-post-br))
-                    (for [y (range 1 lastrow)] (key-wall-brace lastcol (dec y) 1 0 web-post-br lastcol y 1 0 web-post-tr)))
+(defn right-wall [& {:keys [extra-top-row] :or {extra-top-row false}}]
+  (let [
+        startrow (cond (and extra-top-row (= extra-row-col 5)) -1 :else 0)
+        ]
+    (union (key-wall-brace lastcol startrow 0 0.5 web-post-tr lastcol startrow 1 0 web-post-tr)
+             (union (for [y (range startrow lastrow)] (key-wall-brace lastcol y 1 0 web-post-tr lastcol y 1 0 web-post-br))
+                    (for [y (range (inc startrow) lastrow)] (key-wall-brace lastcol (dec y) 1 0 web-post-br lastcol y 1 0 web-post-tr)))
            (key-wall-brace lastcol cornerrow 0 -1 web-post-br lastcol cornerrow 1 0 web-post-br)
-           ))
+           )))
 
 (defn thumb-connectors [& {:keys [encoder] :or {encoder false}}]
   (let [ place-func (cond encoder enc-place :else key-place) ]
@@ -757,6 +781,7 @@
     ;(for [x (range 1 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
     (if extra-top-row
       (vector
+        ;defn key-wall-brace [x1 y1 dx1 dy1 post1 x2 y2 dx2 dy2 post2]
         ; x/y is placement of key, 0/0 being top-left on the right model
         ; dx1/dy1 moves the post a bit, scaled by wall-xy-locate
         ; ditto for the second post. So you move to key pos 0/0 and put down a
@@ -777,18 +802,20 @@
           )
         (key-wall-brace 3 -1 0 1 web-post-tl 3 -1 0 1 web-post-tr)
         ; these use a dx=2 offset to make the wall thicker, needs also a bespoke triangle hull.
-        (color [1 1 0 1] (key-wall-brace 3 -1 0 1 web-post-tr 4 0 2 1 web-post-tl))
-        (key-wall-brace 4 0 2 1 web-post-tl 4 0 0 1 web-post-tr)
+        (let [
+              startrow (cond (and extra-top-row (= extra-row-col 5)) -1 :else 0)
+              dx (cond (= startrow -1) 0 :else 2)
+              dy (cond (= startrow -1) 2 :else 1)
+              ]
+          (vector
+            (color [1 1 0 1] (key-wall-brace 3 -1 0 1 web-post-tr 4 startrow dx dy web-post-tl))
+            (key-wall-brace 4 startrow dx dy web-post-tl 4 startrow 0 0.5 web-post-tr)
+            ))
         (color [1 0 0 1] (hull
                            (key-place 3 -1 web-post-tr)
                            (key-place 3  0 web-post-tr)
                            (key-place 4  0 web-post-tl)
                            ))
-        (cond
-          (= lastcol 5) (union
-                          (color [1 1 0 1] (key-wall-brace 4 0 0 1 web-post-tr 5 0 0 1 web-post-tl))
-                          (key-wall-brace 5 0 0 1 web-post-tl 5 0 0 1 web-post-tr)
-                          ))
        )
       ; else
       (vector
@@ -834,7 +861,7 @@
 (defn case-walls [& {:keys [extra-top-row] :or {extra-top-row false}}]
   (union
    thumb-wall
-   right-wall
+   (right-wall :extra-top-row extra-top-row)
    (back-wall :extra-top-row extra-top-row)
    left-wall
    front-wall
