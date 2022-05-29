@@ -3,7 +3,8 @@
   (:require [clojure.core.matrix :refer [array matrix mmul]]
             [scad-clj.scad :refer :all]
             [scad-clj.model :refer :all]
-            [unicode-math.core :refer :all]))
+            [unicode-math.core :refer :all])
+  (:load "trackball"))
 
 (defn deg2rad [degrees]
   (* (/ degrees 180) pi))
@@ -1086,189 +1087,9 @@
                       ))))
       )
 
+
 (def trackball-r (+ (/ 44 2) 0.5))  ; 34 mm ball plus offset
-(def trackball-outer-r (+ trackball-r 2.5))
-(defn trackholder [l zdeg]
-  (let [r trackball-r
-        h 70
-        outer-r (+ r 1)
-        d (/ r 2)
-        c (* r 3)
-        sensor-angle (deg2rad 180)
-        ; steel balls will be glued in here
-        pimple (fn [r] (difference
-                         (->> (sphere r)
-                              (with-fn 40))
-                         ; snip off 4mm from the top of the pimple
-                         (->> (sphere 4) (with-fn 40) (translate [0 0 (+ (- -4 r) 0.4)]))
-                         ))
-        ; where the ball will sit
-        bowl (union
-               (difference
-                 (fa! 1)
-                 (fs! 1)
-                 (sphere (+ r 1.5))
-                 (sphere (+ r 0.1))
-                 (->> (cube c c c)
-                      (translate [0 0 (/ c 2)]))
-                 ; through hole to the bottom
-                 (->> (cylinder 10 10)(translate [0 0 (* r -1)]))
-                 )
-               ; three d=4mm balls to meld/glue steel balls into
-               (for [x [[0 2] [120 2] [240 2]]] (->>
-                                         (pimple (second x))
-                                         (translate [0 0 (+ r 1.0)])
-                                         (rotate (deg2rad 120) [1 0 0])
-                                         (rotate (deg2rad (+ (first x) 60)) [0 0 1])
-                                         )
-                 )
-               )
-        ; cutout to reach the sensor board
-        sensor-wall-cut (->> (union
-                               (cube 28.6 20 h)
-                               (->> (cylinder 14.3 20)
-                                    (rotate (deg2rad 90) [1 0 0])
-                                    (scale [1 1 0.75])
-                                    (translate [0 0 (/ h 2)])
-                                    )
-                               )
-                             (translate [0 (* -1 r) (- -5 r)]))
-        ; top outer rim connecting to the cylinder
-        ring (->>
-               (difference
-                 (fa! 1)
-                 (fs! 1)
-                 (cylinder outer-r 2)
-                 (cylinder (+ r 1) 4)
-                 )
-               (translate [0 0 -1]))
-        ; the hollow cylinder
-        cyl-r (/ outer-r 1)
-        cyl (->>
-              (union (difference
-                 (fa! 1)
-                 (fs! 1)
-                 (cylinder [ (+ cyl-r 2) (+ outer-r 2) ] h)
-                 ; the subtraction is the wall thickness +2
-                 (cylinder [ (- cyl-r 2) (- outer-r 2)] (+ h 1))
-                 (->> (sphere (+ r 1.5))
-                      (translate [0 0 (/ h 2)]))
-
-                 sensor-wall-cut
-                 )
-                 )
-              (translate [0 0 (/ h -2)])
-              ;(multmatrix [[1 0 -0.0 0]
-              ;             [0 1 0.15 0]
-              ;             [0 0 1 0]])
-              )
-        ; PWM3360 board
-        sensor (difference
-                 (->> (union
-                        ;(difference
-                        ;  (union
-                        ;    (->> (cube 2 18 h :center false)(translate [-14 -14 -20]))
-                        ;    (->> (cube 2 18 h :center false)(translate [ 12 -14 -20]))
-                        ;    )
-                        ;  ; actual max dimensions, but much thinner on the side.
-                        ;  ;(cube 28.5 21.5 6.7)
-                        ;  ; cut away the sensor cube from the supports, then also a window
-                        ;  (->> (cube 28.5 21.5 3)(translate [0 0 0.5]))
-                        ;  ;(->> (cube 28.5 21.5 10)(translate [0 4 6]))
-                        ;  ; cut off things that would stick out, ugh, this is horribly hacky
-                        ;  ;(->> (cube 28.5 12 6)(rotate (deg2rad -35) [1 0 0])(translate [0 -9 8]))
-                        ;  )
-                        ; turn this on to see if the sensor fits the overall model
-                        ;(color [0 0 0 1] (->> (cube 28.5 21.5 3)(translate [0 0 0.5])) (->> (cube 21.5 21.5 8)(translate [0 3 0.5])))
-                        ; should rotate this better to simulate whether sensor board can be inserted
-                        ;(->> (union (->> (cube 21.5 21.5 8)(rotate (deg2rad 30) [1 0 0])(translate [0 20 5]))) )
-                        )
-                      (translate [0 0 (+ 3.75 r)]) ; half cube width plus thickness
-                      (rotate sensor-angle [1 0 0])
-                      )
-                 (->> (sphere (+ r 1))(with-fn 60))
-                 )
-        rounded-side-support (->>
-                               (hull
-                                 (->> (cylinder 15 13) (translate [15 -15 0]))
-                                 (->> (cube 2 2 13) (translate [1 -29 0]))
-                                 (->> (cube 2 2 13) (translate [39 -29 0]))
-                                 (->> (cube 2 2 13) (translate [39 -1 0])))
-                               (rotate (deg2rad 180) [1 0 0])
-                               (rotate (deg2rad 90) [0 1 0])
-                               (translate [0 -15 20])
-                               )
-        side-supports (intersection
-                        (union
-                          ; left wall/support
-                          (->>
-                            rounded-side-support
-                            (multmatrix [[1 0 0.15 0]
-                                         [0 1 0 0]
-                                         [0 0 1 0]])
-                            (translate [-20 0 (- -26.0 r)]))
-                          ; right wall/support
-                          (->>
-                            rounded-side-support
-                            (multmatrix [[1 0 -0.15 0]
-                                         [0 1 0 0]
-                                         [0 0 1 0]])
-                            (translate [20 0 (- -26.0 r)]))
-                          ; backwall
-                          (->>
-                            (cube 40 20 40)
-                            (multmatrix [[1 0 0 0]
-                                         [0 1 -0.15 0]
-                                         [0 0 1 0]])
-                            (translate [0 21 (- -26.0 r)]))
-                          ; backstop
-                          (->>
-                            (cube 40 3 4)
-                            (translate [0 12.3 (- -4.5 r)]))
-                          ; upper walls
-                          (->>
-                            (cube 10 30 50)
-                            (multmatrix [[1 0 0.90 0]
-                                         [0 1 0 0]
-                                         [0 0 1 0]])
-                            (translate [-20 0 (- -4.0 r)]))
-                          (->>
-                            (cube 10 30 50)
-                            (multmatrix [[1 0 -0.90 0]
-                                         [0 1 0 0]
-                                         [0 0 1 0]])
-                            (translate [20 0 (- -4.0 r)]))
-                          ; upper back wall
-                          (->>
-                            (cube 50 30 50)
-                            (multmatrix [[1 0 0 0]
-                                         [0 1 -0.60 0]
-                                         [0 0 1 0]])
-                            (translate [0 27 (- -4.0 r)]))
-                          )
-                        (difference (hull cyl)
-                                    (sphere (+ r 0.5))
-                                    )
-                        )
-        ]
-    (difference
-      (->> (union
-             bowl
-             ring
-             cyl
-             side-supports
-             sensor
-             ;(->> (sphere trackball-r)(with-fn 60)(translate [0 0 0.8]))
-             )
-           (rotate (deg2rad zdeg) [0 0 1]))
-      (->> (cube 100 100 100)(translate [0 0 (- -50 l)]))
-    )))
-
-(spit "things/trackball-test.scad"
-      (write-scad (difference
-                    (trackholder 50 0)
-                    ;(->> (cube 100 200 200)(translate [50 0 0]))
-                    )))
+(def trackball-outer-r (+ trackball-r 2))
 
 ; Trackballs on the top/back and side of keyboard.
 (def trackball-top-height (+ 35 keyboard-z-offset))
@@ -1314,13 +1135,13 @@
     (fa! 1)
     ; top
     (union
-      (->> (cylinder trackball-r trackball-top-height) (translate trackball-top-pos)(translate [0 0 (/ trackball-top-height -2)]))
-      (->> (cylinder trackball-outer-r trackball-top-height) (translate trackball-top-pos)(translate [0 0 (- (/ trackball-top-height -2) 20)]))
-      ;trackball-top-cylinder-difference
+      (->> (cylinder (- trackball-r 0.5) trackball-top-height) (translate trackball-top-pos))
+      (->> (cylinder trackball-outer-r trackball-top-height) (translate trackball-top-pos)(translate [0 0 (- (/ trackball-top-height -2) 30)]))
       )
-    ;(->> (cube 28.5 20 40) (translate trackball-top-pos)(translate [0 (- 0 trackball-r) -42]))
+    (->> (cube 28.5 20 40) (translate trackball-top-pos)(translate [0 (- 0 trackball-r) -42.7]))
     ; side
-    (->> (cylinder trackball-outer-r (+ trackball-side-height 10)) (translate trackball-side-pos) (translate [0 0 (+ (/ trackball-side-height -2) 5)]))
+    (->> (cylinder (- trackball-outer-r 0.5) (+ trackball-side-height 10)) (translate trackball-side-pos) (translate [0 0 (+ (/ trackball-side-height -2) -25)]))
+    (->> (sphere (- trackball-outer-r 1.9)) (translate trackball-side-pos) )
   ))
 
 (spit "things/sensor-welltest.scad"
@@ -1534,9 +1355,11 @@
                        (difference trackball-top (->> (hull (back-wall))(translate [0 -3.3 -8])))
                        ;trackball-side
                        (difference trackball-side
-                                   (->> (hull left-wall)(translate [2.2 0 -10]))
-                                   (difference (hull (->> single-plate (key-place 0 1))) (->> single-plate (key-place 0 1)))
-                                   )
+                                   (hull (->> single-plate (key-place 0 1)))
+                                   (difference
+                                     (->> (hull (union left-wall (->> (sphere 1))))(translate [2.2 0 -4]))
+                                     (->> (sphere (- trackball-outer-r 1.0)) (translate trackball-side-pos) )
+                                     ))
                        ))
           ]
       (cond (not= old new) (spit file new))
