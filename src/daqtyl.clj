@@ -612,7 +612,7 @@
   (let [
         startrow (cond (and extra-top-row (= extra-row-col 5)) -1 :else 0)
         ]
-    (union (key-wall-brace lastcol startrow 0 0.5 web-post-tr lastcol startrow 1 0 web-post-tr)
+    (union (key-wall-brace lastcol startrow 0 1 web-post-tr lastcol startrow 1 0 web-post-tr)
              (union (for [y (range startrow lastrow)] (key-wall-brace lastcol y 1 0 web-post-tr lastcol y 1 0 web-post-br))
                     (for [y (range (inc startrow) lastrow)] (key-wall-brace lastcol (dec y) 1 0 web-post-br lastcol y 1 0 web-post-tr)))
            (key-wall-brace lastcol cornerrow 0 -1 web-post-br lastcol cornerrow 1 0 web-post-br)
@@ -788,28 +788,28 @@
         ; wall from its top-left to top-right position. Then you brace from key
         ; 0/0's top-right to 1/-1's top left, etc.
         (key-wall-brace 0 0 0 1 web-post-tl 0 0 -0.5 1 web-post-tr)
-        (color [1 1 0 1] (key-wall-brace 0 0 -0.5 1 web-post-tr 1 -1 0 1 web-post-tl))
+        (color [1 1 0 1] (key-wall-brace 0 0 -0.5 1 web-post-tr 1 -1 0 0.5 web-post-tl))
         (color [1 1 0 1] (hull
                            (key-place 1 -1 web-post-tl)
                            (key-place 1  0 web-post-tl)
                            (key-place 0  0 web-post-tr)
                            ))
-        (key-wall-brace 1 -1 0 1 web-post-tl 1 -1 0 1 web-post-tr)
+        (key-wall-brace 1 -1 0 0.5 web-post-tl 1 -1 0 0.5 web-post-tr)
         (union
-          (color [0 1 0 1] (enc-wall-brace (partial enc-place 2 -1) 0 1 web-post-tl (partial key-place 1 -1) 0 1 web-post-tr))
-          (color [1 0 0 1] (enc-wall-brace (partial enc-place 2 -1) 0 1 web-post-tl (partial enc-place 2 -1) 0 1 web-post-tr))
-          (color [0 0 1 1] (enc-wall-brace (partial key-place 3 -1) 0 1 web-post-tl (partial enc-place 2 -1) 0 1 web-post-tr))
+          (color [0 1 0 1] (enc-wall-brace (partial enc-place 2 -1) 0 0.5 web-post-tl (partial key-place 1 -1) 0 0.5 web-post-tr))
+          (color [1 0 0 1] (enc-wall-brace (partial enc-place 2 -1) 0 0.5 web-post-tl (partial enc-place 2 -1) 0 0.5 web-post-tr))
+          (color [0 0 1 1] (enc-wall-brace (partial key-place 3 -1) 0 0.5 web-post-tl (partial enc-place 2 -1) 0 0.5 web-post-tr))
           )
-        (key-wall-brace 3 -1 0 1 web-post-tl 3 -1 0 1 web-post-tr)
+        (key-wall-brace 3 -1 0 0.5 web-post-tl 3 -1 0 0.5 web-post-tr)
         ; these use a dx=2 offset to make the wall thicker, needs also a bespoke triangle hull.
         (let [
               startrow (cond (and extra-top-row (= extra-row-col 5)) -1 :else 0)
               dx (cond (= startrow -1) 0 :else 2)
-              dy (cond (= startrow -1) 2 :else 1)
+              dy (cond (= startrow -1) 1 :else 1)
               ]
           (vector
-            (color [1 1 0 1] (key-wall-brace 3 -1 0 1 web-post-tr 4 startrow dx dy web-post-tl))
-            (key-wall-brace 4 startrow dx dy web-post-tl 4 startrow 0 0.5 web-post-tr)
+            (key-wall-brace 3 -1 0 0.5 web-post-tr 4 startrow dx dy web-post-tl)
+            (key-wall-brace 4 startrow dx dy web-post-tl 4 startrow 0 1 web-post-tr)
             ))
         (color [1 0 0 1] (hull
                            (key-place 3 -1 web-post-tr)
