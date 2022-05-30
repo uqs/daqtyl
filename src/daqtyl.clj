@@ -1145,7 +1145,8 @@
   ))
 
 (spit "things/sensor-welltest.scad"
-      (write-scad (intersection (->> (cube 55 80 60)(translate [-38 50 30]))
+      (write-scad (intersection ;(->> (cube 55 80 60)(translate [-38 50 30]))
+                                (->> (cube 80 55 50)(translate [-100 -5 40]))
                                 (union
                                   (difference
                                     (union
@@ -1153,11 +1154,17 @@
                                       (connectors)
                                       (thumb-connectors)
                                       thumb
-                                      (difference (case-walls) trackball-cutouts)
+                                      (case-walls)
                                       )
+                                    trackball-cutouts
                                     )
-                                  (difference trackball-top (->> (hull (back-wall))(translate [0 -2.4 -8])))
-                                  trackball-side
+                                  (difference trackball-top (->> (hull (back-wall))(translate [0 -3.3 -8])))
+                                  (difference trackball-side
+                                              (hull (->> single-plate (key-place 0 1)))
+                                              (difference
+                                                (->> (hull (union left-wall (->> (sphere 1))))(translate [2.2 0 -4]))
+                                                (->> (sphere (- trackball-outer-r 1.0)) (translate trackball-side-pos) )
+                                                ))
                                   )
                                 ))
       )
