@@ -8,16 +8,15 @@
  * a strong dragon spear to modify any 'kinda adjustable' values */
 
 reset_holder = true;
-vertical = false;
+vertical = true;
 cutout_blank = false;
 show_previous = false;
 
-controller_adj = 2.9;
+controller_adj = 0.0;
 
 usb_holder_x = 30.6;       // kinda adjustable
 usb_holder_y = 38.8 + controller_adj;       // kinda adjustable
 usb_holder_z = reset_holder? 15 : 8.4;        // kinda adjustable
-
 
 usb_holder_border = 1.5;   // kinda adjustable
 
@@ -32,7 +31,7 @@ usb_c_z = 4.5;             // kinda adjustable
 
 trrs_x = 6.2;              // mostly adjustable
 trrs_y = 12.7;             // kinda adjustable
-trrs_r = 2.55;             // adjustable
+trrs_r = 3.25;             // adjustable
 
 usb_holder_center_x = usb_holder_x / 2;
 usb_holder_center_y = usb_holder_y / 2;
@@ -59,7 +58,7 @@ module basicShape() {
     cut1_y = (usb_holder_center_y - (usb_holder_center_y - left_cut_y/2));
     
     cut2_x = (usb_holder_center_x - (bottom_cut_x / 2));
-    cut2_y = (usb_holder_center_y - (- usb_holder_center_y (16.6 / 2))); //todo
+    //cut2_y = (usb_holder_center_y - (- usb_holder_center_y (16.6 / 2))); //todo
       
     //misc magic numbers
     if (!cutout_blank) {
@@ -70,7 +69,7 @@ module basicShape() {
         translate ([-cut2_x, -8.3, 0]) {
           cube ([bottom_cut_x, (usb_holder_y - 16.6), 99], center=true);
         }
-        rotate (a=8, v=[1, 0, 0]) {
+        rotate (a=3, v=[1, 0, 0]) {
           top_cut_adjust = reset_holder? 1.75*usb_holder_border : usb_holder_border;
           translate ([0, -(usb_holder_border * 3), (usb_holder_z / top_cut_adjust) ]) {
             cube ([usb_holder_x, usb_holder_y, usb_holder_z], center=true);
@@ -119,9 +118,9 @@ module trrsCutouts() {
 
 module resetCutout() {
     reset_xz = 7.1;
-    reset_y = 4.5;
+    reset_y = 4.4;
     reset_floor = usb_holder_z / 1.5 ;
-    reset_r = 1.75;
+    reset_r = 1.85;
     
     reset_x_offset = usb_holder_center_x - usb_elite_c_x / 2 - usb_holder_border;
     reset_y_offset = usb_holder_center_y - usb_elite_c_y - usb_holder_border;
@@ -166,19 +165,19 @@ module usbPortCutout() {
     usbPortCenter = ((usb_holder_center_x - (usb_elite_c_x/2)) - usb_holder_border);
     usbPortCenterCut = (usb_c_x - usb_c_z);
     usbPortSideOffset = usbPortCenterCut / 2;
-    usbPortCenterCutLength = 40;
+    usbPortCenterCutLength = 20;
     
-    translate ([(usbPortCenter - usbPortSideOffset), 0, 0]) {
+    translate ([(usbPortCenter - usbPortSideOffset), 20, 0]) {
         rotate (a=90.0, v=[1, 0, 0]) {
             cylinder (h=usbPortCenterCutLength, r=usb_c_z/2, center=true);
         }
     }
     
-    translate ([usbPortCenter, 0, 0]) {
+    translate ([usbPortCenter, 20, 0]) {
         cube ([usbPortCenterCut, usbPortCenterCutLength, usb_c_z], center=true);
     }
     
-    translate ([(usbPortCenter + usbPortSideOffset), 0, 0]) {
+    translate ([(usbPortCenter + usbPortSideOffset), 20, 0]) {
         rotate (a=90.0, v=[1, 0, 0]) {
             cylinder (h=usbPortCenterCutLength, r=usb_c_z/2, center=true);
         }
@@ -228,7 +227,7 @@ module usb_holder() {
           translate([0,0,0])
             union() {
               rotate([0,0,0])
-              import("usb_holder_w_reset.stl");
+              import("../elite-c_holder_w_reset.stl");
             }
     }
 }
@@ -265,10 +264,10 @@ module vertical_usb_holder() {
     }
     if (show_previous) {
         color( "grey", 0.6 )
-          translate([-usb_holder_x/4,0,15.25])
+          translate([0,0,0])
             union() {
-              rotate([0,180,0])
-              import("usb_holder_vertical.stl");
+              rotate([0,270,0])
+              import("../elite-c_holder_w_reset.stl");
             }
     }
 }
