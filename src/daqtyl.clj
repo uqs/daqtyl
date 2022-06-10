@@ -910,10 +910,10 @@
 (def bottom-plate-thickness 2.6)
 
 (defn screw-insert-all-shapes [bottom-radius top-radius height]
-  (union (screw-insert 0 0        bottom-radius top-radius height [9 10.0 bottom-plate-thickness] [1 0 0]) ; red
+  (union ;(screw-insert 0 0        bottom-radius top-radius height [9 10.0 bottom-plate-thickness] [1 0 0]) ; red
          (screw-insert 0 lastrow  bottom-radius top-radius height [1.0 13 bottom-plate-thickness] [1 1 0]) ; yellow
          ; FIXME later
-         ;(screw-insert 2 0        bottom-radius top-radius height [9.5 -4.5 bottom-plate-thickness] [0 0 1]) ; blue
+         (screw-insert 2 0        bottom-radius top-radius height [9.5 -4.5 bottom-plate-thickness] [0 0 1]) ; blue
          (screw-insert 1 lastrow  bottom-radius top-radius height [-50 0 bottom-plate-thickness] [1 0 1]) ; fuchsia
          (screw-insert lastcol 0        bottom-radius top-radius height [-21 (cond (= lastcol 4) 13 (= lastcol 5) 9) bottom-plate-thickness] [0 1 1]) ; aqua
          (screw-insert lastcol lastrow  bottom-radius top-radius height [-21 13.9 bottom-plate-thickness] [0 1 0]) ; green
@@ -1167,6 +1167,20 @@
                                 ))
       )
 
+; the cutout to slide into the wall
+(def usb-holder (import "../things/usb_holder_cutout.stl"))
+
+(def right-usb-cutout
+  (let [ holder (union usb-holder (->> usb-holder (translate [0 0 (* -1 bottom-plate-thickness)]))) ]
+  (->> (union
+         holder
+         (->> holder (translate [0 0.2 0]))
+         (->> holder (translate [0.2 0 0]))
+         (->> holder (translate [0.2 0.2 0]))
+         )
+       (rotate (deg2rad 0)[0 0 1])(rotate (deg2rad 180)[0 1 0]) (translate [-77.50 39.10 15.28]))
+  ))
+
 ; put it all together
 (def model-right (difference
                    (union
@@ -1176,14 +1190,20 @@
                      thumb
                      (difference (union (case-walls)
                                         screw-insert-outers)
-                                 ;usb-holder-space
-                                 ;trrs-notch
-                                 ;usb-holder-notch
+                                 ; TODO: need to add the intersection of wall and cutout to the bottom plate!
+                                 right-usb-cutout
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                  screw-insert-holes))
                    trackball-cutouts
                    cut-bottom
                    ))
+
+(def left-cable-cutout
+  (let [ cable-hole (->> (cylinder 3 20)(with-fn 32)(rotate (deg2rad 90)[1 0 0])) ]
+  (->>
+    cable-hole
+    (rotate (deg2rad 56.5)[0 0 1]) (translate [-60 45 5]))
+  ))
 
 (def model-left (difference
                   (union
@@ -1193,6 +1213,7 @@
                     (thumb-connectors :encoder true)
                     (difference (union (case-walls :extra-top-row true)
                                        screw-insert-outers)
+                                left-cable-cutout
                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
                                 screw-insert-holes))
                   cut-bottom
