@@ -1096,11 +1096,11 @@
 (def trackball-top-pos [-38 (+ 30 trackball-outer-r) trackball-top-height])
 (def trackball-top-cylinder-difference
     (->> (union
-           (cube 40 5 50)(rotate (deg2rad -0) [0 0 1])
+           (->> (cube 40 5 25)(rotate (deg2rad 30) [0 1 0]))
            (->>
              (sphere (/ trackball-outer-r 0.75))
              (scale [1 1 0.4])
-             (translate [0 0 5])
+             (translate [0 0 7])
              )
            )
          (translate trackball-top-pos)
@@ -1134,19 +1134,17 @@
   (union
     (fa! 1)
     ; top
-    (union
-      (->> (cylinder (- trackball-r 0.5) trackball-top-height) (translate trackball-top-pos))
-      (->> (cylinder trackball-outer-r trackball-top-height) (translate trackball-top-pos)(translate [0 0 (- (/ trackball-top-height -2) 30)]))
-      )
-    (->> (cube 28.5 20 40) (translate trackball-top-pos)(translate [0 (- 0 trackball-r) -42.7]))
+    (->> (difference (trackholder-cyl (last trackball-top-pos) 0) (->> (cube 35 55 30)(rotate (deg2rad 30) [0 1 0]))) (translate trackball-top-pos))
+    (->> (sphere (- trackball-outer-r 1.9)) (translate trackball-top-pos))
     ; side
-    (->> (cylinder (- trackball-outer-r 0.5) (+ trackball-side-height 10)) (translate trackball-side-pos) (translate [0 0 (+ (/ trackball-side-height -2) -25)]))
-    (->> (sphere (- trackball-outer-r 1.9)) (translate trackball-side-pos) )
+    (->> (difference (trackholder-cyl (last trackball-side-pos) 94) (cube 50 50 16)) (translate trackball-side-pos))
+    (->> (sphere (- trackball-outer-r 1.9)) (translate trackball-side-pos))
   ))
 
 (spit "things/sensor-welltest.scad"
       (write-scad (intersection ;(->> (cube 55 80 60)(translate [-38 50 30]))
-                                (->> (cube 80 55 50)(translate [-100 -5 40]))
+                                ;(->> (cube 80 55 50)(translate [-100 -5 40]))
+                                (->> (cube 60 45 30)(translate [-110 -5 32]))
                                 (union
                                   (difference
                                     (union

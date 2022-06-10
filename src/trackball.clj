@@ -31,13 +31,13 @@
   (let [
         r trackball-r
         h 70
-        outer-r (+ r 1)
-        zdeg 94
+        outer-r (+ r 2)
+        slant 0.15
         ]
-    (->> (cylinder [(/ outer-r 2) outer-r] h) (with-fn 100)
+    (->> (cylinder [(/ outer-r 1.5) outer-r] h) (with-fn 100)
          (translate [0 0 (/ h -2)])
          (multmatrix [[1 0 -0.0 0]
-                      [0 1 0.07 0]
+                      [0 1 slant 0]
                       [0 0 1 0]])
          (rotate (deg2rad zdeg) [0 0 1])
          ))
@@ -46,8 +46,6 @@
 (defn trackholder [l zdeg]
   (let [
         r trackball-r
-        h 70
-        outer-r (+ r 2)
         pimple (fn [r] (difference
                          (->> (sphere r) (with-fn 40))
                          ; snip off 4mm from the top of the pimple
