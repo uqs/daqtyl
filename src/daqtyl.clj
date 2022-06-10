@@ -909,11 +909,19 @@
 
 (def bottom-plate-thickness 2.6)
 
-(defn screw-insert-all-shapes [bottom-radius top-radius height]
-  (union ;(screw-insert 0 0        bottom-radius top-radius height [9 10.0 bottom-plate-thickness] [1 0 0]) ; red
+(defn screw-insert-all-shapes [right bottom-radius top-radius height]
+  (union (cond right
+               (union)
+               ;(screw-insert 0 0        bottom-radius top-radius height [5 -15.0 bottom-plate-thickness] [1 0 0]) ; red
+               :else
+               (screw-insert 0 0        bottom-radius top-radius height [9 10.0 bottom-plate-thickness] [1 0 0]) ; red
+               )
          (screw-insert 0 lastrow  bottom-radius top-radius height [1.0 13 bottom-plate-thickness] [1 1 0]) ; yellow
-         ; FIXME later
-         (screw-insert 2 0        bottom-radius top-radius height [9.5 -4.5 bottom-plate-thickness] [0 0 1]) ; blue
+         (cond right
+               (screw-insert 2 0        bottom-radius top-radius height [-16.5 -7.5 bottom-plate-thickness] [0 0 1]) ; blue
+               :else
+               (screw-insert 2 0        bottom-radius top-radius height [9.5 10.7 bottom-plate-thickness] [0 0 1]) ; blue
+               )
          (screw-insert 1 lastrow  bottom-radius top-radius height [-50 0 bottom-plate-thickness] [1 0 1]) ; fuchsia
          (screw-insert lastcol 0        bottom-radius top-radius height [-21 (cond (= lastcol 4) 13 (= lastcol 5) 9) bottom-plate-thickness] [0 1 1]) ; aqua
          (screw-insert lastcol lastrow  bottom-radius top-radius height [-21 13.9 bottom-plate-thickness] [0 1 0]) ; green
@@ -926,13 +934,13 @@
 ; Hole Diameter C: 4.1-4.4
 (def screw-insert-bottom-radius (/ 4.2 2))
 (def screw-insert-top-radius (/ 4.0 2))
-(def screw-insert-holes  (->> (screw-insert-all-shapes screw-insert-bottom-radius screw-insert-top-radius screw-insert-height)
-                              (translate [0 0 -0.01])))
+(defn screw-insert-holes [right] (->> (screw-insert-all-shapes right screw-insert-bottom-radius screw-insert-top-radius screw-insert-height)
+                                      (translate [0 0 -0.01])))
 
 ; Wall Thickness W:  2.1--3.0
-(def screw-insert-outers (screw-insert-all-shapes (+ screw-insert-bottom-radius 3.0) (+ screw-insert-top-radius 2.1) (+ screw-insert-height 1.1)))
-(def screw-insert-screw-holes  (screw-insert-all-shapes 1.7 1.7 35))
-(def plate-screw-recess  (screw-insert-all-shapes 3.1 1.95 2.1)) ;; creates the recess for screws in bottom plate
+(defn screw-insert-outers [right] (screw-insert-all-shapes right (+ screw-insert-bottom-radius 3.0) (+ screw-insert-top-radius 2.1) (+ screw-insert-height 1.1)))
+(defn screw-insert-screw-holes [right]  (screw-insert-all-shapes right 1.7 1.7 35))
+(defn plate-screw-recess [right]  (screw-insert-all-shapes right 3.1 1.95 2.1)) ;; creates the recess for screws in bottom plate
 
 ; Wrist rest cutout from https://github.com/crystalhand/dactyl-keyboard.git
 ;;Wrist rest to case connections
@@ -1189,11 +1197,11 @@
                      (thumb-connectors)
                      thumb
                      (difference (union (case-walls)
-                                        screw-insert-outers)
+                                        (screw-insert-outers true))
                                  ; TODO: need to add the intersection of wall and cutout to the bottom plate!
                                  right-usb-cutout
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
-                                 screw-insert-holes))
+                                 (screw-insert-holes true)))
                    trackball-cutouts
                    cut-bottom
                    ))
@@ -1212,10 +1220,10 @@
                     thumb
                     (thumb-connectors :encoder true)
                     (difference (union (case-walls :extra-top-row true)
-                                       screw-insert-outers)
+                                       (screw-insert-outers false))
                                 left-cable-cutout
                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
-                                screw-insert-holes))
+                                (screw-insert-holes false)))
                   cut-bottom
                   ))
 
@@ -1224,8 +1232,8 @@
   (union
     (difference
       shape
-      (translate [0 0 -10] screw-insert-screw-holes)
-      (translate [0 0 -3.4] plate-screw-recess)
+      (translate [0 0 -10] (screw-insert-screw-holes (not extra-top-row)))
+      (translate [0 0 -3.4] (plate-screw-recess (not extra-top-row)))
       (union
         (for [xy (range 0.994 1.14 0.015)]
           (->> (case-walls :extra-top-row extra-top-row)
