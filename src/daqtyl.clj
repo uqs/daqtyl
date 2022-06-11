@@ -494,9 +494,6 @@
        thumb-offsets))
 
 ; My version of a 3-button cluster, I call it the micro cluster
-; TODO: need to tilt them forward a bit more, waiting for stupid Drop keycaps
-; to arrive to see how exactly they would fit.
-; Also might open up the angle a bit more, to press them more with the tip of the thumb.
 (defn thumb-r-place [shape]
   (->> shape
        (rotate (deg2rad  18) [1 0 0])
@@ -506,19 +503,19 @@
        (translate [-14 -7.2 3])))
 (defn thumb-m-place [shape & {:keys [offset] :or {offset [0 0 0]}}]
   (->> shape
-       (rotate (deg2rad  18) [1 0 0])
+       (rotate (deg2rad  18.5) [1 0 0])
        (rotate (deg2rad   0) [0 1 0])
        (rotate (deg2rad  25.5) [0 0 1])
        (translate thumborigin)
        (translate offset)
-       (translate [-34 -15 2.2])))
+       (translate [-34 -15 2.0])))
 (defn thumb-l-place [shape]
   (->> shape
-       (rotate (deg2rad  18) [1 0 0])
+       (rotate (deg2rad  19) [1 0 0])
        (rotate (deg2rad   5) [0 1 0])
-       (rotate (deg2rad  32) [0 0 1])
+       (rotate (deg2rad  32.5) [0 0 1])
        (translate thumborigin)
-       (translate [-52.2 -25.2 3])))
+       (translate [-52.7 -25.4 2.7])))
 
 (defn thumb-1x-layout [shape] nil)
 
