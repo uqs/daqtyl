@@ -31,7 +31,6 @@ Shoutout also to the folks from OhKeycaps who inadvertently got me started on th
 - 3 extra buttons for Mouse1-3. Don't ask, I got used to this setup, my WM greatly benefits.
 - Rolling rotary encoders (like a proper mouse wheel), again, can't decide on final placement yet.
 - Support for 34mm and 44mm trackballs.
-- TODO: MCU holder is still missing!
 
 ## Generate OpenSCAD and STL models
 
