@@ -244,8 +244,11 @@
 (def slim-web-post (->> (cube post-size post-size (/ web-thickness 2))
                         (translate [0 0 (+ (/ web-thickness -4)
                                            plate-thickness)])))
-; this no longer seems to make any difference
+; These allow for a tighter spacing of keys to not collide with keycaps
+(def slim-web-post-tr (translate [(- (/ mount-width 1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] slim-web-post))
 (def slim-web-post-tl (translate [(+ (/ mount-width -1.95) post-adj) (- (/ mount-height 1.95) post-adj) 0] slim-web-post))
+(def slim-web-post-br (translate [(- (/ mount-width 1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] slim-web-post))
+(def slim-web-post-bl (translate [(+ (/ mount-width -1.95) post-adj) (+ (/ mount-height -1.95) post-adj) 0] slim-web-post))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Placement Functions ;;
@@ -306,7 +309,10 @@
 
 ; NOTE: could merge with key-place, but need to know about left/right side then ...
 (defn enc-place [column row shape]
-  (let [shape-or-post (cond (= shape slim-web-post-tl) (->> shape (translate [-1 0 0]))
+  (let [shape-or-post (cond (= shape slim-web-post-tl) (->> shape (translate [0 0 -3]))
+                            (= shape slim-web-post-br) (->> shape (translate [0 0 -3]))
+                            (= shape slim-web-post-tr) (->> shape (translate [0 0 -3]))
+                            (= shape slim-web-post-bl) (->> shape (translate [0 0 -3]))
                             (= shape web-post-tl) (->> shape (translate [-1 0 0]))
                             (= shape web-post-tr) (->> shape (translate [1 0 0]))
                             (= shape web-post-br) (->> shape (translate [1 0 0]))
@@ -319,10 +325,10 @@
           (= row 3) (->> shape-or-post
                          (rotate (deg2rad 10)[1 0 0])
                          (rotate (deg2rad -10)[0 1 0])
-                         (rotate (deg2rad -5)[0 0 1])
-                         (translate [-2 -4 11])
+                         (rotate (deg2rad -3)[0 0 1])
+                         (translate [-1.5 -4 12])
                          (key-place column row))
-          :else (key-place column row shape)
+          :else (key-place column row shape-or-post)
           )))
 
 (defn rotate-around-x [angle position]
@@ -681,7 +687,7 @@
    ; snaking around the first extra key
    (color [0 1 0 1] (triangle-hulls
     (thumb-r-place web-post-tr)
-    (key-place 1 cornerrow web-post-br)
+    (place-func 1 cornerrow slim-web-post-br)
     ; the full z-offset would make the keycap north of it collide when pressed.
     (place-func 2 lastrow slim-web-post-tl)
     (thumb-r-place web-post-tr)
@@ -692,7 +698,25 @@
     (place-func 2 lastrow web-post-br)
     (key-place 3 lastrow web-post-bl)
     (place-func 2 lastrow web-post-tr)
+    ))
+   (hull
+    (place-func 2 lastrow slim-web-post-tr)
+    (place-func 2 lastrow web-post-tr)
+    (place-func 2 lastrow slim-web-post-br)
+    (place-func 2 lastrow web-post-br)
+    (key-place 3 cornerrow web-post-bl)
     (key-place 3 lastrow web-post-tl)
+    (key-place 3 lastrow web-post-bl))
+   (color [1 0 0 1] (triangle-hulls
+    (place-func 2 lastrow web-post-bl)
+    (place-func 2 lastrow web-post-tl)
+    (thumb-r-place web-post-tr)
+    (place-func 2 lastrow slim-web-post-tl)
+    ))
+   (color [0 0 1 1] (triangle-hulls
+    (place-func 2 lastrow web-post-tl)
+    (place-func 2 lastrow slim-web-post-tl)
+    (place-func 2 lastrow web-post-tr)
     ))
    ; second extra key to pinky column
    (triangle-hulls
@@ -702,14 +726,17 @@
      (key-place 4 cornerrow web-post-bl))
    ; connect first extra key to regular matrix
    (color [1 0 1 1] (triangle-hulls
-                      (key-place 1 cornerrow web-post-br)
-                      ; the full z-offset would make the keycap north of it collide when pressed.
+                      (place-func 1 cornerrow slim-web-post-br)
                       (place-func 2 lastrow slim-web-post-tl)
                       (place-func 2 cornerrow web-post-bl)
-                      (place-func 2 lastrow web-post-tr)
+                      (place-func 2 lastrow slim-web-post-tl)
+                      (place-func 2 cornerrow web-post-bl)
+                      (place-func 2 lastrow slim-web-post-tr)
                       (place-func 2 cornerrow web-post-br)
                       (key-place 3 cornerrow web-post-bl)
-                      (place-func 2 lastrow web-post-tr)
+                      (place-func 2 lastrow slim-web-post-tr)
+                      (key-place 3 cornerrow web-post-bl)
+                      (place-func 2 lastrow slim-web-post-tr)
                       (key-place 3 lastrow web-post-tl)
                       ))
    ; connect second extra key to regular matrix
@@ -1083,7 +1110,7 @@
 
 (spit "things/encoder-welltest.scad"
       (write-scad (mirror [-1 0 0]
-                          (intersection ;(->> (cube 60 140 50)(translate [-35 0 30]))
+                          (intersection (->> (cube 100 65 60)(translate [-55 -40 30]))
                     (union
                       (key-holes :extra-top-row true)
                       (connectors :extra-top-row true)
