@@ -31,19 +31,25 @@
 (defn column-offset [column]
     (cond (= column 0) [1.35 0 0.3]
           (= column 2) [0 2.82 -4.5]
-          (>= column 4) [0 -14.5 5.64]    ; original [0 -5.8 5.64]
+          (>= column 4) [1 -14.5 5.64]    ; original [0 -5.8 5.64]
           :else [0 0 0]))
 
 (defn column-rotation [column]
     (cond (= column 0) 0
           (= column 2) 0
-          (>= column 4) (deg2rad 5)
+          (>= column 4) (deg2rad 3)
           :else 0))
 
 (defn column-twist [column]
     (cond (= column 0) (deg2rad 5)
           (= column 2) 0
           (>= column 4) 0
+          :else 0))
+
+(defn column-splay [column]
+    (cond (= column 0) 0
+          (= column 2) 0
+          (>= column 4) (deg2rad -1)
           :else 0))
 
 (def thumb-offsets [10 -4 7])
@@ -266,7 +272,7 @@
                       cap-top-height))
 (def column-x-delta (+ -1 (- (* column-radius (Math/sin β)))))
 
-(defn apply-key-geometry [translate-fn rotate-x-fn rotate-y-fn column row shape]
+(defn apply-key-geometry [translate-fn rotate-x-fn rotate-y-fn rotate-z-fn column row shape]
   (let [column-angle (* β (- centercol column))
         placed-shape (->> shape
                           (rotate-y-fn  (column-twist column))
@@ -277,6 +283,7 @@
                           (rotate-y-fn  column-angle)
                           (translate-fn [0 0 column-radius])
                           (rotate-x-fn (column-rotation column))
+                          (rotate-z-fn (column-splay column))
                           (translate-fn (column-offset column)))
         column-z-delta (* column-radius (- 1 (Math/cos column-angle)))
         placed-shape-ortho (->> shape
@@ -305,6 +312,7 @@
   (apply-key-geometry translate
                       (fn [angle obj] (rotate angle [1 0 0] obj))
                       (fn [angle obj] (rotate angle [0 1 0] obj))
+                      (fn [angle obj] (rotate angle [0 0 1] obj))
                       column row shape))
 
 ; NOTE: could merge with key-place, but need to know about left/right side then ...
@@ -345,8 +353,15 @@
     [(- (Math/sin angle)) 0 (Math/cos angle)]]
    position))
 
+(defn rotate-around-z [angle position]
+  (mmul
+   [[(Math/cos angle) (- (Math/sin angle)) 0]
+    [(Math/sin angle) (Math/cos angle)     0]
+    [0 0 1]]
+   position))
+
 (defn key-position [column row position]
-  (apply-key-geometry (partial map +) rotate-around-x rotate-around-y column row position))
+  (apply-key-geometry (partial map +) rotate-around-x rotate-around-y rotate-around-z column row position))
 
 (defn key-holes [& {:keys [extra-top-row] :or {extra-top-row false}}]
   (apply union
