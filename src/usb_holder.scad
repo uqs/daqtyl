@@ -27,7 +27,7 @@ usb_elite_c_y = 33.4 + controller_adj;      // mostly adjustable
 usb_elite_c_side_cut = 6;  // adjustable
 
 usb_c_x = 9.3;             // adjustable
-usb_c_z = 4.5;             // kinda adjustable
+usb_c_z = 4.0;             // kinda adjustable
 
 trrs_x = 6.2;              // mostly adjustable
 trrs_y = 12.7;             // kinda adjustable
@@ -88,7 +88,7 @@ module basicShape() {
   }
 }
 module notch() {
-    cube ([usb_holder_notch_xy, usb_holder_notch_xy, 30.6], center=true);
+    cube ([usb_holder_notch_xy, usb_holder_notch_xy - 0.05, 30.6], center=true);
 }
 
 module trrsCutouts() {
@@ -164,23 +164,20 @@ module circuitBoardSlots() {
 module usbPortCutout() {
     usbPortCenter = ((usb_holder_center_x - (usb_elite_c_x/2)) - usb_holder_border);
     usbPortCenterCut = (usb_c_x - usb_c_z);
-    usbPortSideOffset = usbPortCenterCut / 2;
+    usbPortSideOffset = usbPortCenterCut / 2 + 0.15;
     usbPortCenterCutLength = 20;
     
-    translate ([(usbPortCenter - usbPortSideOffset), 20, 0]) {
-        rotate (a=90.0, v=[1, 0, 0]) {
-            cylinder (h=usbPortCenterCutLength, r=usb_c_z/2, center=true);
-        }
-    }
-    
     translate ([usbPortCenter, 20, 0]) {
-        cube ([usbPortCenterCut, usbPortCenterCutLength, usb_c_z], center=true);
-    }
-    
-    translate ([(usbPortCenter + usbPortSideOffset), 20, 0]) {
-        rotate (a=90.0, v=[1, 0, 0]) {
-            cylinder (h=usbPortCenterCutLength, r=usb_c_z/2, center=true);
-        }
+      hull() {
+	rotate (a=90.0, v=[1, 0, 0]) {
+	  translate ([-usbPortSideOffset, 0, 0]) {
+	    cylinder (h=usbPortCenterCutLength, r=usb_c_z/2);
+	  }
+	  translate ([usbPortSideOffset, 0, 0]) {
+	    cylinder (h=usbPortCenterCutLength, r=usb_c_z/2);
+	  }
+	}
+      }
     }
 }
 
@@ -252,15 +249,16 @@ module vertical_usb_holder() {
             notch_x = (usb_holder_center_x - usb_holder_notch_half);
             notch_y = (usb_holder_center_y - usb_holder_notch_down);
             
-            translate ([-15.75, -0.75, 0]) { notch(); }
-            translate ([-15.75, -3.75, 0]) { notch(); }
+            translate ([-15.75, -0.70, 0]) { notch(); }
+            translate ([-15.75, -3.80, 0]) { notch(); }
             if (cutout_blank) {
                 for ( i = [1.5:1.5:37]) {
                     translate ([-15.75, -(3.75 + i), 0]) { notch(); }
                 }
             }
         }
-        translate ([0.75, -usb_holder_notch_xy*1.5, 0]) { notch(); }
+        translate ([0.75, -usb_holder_notch_xy*1.5 - 0.05, 0]) { notch(); }
+        translate ([0.75, -usb_holder_notch_xy*1.5 + 0.05, 0]) { notch(); }
     }
     if (show_previous) {
         color( "grey", 0.6 )
