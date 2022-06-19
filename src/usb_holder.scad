@@ -120,7 +120,7 @@ module resetCutout() {
     reset_xz = 7.1;
     reset_y = 4.4;
     reset_floor = usb_holder_z / 1.5 ;
-    reset_r = 1.85;
+    reset_r = 1.90;
     
     reset_x_offset = usb_holder_center_x - usb_elite_c_x / 2 - usb_holder_border;
     reset_y_offset = usb_holder_center_y - usb_elite_c_y - usb_holder_border;
@@ -250,15 +250,15 @@ module vertical_usb_holder() {
             notch_y = (usb_holder_center_y - usb_holder_notch_down);
             
             translate ([-15.75, -0.70, 0]) { notch(); }
-            translate ([-15.75, -3.80, 0]) { notch(); }
+            translate ([-15.75, -3.90, 0]) { notch(); }
             if (cutout_blank) {
                 for ( i = [1.5:1.5:37]) {
                     translate ([-15.75, -(3.75 + i), 0]) { notch(); }
                 }
             }
         }
-        translate ([0.75, -usb_holder_notch_xy*1.5 - 0.05, 0]) { notch(); }
-        translate ([0.75, -usb_holder_notch_xy*1.5 + 0.05, 0]) { notch(); }
+        translate ([0.75, -usb_holder_notch_xy*1.5 - 0.10, 0]) { notch(); }
+        translate ([0.75, -usb_holder_notch_xy*1.5 + 0.10, 0]) { notch(); }
     }
     if (show_previous) {
         color( "grey", 0.6 )
