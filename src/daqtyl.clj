@@ -1249,7 +1249,7 @@
   (let [ cable-hole (->> (cylinder 3 20)(with-fn 32)(rotate (deg2rad 90)[1 0 0])) ]
   (->>
     cable-hole
-    (rotate (deg2rad 56.5)[0 0 1]) (translate [-60 45 5]))
+    (rotate (deg2rad 56.5)[0 0 1]) (translate [-60 45 8]))
   ))
 
 (def model-left (difference
