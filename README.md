@@ -25,12 +25,12 @@ Shoutout also to the folks from OhKeycaps who inadvertently got me started on th
 - Trackball holders for the fingers of the right hand (I haven't decided on the final placement).
 - Trackballs don't use dowels or ball bearings, but press-fit steel balls. I prefer the feel of this, but might try BTUs also.
 - Tighter vertical spacing, works for MT3 keycaps.
-- Tighter horizontal spacing for first and last column. First column also slanted inwards.
+- Tighter horizontal spacing for first and last column. First column also slanted inwards. Last column splayed a bit.
 - Three button cluster based off the "mini" cluster.
 - Palm rests without silicone pads.
 - 3 extra buttons for Mouse1-3. Don't ask, I got used to this setup, my WM greatly benefits.
 - Rolling rotary encoders (like a proper mouse wheel), again, can't decide on final placement yet.
-- Support for 34mm and 44mm trackballs.
+- Support for 34mm and 44mm trackballs (T-RB22, actually is 43mm or so).
 
 ## Generate OpenSCAD and STL models
 
