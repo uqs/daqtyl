@@ -1215,10 +1215,11 @@
       )
 
 ; the cutout to slide into the wall
-(def usb-holder (import "../things/usb_holder_cutout.stl"))
+(def usb-holder (import "../things/usb_holder.stl"))
+(def usb-holder-cutout (import "../things/usb_holder_cutout.stl"))
 
 (def right-usb-cutout
-  (let [ holder (union usb-holder (->> usb-holder (translate [0 0 (* -1 bottom-plate-thickness)]))) ]
+  (let [ holder (union usb-holder-cutout (->> usb-holder-cutout (translate [0 0 (* -1 bottom-plate-thickness)]))) ]
   (->> (union
          holder
          (->> holder (translate [0 0.2 0]))
@@ -1343,6 +1344,7 @@
                                               wrist-rest-build
                                               trackball-top
                                               trackball-side
+                                              (->> usb-holder (rotate (deg2rad 180)[0 1 0]) (translate [-75 75 5]))
                                               ))
                   (translate [-130 0 0] (mirror [-1 0 0] (union
                                                            model-left
@@ -1350,7 +1352,8 @@
                                                            thumbcaps
                                                            (caps :extra-top-row true)
                                                            wrist-rest-build
-                                                           )))))
+                                                           )))
+                  ))
           ]
       (cond (not= old new) (spit file new))
       )))
