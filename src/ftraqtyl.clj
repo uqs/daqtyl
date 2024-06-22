@@ -1,4 +1,4 @@
-(ns daqtyl
+(ns ftraqtyl
   (:refer-clojure :exclude [use import])
   (:require [clojure.core.matrix :refer [array matrix mmul]]
             [scad-clj.scad :refer :all]

@@ -1,7 +1,7 @@
-(defproject daqtyl "0.1.0-SNAPSHOT"
+(defproject ftraqtyl "0.2.0-SNAPSHOT"
   :description "A parametrized, split-hand, concave, columnar, ergonomic keyboard with trackballs"
-  :url "https://github.com/uqs/daqtyl.git"
-  :main daqtyl
+  :url "https://github.com/uqs/ftraqtyl.git"
+  :main ftraqtyl
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :plugins [[lein-auto "0.1.3"]

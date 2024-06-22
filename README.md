@@ -1,6 +1,6 @@
-# Daqtyl Keyboard
+# Ftraqtyl Keyboard
 
-The Daqtyl is a family member of the Dactyl-Manuform family of keyboards with
+The Ftraqtyl is a family member of the Dactyl-Manuform family of keyboards with
 added trackball support for finger-operated trackballs.
 
 The genealogy goes roughly like this, with no claim to be accurate:
@@ -45,7 +45,7 @@ This requires the unreleased (yet) version of scad-clj, you should be able to cl
 
 ## License
 
-Copyright © 2015-2022 Matthew Adereth, Tom Short, Leo Lou, carbonfet, crystalhands, and Ulrich Spörlein.
+Copyright © 2015-2024 Matthew Adereth, Tom Short, Leo Lou, carbonfet, crystalhands, and Ulrich Spörlein.
 
 The source code for generating the models is distributed under the [GNU AFFERO GENERAL PUBLIC LICENSE Version 3](LICENSE).
 
