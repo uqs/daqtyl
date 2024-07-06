@@ -8,9 +8,10 @@
 (defn deg2rad [degrees]
   (* (/ degrees 180) pi))
 
-(def trackball-r (+ (/ 44 2) 0.5))  ; 44 mm ball plus offset
+(def trackball-r (+ (/ 34 2) 0.5))  ; 34 mm ball plus offset
+(def trackball-outer-r (+ trackball-r 2))
 
- ; PWM3360 board
+ ; PMW3360/3389 board
 (def sensor-sans-pins
   (->> (union
          ; hull the upper part for printing the overhangs at an angle
@@ -31,8 +32,8 @@
   (let [
         r trackball-r
         h 70
-        outer-r (+ r 2)
-        slant 0.15
+        outer-r (+ r 3)
+        slant 0
         ]
     (->> (cylinder [(/ outer-r 1.5) outer-r] h) (with-fn 100)
          (translate [0 0 (/ h -2)])
@@ -91,8 +92,8 @@
 
 (spit "things/trackball-test.scad"
       (write-scad (union
-                    (->> sensor (translate [0 0 30]))
-                    (->> (color [1 0 0 1] (sphere (/ 44 2))) (translate [0 0 0.5]))
+                    (->> sensor (translate [0 0 23])(color [0.3 0.3 0.3 1]))
+                    (->> (color [1 0 0 1] (sphere (/ 34 2))) (translate [0 0 0.5]))
                     (difference
                       (trackholder 50 0)
                       ;(->> (cube 100 200 200)(translate [50 0 0]))

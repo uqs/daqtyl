@@ -845,7 +845,7 @@
                )
          (screw-insert 0 lastrow  bottom-radius top-radius height [1.0 13 bottom-plate-thickness] [1 1 0]) ; yellow
          (cond right
-               (screw-insert 2 0        bottom-radius top-radius height [-16.5 -7.5 bottom-plate-thickness] [0 0 1]) ; blue
+               (screw-insert 2 0        bottom-radius top-radius height [-13 -7.5 bottom-plate-thickness] [0 0 1]) ; blue
                :else
                (screw-insert 2 0        bottom-radius top-radius height [7.5 -7.5 bottom-plate-thickness] [0 0 1]) ; blue
                )
@@ -1023,12 +1023,10 @@
       )
 
 
-(def trackball-r (+ (/ 44 2) 0.5))  ; 34 mm ball plus offset
-(def trackball-outer-r (+ trackball-r 2))
 
-; Trackballs on the top/back and side of keyboard.
-(def trackball-top-height (+ 35 keyboard-z-offset))
-(def trackball-top-pos [-38 (+ 30 trackball-outer-r) trackball-top-height])
+; Trackball on the top/back side of keyboard.
+(def trackball-top-height (+ 28 keyboard-z-offset))
+(def trackball-top-pos [-28 (+ 30 trackball-outer-r) trackball-top-height])
 (def trackball-top-cylinder-difference
     (->> (union
            (->> (cube 40 5 25)(rotate (deg2rad 30) [0 1 0]))
@@ -1040,27 +1038,18 @@
            )
          (translate trackball-top-pos)
          (translate [0 (- -0.3 trackball-outer-r) 0])))
-(def trackball-top
-  (difference
-    (union (->> (trackholder (last trackball-top-pos) 0)
-                (translate trackball-top-pos)
-                (color [1 0 0 1]))
-           )
-    trackball-top-cylinder-difference
-    )
-  )
 
-(def trackball-side-height (+ 52 keyboard-z-offset))
-(def trackball-side-pos [(- -75 trackball-outer-r) -5 trackball-side-height])
-(def trackball-side-cylinder-difference
-    (->> (cube 40 5 50)(rotate (deg2rad 90) [0 0 1]) (translate trackball-side-pos)(translate [(+ -0.3 trackball-outer-r) 0 0])))
-(def trackball-side
-  (difference
-    (union (->> (trackholder (last trackball-side-pos) 94)
-                (translate trackball-side-pos)
-                (color [0 0 1 1]))
-           )
-    ;trackball-side-cylinder-difference
+(def trackball-top
+  (union
+    (difference
+      (->> (trackholder (last trackball-top-pos) 0)
+           (translate trackball-top-pos)
+           (color [1 0 0 1]))
+      trackball-top-cylinder-difference)
+    ; to show the placement of the ball
+    ;(->> (color [1 0 0 1] (sphere trackball-r))
+    ;     (translate trackball-top-pos)
+    ;     (translate [0 0 0.5]))
     )
   )
 
@@ -1071,9 +1060,6 @@
     ; top
     (->> (difference (trackholder-cyl (last trackball-top-pos) 0) (->> (cube 35 55 30)(rotate (deg2rad 30) [0 1 0]))) (translate trackball-top-pos))
     (->> (sphere (- trackball-outer-r 1.9)) (translate trackball-top-pos))
-    ; side
-    (->> (difference (trackholder-cyl (last trackball-side-pos) 94) (cube 50 50 16)) (translate trackball-side-pos))
-    (->> (sphere (- trackball-outer-r 1.9)) (translate trackball-side-pos))
   ))
 
 (spit "things/sensor-welltest.scad"
@@ -1092,12 +1078,6 @@
                                     trackball-cutouts
                                     )
                                   (difference trackball-top (->> (hull back-wall)(translate [0 -3.3 -8])))
-                                  (difference trackball-side
-                                              (hull (->> single-plate (key-place 0 1)))
-                                              (difference
-                                                (->> (hull (union left-wall (->> (sphere 1))))(translate [2.2 0 -4]))
-                                                (->> (sphere (- trackball-outer-r 1.0)) (translate trackball-side-pos) )
-                                                ))
                                   )
                                 ))
       )
@@ -1231,7 +1211,6 @@
                                               (caps)
                                               wrist-rest-build
                                               trackball-top
-                                              trackball-side
                                               (->> usb-holder (rotate (deg2rad 180)[0 1 0]) (translate [-75 75 5]))
                                               ))
                   (translate [-130 0 0] (mirror [-1 0 0] (union
@@ -1303,7 +1282,6 @@
                        (caps)
                        wrist-rest-build
                        trackball-top
-                       trackball-side
                        ))
           ]
       (cond (not= old new) (spit file new))
@@ -1317,13 +1295,6 @@
                 (union model-right
                        ;trackball-top
                        (difference trackball-top (->> (hull back-wall)(translate [0 -3.3 -8])))
-                       ;trackball-side
-                       (difference trackball-side
-                                   (hull (->> single-plate (key-place 0 1)))
-                                   (difference
-                                     (->> (hull (union left-wall (->> (sphere 1))))(translate [2.2 0 -4]))
-                                     (->> (sphere (- trackball-outer-r 1.0)) (translate trackball-side-pos) )
-                                     ))
                        ))
           ]
       (cond (not= old new) (spit file new))

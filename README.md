@@ -28,14 +28,15 @@ Shoutout also to the folks from OhKeycaps who inadvertently got me started on th
 - Tighter horizontal spacing for first and last column. First column also slanted inwards. Last column splayed a bit.
 - Three button cluster based off the "mini" cluster.
 - Palm rests without silicone pads.
-- 3 extra buttons for Mouse1-3. Don't ask, I got used to this setup, my WM greatly benefits.
-- Rolling rotary encoders (like a proper mouse wheel), again, can't decide on final placement yet.
+- Rolling rotary encoders (like a proper mouse wheel).
 - Support for 34mm and 44mm trackballs (T-RB22, actually is 43mm or so).
 
 ## Generate OpenSCAD and STL models
 
 This requires the unreleased (yet) version of scad-clj, you should be able to clone scad-clj and run `lein jar && lein install`.
 (This will be obsolete once https://github.com/farrellm/scad-clj/issues/49 has been resolved).
+
+To create everything, just run `lein generate && make -j4 all`, otherwise:
 
 * Run `lein repl`, enter: `(load-file "src/dactyl_keyboard/dactyl.clj")`
 * This will regenerate the `things/*.scad` files
