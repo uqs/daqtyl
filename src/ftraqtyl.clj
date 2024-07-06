@@ -15,18 +15,12 @@
 
 (def nrows 4)
 (def ncols 5)
-(def extra-row-col 5)             ; 5th or 4th column is the last for the extra row
 
 (def α (/ π 12))                        ; curvature of the columns
 (def β (/ π 36))                        ; curvature of the rows
 (def centerrow (- nrows 3))             ; controls front-back tilt
 (def centercol 4)                       ; controls left-right tilt / tenting (higher number is more tenting)
 (def tenting-angle (/ π 9))            ; or, change this for more precise tenting control
-
-(def first-15u-row 0)                   ; controls which should be the first row to have 1.5u keys on the outer column
-(def last-15u-row 2)                    ; controls which should be the last row to have 1.5u keys on the outer column
-
-(def column-style :standard)
 
 (defn column-offset [column]
     (cond (= column 0) [1.35 0 0.3]
@@ -64,16 +58,6 @@
 (def wall-z-offset -8)                 ; length of the first downward-sloping part of the wall (negative)
 (def wall-xy-offset 5)                  ; offset in the x and/or y direction for the first downward-sloping part of the wall (negative)
 (def wall-thickness 2)                  ; wall thickness parameter; originally 5
-
-;; Settings for column-style == :fixed
-;; The defaults roughly match Maltron settings
-;; http://patentimages.storage.googleapis.com/EP0219944A2/imgf0002.png
-;; Fixed-z overrides the z portion of the column ofsets above.
-;; NOTE: THIS DOESN'T WORK QUITE LIKE I'D HOPED.
-(def fixed-angles [(deg2rad 10) (deg2rad 10) 0 0 0 (deg2rad -15) (deg2rad -15)])
-(def fixed-x [-41.5 -22.5 0 20.3 41.4 65.5 89.6])  ; relative to the middle finger
-(def fixed-z [12.1    8.3 0  5   10.7 14.5 17.5])
-(def fixed-tenting (deg2rad 0))
 
 ; If you use Cherry MX or Gateron switches, this can be turned on.
 ; If you use other switches such as Kailh, you should set this as false
@@ -270,7 +254,6 @@
 (def column-radius (+ (/ (/ (+ mount-width extra-width) 2)
                          (Math/sin (/ β 2)))
                       cap-top-height))
-(def column-x-delta (+ -1 (- (* column-radius (Math/sin β)))))
 
 (defn apply-key-geometry [translate-fn rotate-x-fn rotate-y-fn rotate-z-fn column row shape]
   (let [column-angle (* β (- centercol column))
@@ -285,26 +268,8 @@
                           (rotate-x-fn (column-rotation column))
                           (rotate-z-fn (column-splay column))
                           (translate-fn (column-offset column)))
-        column-z-delta (* column-radius (- 1 (Math/cos column-angle)))
-        placed-shape-ortho (->> shape
-                                (translate-fn [0 0 (- row-radius)])
-                                (rotate-x-fn  (* α (- centerrow row)))
-                                (translate-fn [0 0 row-radius])
-                                (rotate-y-fn  column-angle)
-                                (translate-fn [(- (* (- column centercol) column-x-delta)) 0 column-z-delta])
-                                (translate-fn (column-offset column)))
-        placed-shape-fixed (->> shape
-                                (rotate-y-fn  (nth fixed-angles column))
-                                (translate-fn [(nth fixed-x column) 0 (nth fixed-z column)])
-                                (translate-fn [0 0 (- (+ row-radius (nth fixed-z column)))])
-                                (rotate-x-fn  (* α (- centerrow row)))
-                                (translate-fn [0 0 (+ row-radius (nth fixed-z column))])
-                                (rotate-y-fn  fixed-tenting)
-                                (translate-fn [0 (second (column-offset column)) 0]))]
-    (->> (case column-style
-               :orthographic placed-shape-ortho
-               :fixed        placed-shape-fixed
-               placed-shape)
+        ]
+    (->> placed-shape
          (rotate-y-fn  tenting-angle)
          (translate-fn [0 0 keyboard-z-offset]))))
 
@@ -794,26 +759,6 @@
    left-wall
    front-wall
    ))
-
-; Offsets for the controller/trrs holder cutout
-(def holder-offset
-  (case nrows
-    4 -3.5
-    5 0
-    6 2.2))
-
-(def notch-offset
-  (case nrows
-    4 3.35
-    5 0.15
-    6 -5.07))
-
-; Cutout for controller/trrs jack holder
-(def usb-holder-ref (key-position 0 0 (map - (wall-locate2  0  -1) [0 (/ mount-height 2) 0])))
-(def usb-holder-position (map + [(+ 18.8 holder-offset) 18.7 1.3] [(first usb-holder-ref) (second usb-holder-ref) 2]))
-(def usb-holder-space  (translate (map + usb-holder-position [-1.5 (* -1 wall-thickness) 2.9]) (cube 28.666 30 12.4)))
-(def usb-holder-notch  (translate (map + usb-holder-position [-1.5 (+ 4.4 notch-offset) 2.9]) (cube 31.366 1.3 12.4)))
-(def trrs-notch        (translate (map + usb-holder-position [-10.33 (+ 3.6 notch-offset) 6.6]) (cube 8.4 2.4 19.8)))
 
 ; Screw insert definition & position
 (defn screw-insert-shape [bottom-radius top-radius height]
