@@ -363,7 +363,7 @@
 (defn key-position [column row position]
   (apply-key-geometry (partial map +) rotate-around-x rotate-around-y rotate-around-z column row position))
 
-(defn key-holes [& {:keys [extra-top-row] :or {extra-top-row false}}]
+(defn key-holes [& {:keys [extra-encoder] :or {extra-encoder false}}]
   (apply union
          (conj
            (for [column columns
@@ -374,48 +374,32 @@
            ; XXX not symmetrical, the right side needs to rotate this 180!
            ; we need to mirror it here, as the left model later on get applied
            ; another mirroring operation, so we need to undo the damage here and below.
-           (if extra-top-row
+           (if extra-encoder
              (->> encoder-plate (mirror [-1 0 0]) (enc-place 2 lastrow))
              (->> single-plate (key-place 2 lastrow)))
-           ; mouse keys go here, the middle one uses a different plate for the encoder
-           (if extra-top-row (->> single-plate (key-place 1 -1)))
-           (if extra-top-row (->> encoder-plate (mirror [-1 0 0]) (rotate (deg2rad 180)[0 0 1]) (enc-place 2 -1)))
-           (if extra-top-row
-             (for [col (range 3 extra-row-col)]
-               (->> single-plate (key-place col -1))))
            )))
 
-(defn caps [& {:keys [extra-top-row] :or {extra-top-row false}}]
+(defn caps [& {:keys [extra-encoder] :or {extra-encoder false}}]
   (apply union
          (conj (for [column columns
                      row rows
                      :when (or (.contains [3] column)
                                (not= row lastrow))]
                  (->> (sa-cap 1) (key-place column row)))
-               (if extra-top-row (->> encoder-cap (enc-place 2 lastrow))
+               (if extra-encoder (->> encoder-cap (enc-place 2 lastrow))
                  (->> (sa-cap 1) (key-place 2 lastrow)))
-               (if extra-top-row (->> (sa-cap 1) (key-place 1 -1)))
-               (if extra-top-row (->> encoder-cap (enc-place 2 -1)))
-               (if extra-top-row
-                 (for [col (range 3 extra-row-col)]
-                   (->> (sa-cap 1) (key-place col -1))))
                )))
 
 ; only used to project the shadow on the bottom plate
-(defn caps-fill [& {:keys [extra-top-row] :or {extra-top-row false}}]
+(defn caps-fill [& {:keys [extra-encoder] :or {extra-encoder false}}]
   (apply union
          (conj (for [column columns
                      row rows
                      :when (or (.contains [3] column)
                                (not= row lastrow))]
                  (key-place column row keyhole-fill))
-               (if extra-top-row (enc-place 2 lastrow encoder-fill)
+               (if extra-encoder (enc-place 2 lastrow encoder-fill)
                  (key-place 2 lastrow keyhole-fill))
-               (if extra-top-row (key-place 1 -1 keyhole-fill))
-               (if extra-top-row (enc-place 2 -1 encoder-fill))
-               (if extra-top-row
-                 (for [col (range 3 extra-row-col)]
-                   (key-place col -1 keyhole-fill)))
                )))
 
 (defn triangle-hulls [& shapes]
@@ -423,7 +407,7 @@
          (map (partial apply hull)
               (partition 3 1 shapes))))
 
-(defn connectors [& {:keys [extra-top-row] :or {extra-top-row false}}]
+(def connectors
   (apply union
          (concat
           ;; Row connections
@@ -450,63 +434,6 @@
              (key-place column (inc row) web-post-tr)
              (key-place (inc column) row web-post-bl)
              (key-place (inc column) (inc row) web-post-tl)))
-
-          (if extra-top-row
-              (concat
-                ;; Row connections for the encoder plate
-                (for [column [1] row [-1]]
-                  (triangle-hulls
-                    (enc-place (inc column) row web-post-tl)
-                    (key-place column row web-post-tr)
-                    (enc-place (inc column) row web-post-bl)
-                    (key-place column row web-post-br))
-                  )
-                (for [column [2] row [-1]]
-                  (triangle-hulls
-                    (key-place (inc column) row web-post-tl)
-                    (enc-place column row web-post-tr)
-                    (key-place (inc column) row web-post-bl)
-                    (enc-place column row web-post-br))
-                  )
-                (for [column (range 3 (dec extra-row-col)) row [-1]]
-                  (triangle-hulls
-                    (key-place (inc column) row web-post-tl)
-                    (key-place column row web-post-tr)
-                    (key-place (inc column) row web-post-bl)
-                    (key-place column row web-post-br))
-                  )
-                ;; Column connections
-                (for [column (range 1 extra-row-col) row [-1]]
-                  (let [place-func (cond (= column 2) enc-place :else key-place)]
-                    (triangle-hulls
-                      (place-func column row web-post-bl)
-                      (place-func column row web-post-br)
-                      (place-func column (inc row) web-post-tl)
-                      (place-func column (inc row) web-post-tr)
-                      )))
-                ;; Diagonal connections
-                (for [column [1] row [-1]]
-                  (triangle-hulls
-                    (key-place column row web-post-br)
-                    (key-place column (inc row) web-post-tr)
-                    (enc-place (inc column) row web-post-bl)
-                    (key-place (inc column) (inc row) web-post-tl)
-                    ))
-                (for [column [2] row [-1]]
-                  (triangle-hulls
-                    (enc-place column row web-post-br)
-                    (key-place column (inc row) web-post-tr)
-                    (key-place (inc column) row web-post-bl)
-                    (key-place (inc column) (inc row) web-post-tl)
-                    ))
-                (for [column (range 3 (dec extra-row-col)) row [-1]]
-                  (triangle-hulls
-                    (key-place column row web-post-br)
-                    (key-place column (inc row) web-post-tr)
-                    (key-place (inc column) row web-post-bl)
-                    (key-place (inc column) (inc row) web-post-tl)
-                    ))
-              ))
           )))
 
 ; Thumb cluster
@@ -627,9 +554,9 @@
               :bottomoffset bottomoffset :topoffset topoffset
               ))
 
-(defn right-wall [& {:keys [extra-top-row] :or {extra-top-row false}}]
+(def right-wall
   (let [
-        startrow (cond (and extra-top-row (= extra-row-col 5)) -1 :else 0)
+        startrow 0
         ]
     (union (key-wall-brace lastcol startrow 0 1 web-post-tr lastcol startrow 1 0 web-post-tr)
              (union (for [y (range startrow lastrow)] (key-wall-brace lastcol y 1 0 web-post-tr lastcol y 1 0 web-post-br))
@@ -815,49 +742,10 @@
                       ))))
 
 
-(defn back-wall [& {:keys [extra-top-row] :or {extra-top-row false}}]
+(def back-wall
   (union
     ;(for [x (range 0 ncols)] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
     ;(for [x (range 1 ncols)] (key-wall-brace x 0 0 1 web-post-tl (dec x) 0 0 1 web-post-tr))
-    (if extra-top-row
-      (vector
-        ;defn key-wall-brace [x1 y1 dx1 dy1 post1 x2 y2 dx2 dy2 post2]
-        ; x/y is placement of key, 0/0 being top-left on the right model
-        ; dx1/dy1 moves the post a bit, scaled by wall-xy-locate
-        ; ditto for the second post. So you move to key pos 0/0 and put down a
-        ; wall from its top-left to top-right position. Then you brace from key
-        ; 0/0's top-right to 1/-1's top left, etc.
-        (key-wall-brace 0 0 0 1 web-post-tl 0 0 -0.5 1 web-post-tr)
-        (color [1 1 0 1] (key-wall-brace 0 0 -0.5 1 web-post-tr 1 -1 0 0.5 web-post-tl))
-        (color [1 1 0 1] (hull
-                           (key-place 1 -1 web-post-tl)
-                           (key-place 1  0 web-post-tl)
-                           (key-place 0  0 web-post-tr)
-                           ))
-        (key-wall-brace 1 -1 0 0.5 web-post-tl 1 -1 0 0.5 web-post-tr)
-        (union
-          (color [0 1 0 1] (enc-wall-brace (partial enc-place 2 -1) 0 0.5 web-post-tl (partial key-place 1 -1) 0 0.5 web-post-tr))
-          (color [1 0 0 1] (enc-wall-brace (partial enc-place 2 -1) 0 0.5 web-post-tl (partial enc-place 2 -1) 0 0.5 web-post-tr))
-          (color [0 0 1 1] (enc-wall-brace (partial key-place 3 -1) 0 0.5 web-post-tl (partial enc-place 2 -1) 0 0.5 web-post-tr))
-          )
-        (key-wall-brace 3 -1 0 0.5 web-post-tl 3 -1 0 0.5 web-post-tr)
-        ; these use a dx=2 offset to make the wall thicker, needs also a bespoke triangle hull.
-        (let [
-              startrow (cond (and extra-top-row (= extra-row-col 5)) -1 :else 0)
-              dx (cond (= startrow -1) 0 :else 2)
-              dy (cond (= startrow -1) 1 :else 1)
-              ]
-          (vector
-            (key-wall-brace 3 -1 0 0.5 web-post-tr 4 startrow dx dy web-post-tl)
-            (key-wall-brace 4 startrow dx dy web-post-tl 4 startrow 0 1 web-post-tr)
-            ))
-        (color [1 0 0 1] (hull
-                           (key-place 3 -1 web-post-tr)
-                           (key-place 3  0 web-post-tr)
-                           (key-place 4  0 web-post-tl)
-                           ))
-       )
-      ; else
       (vector
         (for [x (range 0 2)    ] (key-wall-brace x 0 0 1 web-post-tl x       0 0 1 web-post-tr))
         (key-wall-brace 3 0 0 1 web-post-tl 3       0 0 1 web-post-tr)
@@ -869,7 +757,7 @@
         (color [0 1 0 1] (key-wall-brace 2 0 0 1 web-post-tl 1 0 0 1 web-post-tr :bottomoffset [0.43 0]))
         (color [1 0 0 1] (key-wall-brace 2 0 0 1 web-post-tl 2 0 0 1 web-post-tr :bottomoffset [0.43 0.43]))
         (color [0 0 1 1] (key-wall-brace 3 0 0 1 web-post-tl 2 0 0 1 web-post-tr :bottomoffset [0 0.43]))
-      ))))
+      )))
 
 (def left-wall (union
   (for [y (range 0 lastrow)] (union
@@ -898,11 +786,11 @@
   (for [x (range 5 ncols)] (key-wall-brace x cornerrow 0 -1 web-post-bl (dec x) cornerrow 0 -1 web-post-br))
   ))
 
-(defn case-walls [& {:keys [extra-top-row] :or {extra-top-row false}}]
+(def case-walls
   (union
    thumb-wall
-   (right-wall :extra-top-row extra-top-row)
-   (back-wall :extra-top-row extra-top-row)
+   right-wall
+   back-wall
    left-wall
    front-wall
    ))
@@ -959,7 +847,7 @@
          (cond right
                (screw-insert 2 0        bottom-radius top-radius height [-16.5 -7.5 bottom-plate-thickness] [0 0 1]) ; blue
                :else
-               (screw-insert 2 0        bottom-radius top-radius height [9.5 10.7 bottom-plate-thickness] [0 0 1]) ; blue
+               (screw-insert 2 0        bottom-radius top-radius height [7.5 -7.5 bottom-plate-thickness] [0 0 1]) ; blue
                )
          (screw-insert 1 lastrow  bottom-radius top-radius height [-50 0 bottom-plate-thickness] [1 0 1]) ; fuchsia
          (screw-insert lastcol 0        bottom-radius top-radius height [-21 (cond (= lastcol 4) 13 (= lastcol 5) 9) bottom-plate-thickness] [0 1 1]) ; aqua
@@ -1091,7 +979,7 @@
 (def wrest-wall-cut
   (->> (for [xyz (range 0 10 1)] ;controls the scale last number needs to be lower for thinner walls
          (union
-           (translate [0 xyz 0] (case-walls))
+           (translate [0 xyz 0] case-walls)
            )
          )
 ))
@@ -1127,8 +1015,8 @@
       (write-scad (mirror [-1 0 0]
                           (intersection (->> (cube 100 65 60)(translate [-55 -40 30]))
                     (union
-                      (key-holes :extra-top-row true)
-                      (connectors :extra-top-row true)
+                      (key-holes :extra-encoder true)
+                      connectors
                       (thumb-connectors :encoder true)
                       thumb
                       ))))
@@ -1196,14 +1084,14 @@
                                   (difference
                                     (union
                                       (key-holes)
-                                      (connectors)
+                                      connectors
                                       (thumb-connectors)
                                       thumb
-                                      (case-walls)
+                                      case-walls
                                       )
                                     trackball-cutouts
                                     )
-                                  (difference trackball-top (->> (hull (back-wall))(translate [0 -3.3 -8])))
+                                  (difference trackball-top (->> (hull back-wall)(translate [0 -3.3 -8])))
                                   (difference trackball-side
                                               (hull (->> single-plate (key-place 0 1)))
                                               (difference
@@ -1233,10 +1121,10 @@
 (def model-right (difference
                    (union
                      (key-holes)
-                     (connectors)
+                     connectors
                      (thumb-connectors)
                      thumb
-                     (difference (union (case-walls)
+                     (difference (union case-walls
                                         (screw-insert-outers true))
                                  ; TODO: need to add the intersection of wall and cutout to the bottom plate!
                                  right-usb-cutout
@@ -1250,16 +1138,16 @@
   (let [ cable-hole (->> (cylinder 3 20)(with-fn 32)(rotate (deg2rad 90)[1 0 0])) ]
   (->>
     cable-hole
-    (rotate (deg2rad 56.5)[0 0 1]) (translate [-60 45 8]))
+    (translate [-60 40 18]))
   ))
 
 (def model-left (difference
                   (union
-                    (key-holes :extra-top-row true)
-                    (connectors :extra-top-row true)
+                    (key-holes :extra-encoder true)
+                    connectors
                     thumb
                     (thumb-connectors :encoder true)
-                    (difference (union (case-walls :extra-top-row true)
+                    (difference (union case-walls
                                        (screw-insert-outers false))
                                 left-cable-cutout
                                 (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
@@ -1268,15 +1156,15 @@
                   ))
 
 ; Cut away the walls from the bottom plate again, so it recedes fully. Requires sufficient keyboard-z-offset.
-(defn plate-cutout [shape & {:keys [extra-top-row] :or {extra-top-row false}}]
+(defn plate-cutout [shape right]
   (union
     (difference
       shape
-      (translate [0 0 -10] (screw-insert-screw-holes (not extra-top-row)))
-      (translate [0 0 -3.4] (plate-screw-recess (not extra-top-row)))
+      (translate [0 0 -10] (screw-insert-screw-holes right))
+      (translate [0 0 -3.4] (plate-screw-recess right))
       (union
         (for [xy (range 0.994 1.14 0.015)]
-          (->> (case-walls :extra-top-row extra-top-row)
+          (->> case-walls
                (scale [xy xy 1.0])
                (translate [0 0 -0.01]))))
       )))
@@ -1289,10 +1177,10 @@
             (difference
               (union
                 (key-holes)
-                (connectors)
+                connectors
                 thumb
                 (thumb-connectors)
-                (case-walls)
+                case-walls
                 thumbcaps-fill
                 (caps-fill)
                 ;screw-insert-outers
@@ -1306,13 +1194,13 @@
           (project
             (difference
               (union
-                (key-holes :extra-top-row true)
-                (connectors :extra-top-row true)
+                (key-holes :extra-encoder true)
+                connectors
                 thumb
                 (thumb-connectors :encoder true)
-                (case-walls :extra-top-row true)
+                case-walls
                 thumbcaps-fill
-                (caps-fill :extra-top-row true)
+                (caps-fill :extra-encoder true)
                 ;screw-insert-outers
                 )
               )))
@@ -1338,7 +1226,7 @@
           new (write-scad
                 (union
                   (translate [130 0 0] (union model-right
-                                              (->> (plate-cutout plate-right) (translate [0 0 -30]))
+                                              (->> (plate-cutout plate-right true) (translate [0 0 -30]))
                                               thumbcaps
                                               (caps)
                                               wrist-rest-build
@@ -1348,9 +1236,9 @@
                                               ))
                   (translate [-130 0 0] (mirror [-1 0 0] (union
                                                            model-left
-                                                           (->> (plate-cutout plate-left :extra-top-row true) (translate [0 0 -30]))
+                                                           (->> (plate-cutout plate-left false) (translate [0 0 -30]))
                                                            thumbcaps
-                                                           (caps :extra-top-row true)
+                                                           (caps :extra-encoder true)
                                                            wrist-rest-build
                                                            )))
                   ))
@@ -1366,9 +1254,9 @@
           new (write-scad
                 (mirror [-1 0 0]
                       (union model-left
-                             (->> (plate-cutout plate-left :extra-top-row true) (translate [0 0 -30]))
+                             (->> (plate-cutout plate-left false) (translate [0 0 -30]))
                              thumbcaps
-                             (caps :extra-top-row true)
+                             (caps :extra-encoder true)
                              wrist-rest-build
                              )))
           ]
@@ -1388,7 +1276,7 @@
     (let [
           file "things/left-plate.scad"
           old (try (slurp file) (catch Exception e))
-          new (write-scad (->> (plate-cutout plate-left :extra-top-row true) (mirror [-1 0 0])))
+          new (write-scad (->> (plate-cutout plate-left false) (mirror [-1 0 0])))
           ]
       (cond (not= old new) (spit file new))
 )))
@@ -1410,7 +1298,7 @@
           old (try (slurp file) (catch Exception e))
           new (write-scad
                 (union model-right
-                       (->> (plate-cutout plate-right) (translate [0 0 -30]))
+                       (->> (plate-cutout plate-right true) (translate [0 0 -30]))
                        thumbcaps
                        (caps)
                        wrist-rest-build
@@ -1428,7 +1316,7 @@
           new (write-scad
                 (union model-right
                        ;trackball-top
-                       (difference trackball-top (->> (hull (back-wall))(translate [0 -3.3 -8])))
+                       (difference trackball-top (->> (hull back-wall)(translate [0 -3.3 -8])))
                        ;trackball-side
                        (difference trackball-side
                                    (hull (->> single-plate (key-place 0 1)))
@@ -1445,7 +1333,7 @@
     (let [
           file "things/right-plate.scad"
           old (try (slurp file) (catch Exception e))
-          new (write-scad (plate-cutout plate-right))
+          new (write-scad (plate-cutout plate-right true))
           ]
       (cond (not= old new) (spit file new))
 )))
