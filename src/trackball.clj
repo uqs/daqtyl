@@ -44,6 +44,22 @@
          ))
   )
 
+(def sensor-cutout
+  (->> (union
+         sensor
+         (->> sensor (rotate (deg2rad 0) [1 0 0]) (translate [0 -5 0]))
+         (->> sensor (rotate (deg2rad 0) [1 0 0]) (translate [0 -10 0]))
+         (->> sensor (rotate (deg2rad 0) [1 0 0]) (translate [0 -15 0]))
+         (->> sensor (rotate (deg2rad 0) [1 0 0]) (translate [0 -20 0]))
+         (->> sensor (rotate (deg2rad 10) [1 0 0]) (translate [0 -20 -2]))
+         (->> sensor (rotate (deg2rad 16) [1 0 0]) (translate [0 -15 -3]))
+         (->> sensor-sans-pins (rotate (deg2rad 30) [1 0 0]) (translate [0 -18 -6]))
+         (->> sensor-sans-pins (rotate (deg2rad 45) [1 0 0]) (translate [0 -21 -9]))
+         )
+       (translate [0 0 (- -4.75 trackball-r)]) ; sensor needs 2.40mm distance from surface
+       )
+  )
+
 (defn trackholder [l zdeg]
   (let [
         r trackball-r
@@ -68,20 +84,6 @@
                          ))
         ; subtract the hole through the bottom
         (->> (cylinder 9.5 5) (translate [0 0 (- 0 r)]))
-        ; subtract the sensor board shape including a trajectory to insert/remove it
-        (->> (union
-               sensor
-               (->> sensor (rotate (deg2rad 0) [1 0 0]) (translate [0 -5 0]))
-               (->> sensor (rotate (deg2rad 0) [1 0 0]) (translate [0 -10 0]))
-               (->> sensor (rotate (deg2rad 0) [1 0 0]) (translate [0 -15 0]))
-               (->> sensor (rotate (deg2rad 0) [1 0 0]) (translate [0 -20 0]))
-               (->> sensor (rotate (deg2rad 10) [1 0 0]) (translate [0 -20 -2]))
-               (->> sensor (rotate (deg2rad 16) [1 0 0]) (translate [0 -15 -3]))
-               (->> sensor-sans-pins (rotate (deg2rad 30) [1 0 0]) (translate [0 -18 -6]))
-               (->> sensor-sans-pins (rotate (deg2rad 45) [1 0 0]) (translate [0 -21 -9]))
-               )
-             (translate [0 0 (- -4.75 r)]) ; sensor needs 2.40mm distance from surface
-             )
         (->> (cube 100 100 100)(translate [0 0 (- -50 l)]))
         )
       (rotate (deg2rad zdeg) [0 0 1])
@@ -89,12 +91,16 @@
     )
   )
 
+; TODO: raise cylinder walls by 3mm, then put on a cap, with a place to either
+; place magnets or screws.
 
 (spit "things/trackball-test.scad"
       (write-scad (union
-                    (->> sensor (translate [0 0 23])(color [0.3 0.3 0.3 1]))
+                    ;(->> sensor (translate [0 0 23])(color [0.3 0.3 0.3 1]))
                     (->> (color [1 0 0 1] (sphere (/ 34 2))) (translate [0 0 0.5]))
                     (difference
                       (trackholder 50 0)
                       ;(->> (cube 100 200 200)(translate [50 0 0]))
+                      ; subtract the sensor board shape including a trajectory to insert/remove it
+                      sensor-cutout
                       ))))

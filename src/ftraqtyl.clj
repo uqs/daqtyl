@@ -998,19 +998,8 @@
     )
   )
 
-; janky ass way to cut through to the trackball holders left&top side
-(def trackball-cutouts
-  (union
-    (fa! 1)
-    ; top
-    (->> (difference (trackholder-cyl (last trackball-top-pos) 0) (->> (cube 35 55 30)(rotate (deg2rad 30) [0 1 0]))) (translate trackball-top-pos))
-    (->> (sphere (- trackball-outer-r 1.9)) (translate trackball-top-pos))
-  ))
-
 (spit "things/sensor-welltest.scad"
-      (write-scad (intersection ;(->> (cube 55 80 60)(translate [-38 50 30]))
-                                ;(->> (cube 80 55 50)(translate [-100 -5 40]))
-                                (->> (cube 60 45 30)(translate [-110 -5 32]))
+      (write-scad (intersection (->> (cube 55 80 60)(translate [-30 50 30]))
                                 (union
                                   (difference
                                     (union
@@ -1018,9 +1007,9 @@
                                       connectors
                                       (thumb-connectors)
                                       thumb
-                                      case-walls
+                                      (difference case-walls
+                                                  (->> sensor-cutout (translate trackball-top-pos)))
                                       )
-                                    trackball-cutouts
                                     )
                                   (difference trackball-top (->> (hull back-wall)(translate [0 -3.3 -8])))
                                   )
@@ -1054,8 +1043,9 @@
                                  ; TODO: need to add the intersection of wall and cutout to the bottom plate!
                                  right-usb-cutout
                                  (if (== wrist-rest-on 1) (->> rest-case-cuts (translate [wrist-translate-x (- (second thumborigin) (- 56 nrows)) 0])))
-                                 (screw-insert-holes true)))
-                   trackball-cutouts
+                                 (screw-insert-holes true)
+                                 (->> sensor-cutout (translate trackball-top-pos))
+                                 ))
                    cut-bottom
                    ))
 
@@ -1238,7 +1228,6 @@
           old (try (slurp file) (catch Exception e))
           new (write-scad
                 (union model-right
-                       ;trackball-top
                        (difference trackball-top (->> (hull back-wall)(translate [0 -3.3 -8])))
                        ))
           ]
